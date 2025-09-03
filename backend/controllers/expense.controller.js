@@ -375,7 +375,7 @@ ${expenseData.slice(0, 10).map(expense => `
           content: `Based on this expense data:\n\n${contextString}\n\nQuestion: ${query}`
         }
       ],
-      model: "llama3-8b-8192",
+      model: "llama-3.3-70b-versatile",
       temperature: 0.1,
       max_tokens: 1000,
     });

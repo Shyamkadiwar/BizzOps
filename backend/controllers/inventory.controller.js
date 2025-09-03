@@ -220,7 +220,7 @@ Please answer this query based on the inventory data provided. Be specific and h
           content: userPrompt
         }
       ],
-      model: "llama3-8b-8192", // You can change this to other models like "mixtral-8x7b-32768"
+      model: "llama-3.3-70b-versatile", // You can change this to other models like "mixtral-8x7b-32768"
       temperature: 0.7,
       max_tokens: 1000,
     });
@@ -292,7 +292,7 @@ Please provide:
           content: insightPrompt
         }
       ],
-      model: "llama3-8b-8192",
+      model: "llama-3.3-70b-versatile",
       temperature: 0.5,
       max_tokens: 1500,
     });
