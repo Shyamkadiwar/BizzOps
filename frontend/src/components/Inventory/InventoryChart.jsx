@@ -1,4 +1,4 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { Bar } from "react-chartjs-2";
 import "chart.js/auto";
@@ -8,10 +8,12 @@ const InventoryChart = () => {
 
   const fetchInventoryData = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/inventory/get-item`, { withCredentials: true });
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/inventory/get-item?limit=100`, { withCredentials: true });
 
       if (response.status === 200) {
-        setInventoryData(response.data.data);
+        // Handle new paginated response structure
+        const items = response.data.data.inventoryItems || response.data.data || [];
+        setInventoryData(items);
       }
     } catch (error) {
       console.error("Error fetching inventory data:", error.message);
@@ -28,8 +30,8 @@ const InventoryChart = () => {
     datasets: [
       {
         label: "Stock Remaining",
-        data: inventoryData.map((item) => item.stockRemain), 
-        backgroundColor: "rgba(86, 248, 209, 1)", 
+        data: inventoryData.map((item) => item.stockRemain),
+        backgroundColor: "rgba(86, 248, 209, 1)",
         borderColor: "rgba(86, 248, 209, 1)",
         borderWidth: 1,
       },

@@ -19,9 +19,11 @@ const AddInvoice = () => {
     useEffect(() => {
         const fetchInventoryItems = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/inventory/get-item`, { withCredentials: true });
-                
-                setInventoryItems(response.data.data);
+                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/inventory/get-item?limit=100`, { withCredentials: true });
+
+                // Handle new paginated response structure
+                const items = response.data.data.inventoryItems || response.data.data || [];
+                setInventoryItems(items);
             } catch (error) {
                 console.error('Error fetching inventory:', error);
             }
@@ -70,7 +72,7 @@ const AddInvoice = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         try {
             const invoiceData = {
                 name: customer,
@@ -84,17 +86,17 @@ const AddInvoice = () => {
                 date
             };
             console.log(invoiceData);
-            
+
 
             const response = await axios.post(
-                `${import.meta.env.VITE_BACKEND_URL}/api/v1/invoice/add-invoice`, 
-                invoiceData, 
+                `${import.meta.env.VITE_BACKEND_URL}/api/v1/invoice/add-invoice`,
+                invoiceData,
                 {
-                    withCredentials: true 
+                    withCredentials: true
                 }
             );
 
-            if (response.status === 200) {   
+            if (response.status === 200) {
                 setPopupVisible(true);
                 // Reset form
                 setCustomer('');
@@ -143,8 +145,8 @@ const AddInvoice = () => {
                         >
                             <option value="">Select Item</option>
                             {inventoryItems.map((invItem) => (
-                                <option 
-                                    key={invItem._id} 
+                                <option
+                                    key={invItem._id}
                                     value={invItem.item}
                                 >
                                     {invItem.item} (Stock: {invItem.stockRemain})
@@ -220,8 +222,8 @@ const AddInvoice = () => {
                         <h2 className="text-lg font-poppins text-white font-bold">Success!</h2>
                         <p className="mt-2 font-poppins text-white">Invoice added successfully.</p>
                         <div className="mt-4 flex justify-end">
-                            <button 
-                                onClick={handleClosePopup} 
+                            <button
+                                onClick={handleClosePopup}
                                 className="text-blue-400 font-semibold hover:text-blue-300 font-poppins"
                             >
                                 Close
@@ -231,7 +233,7 @@ const AddInvoice = () => {
                 </div>
             )}
         </div>
-        
+
     );
 };
 

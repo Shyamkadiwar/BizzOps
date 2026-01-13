@@ -1,99 +1,164 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import * as XLSX from "xlsx";
+import { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import { Box, Typography, Chip, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ProfessionalDataGrid from "../shared/ProfessionalDataGrid";
+
+const token = localStorage.getItem('accessToken');
 
 function ExpenseTable() {
-    const [expense, setExpense] = useState([]); 
+    const [expenses, setExpenses] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString();
-    };
-
-    const getExpense = async () => {
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/expense/get-expense`, {withCredentials: true });
-            if (response.data.statusCode === 200) {
-                setExpense(response.data.data.expense); 
-            }
-        } catch (error) {
-            console.error("Error while fetching expense", error.response?.data || error.message);
-        }
-    };
-
-    const fetchAndDownload = async () => {
+    const fetchExpenses = useCallback(async () => {
+        setLoading(true);
         try {
             const response = await axios.get(
                 `${import.meta.env.VITE_BACKEND_URL}/api/v1/expense/get-expense`,
-                { withCredentials: true }
+                { headers: { 'Authorization': token }, withCredentials: true }
             );
-            const expenseData = response.data.data.expense;
-    
-            const formattedData = expenseData.map(item => ({
-                Name: item.name,
-                Expense: `${item.expAmount} Rs`,
-                Description: item.description,
-                Date: new Date(item.date).toLocaleDateString(),
-            }));
-    
-            // Create Excel file
-            const worksheet = XLSX.utils.json_to_sheet(formattedData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Expense");
-    
-            XLSX.writeFile(workbook, "Expense.xlsx");
-        } catch (error) {
-            console.error("Error fetching or downloading Expense data:", error);
-            alert("Failed to download the file.");
-        }
-    };
-    
 
-    useEffect(() => {
-        getExpense();
+            if (response.status === 200 && response.data && response.data.data) {
+                // Handle both possible response structures
+                const expensesData = response.data.data.expenses || response.data.data.expense || [];
+                setExpenses(expensesData.map(expense => ({
+                    ...expense,
+                    id: expense._id,
+                    category: expense.name || expense.category || 'N/A',
+                    amount: expense.expAmount || expense.amount || 0
+                })));
+            }
+        } catch (error) {
+            console.error('Failed to fetch expenses:', error);
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
-    return (
-        <div className="w-full bg-[#28282B] shadow-md rounded-lg p-6">
-            <div className="flex gap-10 h-20 items-center">
-                <h2 className="text-base font-poppins font-semibold mb-4 text-white">Expense Records</h2>
-                <button
-                    onClick={fetchAndDownload}
-                    className="bg-white h-1/2 text-black py-2 px-4 rounded-xl"
+    useEffect(() => {
+        fetchExpenses();
+    }, [fetchExpenses]);
+
+    const handleDelete = async (id) => {
+        if (window.confirm('Are you sure you want to delete this expense?')) {
+            try {
+                await axios.post(
+                    `${import.meta.env.VITE_BACKEND_URL}/api/v1/expense/delete-expense`,
+                    { id },
+                    { headers: { 'Authorization': token }, withCredentials: true }
+                );
+                fetchExpenses();
+            } catch (error) {
+                console.error('Error deleting expense:', error);
+                alert('Error deleting expense');
+            }
+        }
+    };
+
+    const handleExport = async () => {
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_BACKEND_URL}/api/v1/excel/export/expenses`,
+                {
+                    headers: { 'Authorization': token },
+                    withCredentials: true,
+                    responseType: 'blob'
+                }
+            );
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'expenses.xlsx');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error('Export failed:', error);
+            alert('Failed to export expenses');
+        }
+    };
+
+    const handleImport = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.xlsx,.xls';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await axios.post(
+                    `${import.meta.env.VITE_BACKEND_URL}/api/v1/excel/import/expenses`,
+                    formData,
+                    {
+                        headers: {
+                            'Authorization': token,
+                            'Content-Type': 'multipart/form-data'
+                        },
+                        withCredentials: true
+                    }
+                );
+
+                alert(`Import successful! ${response.data.data.success.length} expenses imported.`);
+                fetchExpenses();
+            } catch (error) {
+                console.error('Import failed:', error);
+                alert('Failed to import expenses');
+            }
+        };
+        input.click();
+    };
+
+    const columns = [
+        {
+            field: 'date',
+            headerName: 'Date',
+            width: 120,
+            valueFormatter: (value) => value ? new Date(value).toLocaleDateString() : 'N/A'
+        },
+        { field: 'description', headerName: 'Description', width: 250, filterable: true },
+        { field: 'category', headerName: 'Category', width: 150, filterable: true },
+        {
+            field: 'amount',
+            headerName: 'Amount',
+            width: 150,
+            type: 'number',
+            valueFormatter: (value) => `₹${value?.toLocaleString() || 0}`,
+            cellClassName: 'font-bold text-red-600'
+        },
+        {
+            field: 'actions',
+            headerName: 'Actions',
+            width: 100,
+            sortable: false,
+            filterable: false,
+            renderCell: (params) => (
+                <IconButton
+                    color="error"
+                    size="small"
+                    onClick={() => handleDelete(params.row._id)}
                 >
-                    Download
-                </button>
-            </div>
-            <div className="overflow-x-auto">
-                <table className="min-w-full">
-                    <thead>
-                        <tr className="bg-zinc-900">
-                            <th className="px-4 py-2 text-white font-poppins">Date</th>
-                            <th className="px-4 py-2 text-white font-poppins">Item</th>
-                            <th className="px-4 py-2 text-white font-poppins">Amount</th>
-                            <th className="px-4 py-2 text-white font-poppins">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {expense.length > 0 ? (
-                            expense.map((expense) => ( 
-                                <tr key={expense._id} className="text-center">
-                                    <td className="px-5 py-6 text-white text-sm font-poppins">{formatDate(expense.date)}</td>
-                                    <td className="px-5 py-6 text-white text-sm font-poppins">{expense.name}</td>
-                                    <td className="px-5 py-6 text-white text-sm font-poppins">₹{expense.expAmount.toFixed(2)}</td>
-                                    <td className="px-5 py-6 text-white text-sm font-poppins">{expense.description}</td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="7" className="text-center px-4 py-2 border font-poppins">
-                                    No expense data available.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    <DeleteIcon />
+                </IconButton>
+            )
+        }
+    ];
+
+    return (
+        <Box sx={{ width: '100%' }}>
+            <ProfessionalDataGrid
+                rows={expenses}
+                columns={columns}
+                loading={loading}
+                onExport={handleExport}
+                onImport={handleImport}
+                pageSize={10}
+            />
+        </Box>
     );
 }
 

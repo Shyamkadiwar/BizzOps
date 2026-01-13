@@ -16,6 +16,8 @@ import StaffPage from "./pages/SatffPage.jsx";
 import Notes from "./components/Note/Note.jsx";
 import Customizes from "./components/Customize/Customize.jsx";
 import Demo from "./components/Demo.jsx";
+import ProductPage from "./pages/ProductPage.jsx";
+import VendorPage from "./pages/VendorPage.jsx";
 
 function App() {
   return (
@@ -24,19 +26,21 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Signin />} />
         <Route path="/register" element={<Signup />} />
-        <Route path="/Customizes" element={<Customizes />}/>
-        <Route path="/demo" element={<Demo />}/>
-        
+        <Route path="/Customizes" element={<Customizes />} />
+        <Route path="/demo" element={<Demo />} />
+
         {/* Protected Routes */}
         <Route path="/dashboard" element={<ProtectedRoute element={<DashboardPage />} />} />
         <Route path="/inventory" element={<ProtectedRoute element={<InventoryPage />} />} />
         <Route path="/sales" element={<ProtectedRoute element={<SalesPage />} />} />
+        <Route path="/product" element={<ProtectedRoute element={<ProductPage />} />} />
         <Route path="/Invoices" element={<ProtectedRoute element={<InvoicePage />} />} />
         <Route path="/Expenses" element={<ProtectedRoute element={<ExpensePage />} />} />
         <Route path="/Report" element={<ProtectedRoute element={<ReportPage />} />} />
         <Route path="/Payment" element={<ProtectedRoute element={<PaymentPage />} />} />
         <Route path="/Orders" element={<ProtectedRoute element={<OrderPage />} />} />
         <Route path="/Customer" element={<ProtectedRoute element={<CustomerPage />} />} />
+        <Route path="/Vendor" element={<ProtectedRoute element={<VendorPage />} />} />
         <Route path="/Staff" element={<ProtectedRoute element={<StaffPage />} />} />
         <Route path="/Notes" element={<ProtectedRoute element={<Notes />} />} />
       </Routes>

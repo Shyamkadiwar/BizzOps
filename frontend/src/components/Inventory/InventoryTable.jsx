@@ -78,7 +78,7 @@ function InventoryTable({ inventoryItems, onUpdateInventory }) {
         try {
             const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/inventory/get-item`, { withCredentials: true });
             const inventoryData = response.data.data;
-            
+
             if (!inventoryData || inventoryData.length === 0) {
                 alert("No data to download");
                 return;
@@ -124,6 +124,7 @@ function InventoryTable({ inventoryItems, onUpdateInventory }) {
                             <tr className="bg-zinc-900">
                                 <th className="px-4 py-2 text-white font-poppins">Item</th>
                                 <th className="px-4 py-2 text-white font-poppins">Category</th>
+                                <th className="px-4 py-2 text-white font-poppins">Vendor</th>
                                 <th className="px-4 py-2 text-white font-poppins">Stock In</th>
                                 <th className="px-6 py-4 text-white font-poppins">Actions</th>
                             </tr>
@@ -134,6 +135,9 @@ function InventoryTable({ inventoryItems, onUpdateInventory }) {
                                     <tr key={inventory._id} className="text-center">
                                         <td className="px-4 py-6 sm:py-3 text-white text-sm font-medium font-poppins">{inventory.item}</td>
                                         <td className="px-4 py-6 sm:py-3 text-white text-sm font-medium font-poppins">{inventory.category}</td>
+                                        <td className="px-4 py-6 sm:py-3 text-white text-sm font-medium font-poppins">
+                                            {inventory.vendor?.name || inventory.vendorName || 'N/A'}
+                                        </td>
                                         <td className="px-4 py-6 sm:py-3 text-white text-sm font-poppins font-bold">
                                             {inventory.stockRemain || 'N/A'}
                                         </td>
@@ -161,7 +165,7 @@ function InventoryTable({ inventoryItems, onUpdateInventory }) {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="4" className="text-center">No inventory items found.</td>
+                                    <td colSpan="5" className="text-center">No inventory items found.</td>
                                 </tr>
                             )}
                         </tbody>

@@ -31,12 +31,10 @@ function Login() {
                 if (accessToken) {
                     localStorage.setItem("accessToken", accessToken);
                 }
-                
                 if (sessionId) {
                     localStorage.setItem("sessionId", sessionId);
                     console.log("Session ID stored:", sessionId);
                 }
-                
                 const isSuccess = true;
 
                 if (isSuccess) {
@@ -72,7 +70,7 @@ function Login() {
         <>
             <div className="w-full h-screen sm:flex sm:justify-center sm:items-center bg-[#141415]">
                 <div className="sm:w-1/4 sm:m-28 sm:mt-20 ">
-                    <img src={logo}  alt="" className="w-24 h-6 sm:w-auto sm:h-auto xl:w-36 xl:h-9 absolute top-6 left-8" onClick={()=>{navigate('/')}}/>
+                    <img src={logo} alt="" className="w-24 h-6 sm:w-auto sm:h-auto xl:w-36 xl:h-9 absolute top-6 left-8" onClick={() => { navigate('/') }} />
                     <form onSubmit={handleLogin} className="p-8 mt-20">
                         <h2 className="text-4xl text-white font-poppins font-bold mb-10">Sign In</h2>
                         <div className="relative mb-4">
@@ -104,7 +102,7 @@ function Login() {
                                 className="absolute right-3 top-4 text-zinc-300 hover:text-white transition-colors"
                                 disabled={isLoading}
                             >
-                                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} className="absolute right-4 text-zinc-300"/>
+                                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} className="absolute right-4 text-zinc-300" />
                             </button>
                         </div>
                         <div className='relative mb-4' onClick={() => navigate('/register')}>
@@ -112,14 +110,13 @@ function Login() {
                                 Don't have an account? <span className="text-zinc-200 font-bold underline cursor-pointer">Sign up</span>
                             </p>
                         </div>
-                        <button 
-                            type="submit" 
+                        <button
+                            type="submit"
                             disabled={isLoading}
-                            className={`w-2/5 py-3 font-poppins font-bold rounded-full transition-all duration-500 ${
-                                isLoading 
-                                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
+                            className={`w-2/5 py-3 font-poppins font-bold rounded-full transition-all duration-500 ${isLoading
+                                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                                     : 'bg-white text-black hover:bg-gray-200 hover:scale-110'
-                            }`}
+                                }`}
                         >
                             {isLoading ? 'Signing In...' : 'Login'}
                         </button>

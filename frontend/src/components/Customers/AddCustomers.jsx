@@ -1,91 +1,200 @@
 import axios from "axios";
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
+import { Box, TextField, Button, Grid } from '@mui/material';
+import AlertDialog from '../shared/AlertDialog.jsx';
 
-function AddCustomers() {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [city, setCity] = useState('')
-    const [isPopupVisible, setPopupVisible] = useState(false)
+function AddCustomers({ addNewCustomer, onCancel }) {
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        city: '',
+        address: '',
+        gstNumber: '',
+        company: '',
+        state: '',
+        pincode: '',
+        notes: ''
+    });
+
+    const [alertDialog, setAlertDialog] = useState({ open: false, title: "", message: "", severity: "info" });
 
     const handleAddCustomer = async (e) => {
-        e.preventDefault()
-        const data = { name, email, phone, city }
+        e.preventDefault();
+
+        if (!formData.name || !formData.email || !formData.phone || !formData.city) {
+            setAlertDialog({
+                open: true,
+                title: "Validation Error",
+                message: "Please fill all required fields",
+                severity: "warning"
+            });
+            return;
+        }
+
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/customer/add-customer`, data, { withCredentials: true })
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/v1/customer/add-customer`,
+                formData,
+                { withCredentials: true }
+            );
+
             if (response.data.statusCode === 200) {
-                setPopupVisible(true);
+                setAlertDialog({
+                    open: true,
+                    title: "Success",
+                    message: "Customer added successfully!",
+                    severity: "success"
+                });
+
+                setTimeout(() => {
+                    addNewCustomer();
+                }, 1500);
+
+                // Reset form
+                setFormData({
+                    name: '',
+                    email: '',
+                    phone: '',
+                    city: '',
+                    address: '',
+                    gstNumber: '',
+                    company: '',
+                    state: '',
+                    pincode: '',
+                    notes: ''
+                });
             }
         } catch (error) {
             console.error("Error while adding customer", error.response?.data || error.message);
+            setAlertDialog({
+                open: true,
+                title: "Error",
+                message: error.response?.data?.message || "Error adding customer",
+                severity: "error"
+            });
         }
-    }
-    const handleClosePopup = () => {
-        setPopupVisible(false);
-        window.location.reload();
     };
 
     return (
-        <> 
-            <form onSubmit={handleAddCustomer} className="space-y-4 mt-3 sm:mb-2 mb-4">
-                <input
-                    type="text"
-                    placeholder="Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    className="sm:w-1/5 w-4/5 text-center bg-[#2b2b2e] h-10 m-2 rounded-2xl font-poppins font-normal text-white shadow-xl "
-                />
+        <Box component="form" onSubmit={handleAddCustomer} sx={{ p: 2 }}>
+            <Grid container spacing={2}>
+                {/* Required Fields */}
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        label="Name"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        required
+                        fullWidth
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        label="Email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        required
+                        fullWidth
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        label="Phone"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        required
+                        fullWidth
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        label="City"
+                        value={formData.city}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                        required
+                        fullWidth
+                    />
+                </Grid>
 
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="sm:w-1/5 w-4/5 text-center h-10 m-2 bg-[#2b2b2e] rounded-2xl  font-poppins font-normal text-white shadow-xl"
-                />
+                {/* Optional Fields */}
+                <Grid item xs={12}>
+                    <TextField
+                        label="Address"
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        fullWidth
+                        multiline
+                        rows={2}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        label="Company"
+                        value={formData.company}
+                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                        fullWidth
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        label="GST Number"
+                        value={formData.gstNumber}
+                        onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
+                        fullWidth
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        label="State"
+                        value={formData.state}
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                        fullWidth
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        label="Pincode"
+                        value={formData.pincode}
+                        onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                        fullWidth
+                    />
+                </Grid>
+                <Grid item xs={12}>
+                    <TextField
+                        label="Notes"
+                        value={formData.notes}
+                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        fullWidth
+                        multiline
+                        rows={3}
+                    />
+                </Grid>
+            </Grid>
 
-                <input
-                    type="text"
-                    placeholder="Phone"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    required
-                    className="sm:w-1/5 w-3/6 text-center h-10 m-2 rounded-2xl bg-[#2b2b2e]  font-poppins font-normal text-white shadow-xl"
-                />
+            {/* Action Buttons */}
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}>
+                {onCancel && (
+                    <Button onClick={onCancel} variant="outlined">
+                        Cancel
+                    </Button>
+                )}
+                <Button type="submit" variant="contained">
+                    Add Customer
+                </Button>
+            </Box>
 
-                <input
-                    type="text"
-                    placeholder="City"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    required
-                    className="sm:w-1/12 w-2/6 text-center pl-4 h-10 m-2 rounded-2xl bg-[#2b2b2e] font-poppins font-normal text-white shadow-xl"
-                />
-                    <button type="submit" className="bg-white h-10 m-2 hover:bg-blue-200 text-black px-4 py-2 rounded-xl">Add Customer</button>
-            </form>
-
-            {isPopupVisible && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-                    <div className="bg-[#28282B] rounded p-6 max-w-sm sm:w-full w-4/5">
-                        <h2 className="text-lg font-poppins text-white font-bold">Success!</h2>
-                        <p className="mt-2 font-poppins text-white">Customer added successfully.</p>
-                        <div className="mt-4 flex justify-end">
-                            <button
-                                onClick={handleClosePopup}
-                                className="text-blue-500 font-semibold hover:text-blue-300"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </>
-    )
+            {/* Alert Dialog */}
+            <AlertDialog
+                open={alertDialog.open}
+                onClose={() => setAlertDialog({ ...alertDialog, open: false })}
+                title={alertDialog.title}
+                message={alertDialog.message}
+                severity={alertDialog.severity}
+            />
+        </Box>
+    );
 }
 
-
-export default AddCustomers
+export default AddCustomers;
