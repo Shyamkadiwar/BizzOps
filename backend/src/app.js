@@ -29,7 +29,7 @@ app.use(cors(corsOptions));
 // Middleware
 app.use(express.json({ limit: '16kb' }));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public")); 
+app.use(express.static("public"));
 app.use(cookieParser());
 
 import userRouter from "../routes/user.routes.js";
@@ -41,6 +41,9 @@ import staffRouter from '../routes/staff.routes.js';
 import expenseRouter from "../routes/expense.routes.js";
 import notesRouter from "../routes/notes.routes.js";
 import ordersRouter from "../routes/orders.routes.js";
+import productRouter from "../routes/product.routes.js";
+import excelRouter from "../routes/excel.routes.js";
+import vendorRouter from "../routes/vendor.routes.js";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/inventory", inventoryRouter);
@@ -51,14 +54,17 @@ app.use("/api/v1/staff", staffRouter);
 app.use("/api/v1/expense", expenseRouter);
 app.use("/api/v1/orders", ordersRouter);
 app.use("/api/v1/notes", notesRouter);
+app.use("/api/v1/product", productRouter);
+app.use("/api/v1/excel", excelRouter);
+app.use("/api/v1/vendor", vendorRouter);
 
 // Global error handler
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    const statusCode = err.statusCode || 500;
-    res.status(statusCode).json({
-        message: err.message || 'Something went wrong!' 
-    });
+  console.error(err.stack);
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).json({
+    message: err.message || 'Something went wrong!'
+  });
 });
 
 export { app };

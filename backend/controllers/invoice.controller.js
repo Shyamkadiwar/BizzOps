@@ -4,174 +4,193 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Invoice } from "../models/invoice.model.js";
 import { Inventory } from "../models/inventory.model.js";
 
-const addInvoice = asyncHandler(async(req, res) => {
-    const { name, items, paid, date } = req.body;
-    const owner = req.user?._id;
+const addInvoice = asyncHandler(async (req, res) => {
+  const { name, items, paid, date } = req.body;
+  const owner = req.user?._id;
 
-    if (!name || !items || items.length === 0) {
-        throw new ApiError(400, "Customer name and items are required.");
-    }
+  if (!name || !items || items.length === 0) {
+    throw new ApiError(400, "Customer name and items are required.");
+  }
 
-    if (!owner) {
-        throw new ApiError(401, "Unauthorized request");
-    }
+  if (!owner) {
+    throw new ApiError(401, "Unauthorized request");
+  }
 
-    // First, check inventory for each item
-    for (const item of items) {
-        const inventoryItem = await Inventory.findOne({ 
-            owner, 
-            item: item.itemName 
-        });
-
-        if (!inventoryItem) {
-            throw new ApiError(404, `Inventory item not found: ${item.itemName}`);
-        }
-
-        if (inventoryItem.stockRemain < item.qty) {
-            throw new ApiError(400, `Insufficient inventory for ${item.itemName}. Available: ${inventoryItem.stockRemain}, Requested: ${item.qty}`);
-        }
-    }
-
-    // If we've made it this far, reduce inventory for each item
-    for (const item of items) {
-        await Inventory.findOneAndUpdate(
-            { owner, item: item.itemName },
-            { $inc: { stockRemain: -item.qty } }
-        );
-    }
-
-    // Calculate subTotal and grandTotal for all items
-    let subTotal = 0;
-    let grandTotal = 0;
-
-    items.forEach((item) => {
-        if (!item.itemName || !item.qty || !item.price || item.tax === undefined) {
-            throw new ApiError(400, "Each item must have a name, qty, price, and tax");
-        }
-        const itemSubTotal = item.qty * item.price;
-        const itemGrandTotal = itemSubTotal * (1 + item.tax / 100);
-
-        subTotal += itemSubTotal;
-        grandTotal += itemGrandTotal;
+  // First, check inventory for each item
+  for (const item of items) {
+    const inventoryItem = await Inventory.findOne({
+      owner,
+      item: item.itemName
     });
 
-    const invoice = await Invoice.create({
-        owner,
-        name,
-        items,
-        subTotal,
-        grandTotal,
-        paid,
-        date
-    });
+    if (!inventoryItem) {
+      throw new ApiError(404, `Inventory item not found: ${item.itemName}`);
+    }
 
-    return res
-        .status(200)
-        .json(new ApiResponse(200, { invoice }, "Invoice added successfully"));
+    if (inventoryItem.stockRemain < item.qty) {
+      throw new ApiError(400, `Insufficient inventory for ${item.itemName}. Available: ${inventoryItem.stockRemain}, Requested: ${item.qty}`);
+    }
+  }
+
+  // If we've made it this far, reduce inventory for each item
+  for (const item of items) {
+    await Inventory.findOneAndUpdate(
+      { owner, item: item.itemName },
+      { $inc: { stockRemain: -item.qty } }
+    );
+  }
+
+  // Calculate subTotal and grandTotal for all items
+  let subTotal = 0;
+  let grandTotal = 0;
+
+  items.forEach((item) => {
+    if (!item.itemName || !item.qty || !item.price || item.tax === undefined) {
+      throw new ApiError(400, "Each item must have a name, qty, price, and tax");
+    }
+    const itemSubTotal = item.qty * item.price;
+    const itemGrandTotal = itemSubTotal * (1 + item.tax / 100);
+
+    subTotal += itemSubTotal;
+    grandTotal += itemGrandTotal;
+  });
+
+  const invoice = await Invoice.create({
+    owner,
+    name,
+    items,
+    subTotal,
+    grandTotal,
+    paid,
+    date
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { invoice }, "Invoice added successfully"));
 });
 
-const getInvoice = asyncHandler(async(req,res)=>{
-    const owner = req.user?._id
-    if(!owner){
-        throw new ApiError(400,"Unauthorized User")
-    }
+const getInvoice = asyncHandler(async (req, res) => {
+  const owner = req.user?._id;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
 
-    const invoice = await Invoice.find({owner})
+  if (!owner) {
+    throw new ApiError(400, "Unauthorized User")
+  }
 
-    if(!invoice){
-        throw new ApiError(400,"No invoices found")
-    }
+  const invoices = await Invoice.find({ owner })
+    .populate('customer', 'name email phone')
+    .populate('sale')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
 
-    return res
+  const totalCount = await Invoice.countDocuments({ owner });
+
+  if (!invoices) {
+    throw new ApiError(400, "No invoices found")
+  }
+
+  return res
     .status(200)
-    .json(new ApiResponse(200,{invoice},"invoice retrived successful"))
+    .json(new ApiResponse(200, {
+      invoices,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalCount / limit),
+        totalCount,
+        limit
+      }
+    }, "Invoices retrieved successfully"))
 })
 
-const getPaidInvoices = asyncHandler(async(req, res) => {
-    const owner = req.user?._id;
+const getPaidInvoices = asyncHandler(async (req, res) => {
+  const owner = req.user?._id;
 
-    if (!owner) {
-        throw new ApiError(401, "Unauthorized request");
-    }
+  if (!owner) {
+    throw new ApiError(401, "Unauthorized request");
+  }
 
-    // Fetch all paid invoices for the logged-in user
-    const paidInvoices = await Invoice.find({ owner, paid: true });
+  // Fetch all paid invoices for the logged-in user
+  const paidInvoices = await Invoice.find({ owner, paid: true });
 
-    if (!paidInvoices || paidInvoices.length === 0) {
-        return res
-            .status(404)
-            .json(new ApiResponse(404, null, "No paid invoices found"));
-    }
-
-    // Calculate the total paid amount
-    const totalPaidAmount = paidInvoices.reduce((acc, invoice) => {
-        return acc + invoice.grandTotal;
-    }, 0);
-
+  if (!paidInvoices || paidInvoices.length === 0) {
     return res
-        .status(200)
-        .json(new ApiResponse(200, { totalPaidAmount, paidInvoices }, "Paid invoices retrieved successfully"));
+      .status(404)
+      .json(new ApiResponse(404, null, "No paid invoices found"));
+  }
+
+  // Calculate the total paid amount
+  const totalPaidAmount = paidInvoices.reduce((acc, invoice) => {
+    return acc + invoice.grandTotal;
+  }, 0);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { totalPaidAmount, paidInvoices }, "Paid invoices retrieved successfully"));
 });
 
-const getUnpaidInvoices = asyncHandler(async(req, res) => {
-    const owner = req.user?._id;
+const getUnpaidInvoices = asyncHandler(async (req, res) => {
+  const owner = req.user?._id;
 
-    if (!owner) {
-        throw new ApiError(401, "Unauthorized request");
-    }
+  if (!owner) {
+    throw new ApiError(401, "Unauthorized request");
+  }
 
-    const unpaidInvoices = await Invoice.find({ owner, paid: false });
+  const unpaidInvoices = await Invoice.find({ owner, paid: false });
 
-    if (!unpaidInvoices) {
-        return res
-            .status(404)
-            .json(new ApiResponse(404, null, "No unpaid invoices found"));
-    }
-
-    // Calculate the total unpaid amount
-    const totalUnpaidAmount = unpaidInvoices.reduce((acc, invoice) => {
-        return acc + invoice.grandTotal;
-    }, 0);
-
+  if (!unpaidInvoices) {
     return res
-        .status(200)
-        .json(new ApiResponse(200, { totalUnpaidAmount, unpaidInvoices }, "Unpaid invoices retrieved successfully"));
+      .status(404)
+      .json(new ApiResponse(404, null, "No unpaid invoices found"));
+  }
+
+  // Calculate the total unpaid amount
+  const totalUnpaidAmount = unpaidInvoices.reduce((acc, invoice) => {
+    return acc + invoice.grandTotal;
+  }, 0);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { totalUnpaidAmount, unpaidInvoices }, "Unpaid invoices retrieved successfully"));
 });
 
 const countInvoices = asyncHandler(async (req, res) => {
-    const owner = req.user?._id;
+  const owner = req.user?._id;
 
-    if (!owner) {
-        throw new ApiError(401, "Unauthorized request");
-    }
+  if (!owner) {
+    throw new ApiError(401, "Unauthorized request");
+  }
 
-    const invoiceCount = await Invoice.countDocuments({ owner });
+  const invoiceCount = await Invoice.countDocuments({ owner });
 
-    return res
-        .status(200)
-        .json(new ApiResponse(200, { invoiceCount }, "Invoice count retrieved successfully"));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { invoiceCount }, "Invoice count retrieved successfully"));
 });
 
 const markPaidUnpaid = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const owner = req.user?._id;
+  const { id } = req.params;
+  const owner = req.user?._id;
 
-    if (!owner) {
-        throw new ApiError(401, "Unauthorized request");
-    }
+  if (!owner) {
+    throw new ApiError(401, "Unauthorized request");
+  }
 
-    const invoice = await Invoice.findOne({ _id: id, owner });
+  const invoice = await Invoice.findOne({ _id: id, owner });
 
-    if (!invoice) {
-        throw new ApiError(404, "Invoice not found");
-    }
+  if (!invoice) {
+    throw new ApiError(404, "Invoice not found");
+  }
 
-    invoice.paid = !invoice.paid; // Toggle the paid status
-    await invoice.save();
+  invoice.paid = !invoice.paid; // Toggle the paid status
+  await invoice.save();
 
-    return res
-        .status(200)
-        .json(new ApiResponse(200, { invoice }, `Invoice marked as ${invoice.paid ? "paid" : "unpaid"} successfully`));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { invoice }, `Invoice marked as ${invoice.paid ? "paid" : "unpaid"} successfully`));
 });
 
 
@@ -187,7 +206,7 @@ const prepareInvoiceContext = (invoiceData) => {
   // Group data by customer
   const customerSummary = invoiceData.reduce((acc, invoice) => {
     const customerName = invoice.name;
-    
+
     if (!acc[customerName]) {
       acc[customerName] = {
         totalInvoices: 0,
@@ -201,10 +220,10 @@ const prepareInvoiceContext = (invoiceData) => {
         items: {}
       };
     }
-    
+
     acc[customerName].totalInvoices += 1;
     acc[customerName].totalAmount += invoice.grandTotal;
-    
+
     if (invoice.paid) {
       acc[customerName].totalPaidAmount += invoice.grandTotal;
       acc[customerName].paidInvoices += 1;
@@ -212,7 +231,7 @@ const prepareInvoiceContext = (invoiceData) => {
       acc[customerName].totalUnpaidAmount += invoice.grandTotal;
       acc[customerName].unpaidInvoices += 1;
     }
-    
+
     // Process items for this customer
     invoice.items.forEach(item => {
       if (!acc[customerName].items[item.itemName]) {
@@ -224,7 +243,7 @@ const prepareInvoiceContext = (invoiceData) => {
           transactions: 0
         };
       }
-      
+
       acc[customerName].items[item.itemName].totalQty += item.qty;
       acc[customerName].items[item.itemName].totalValue += (item.qty * item.price);
       acc[customerName].items[item.itemName].avgPrice += item.price;
@@ -232,7 +251,7 @@ const prepareInvoiceContext = (invoiceData) => {
       acc[customerName].items[item.itemName].transactions += 1;
       acc[customerName].totalItems += item.qty;
     });
-    
+
     return acc;
   }, {});
 
@@ -240,7 +259,7 @@ const prepareInvoiceContext = (invoiceData) => {
   Object.keys(customerSummary).forEach(customerName => {
     const customer = customerSummary[customerName];
     customer.averageInvoiceAmount = customer.totalAmount / customer.totalInvoices;
-    
+
     // Calculate averages for items
     Object.keys(customer.items).forEach(itemName => {
       const item = customer.items[itemName];
@@ -263,10 +282,10 @@ const prepareInvoiceContext = (invoiceData) => {
           customers: new Set()
         };
       }
-      
+
       const itemTotal = item.qty * item.price;
       const taxAmount = itemTotal * (item.tax / 100);
-      
+
       acc[item.itemName].totalQty += item.qty;
       acc[item.itemName].totalRevenue += itemTotal;
       acc[item.itemName].totalTaxCollected += taxAmount;
@@ -275,7 +294,7 @@ const prepareInvoiceContext = (invoiceData) => {
       acc[item.itemName].avgTax += item.tax;
       acc[item.itemName].customers.add(invoice.name);
     });
-    
+
     return acc;
   }, {});
 
@@ -301,9 +320,9 @@ const prepareInvoiceContext = (invoiceData) => {
     uniqueCustomers: new Set(invoiceData.map(invoice => invoice.name)).size,
     averageInvoiceAmount: invoiceData.reduce((sum, invoice) => sum + invoice.grandTotal, 0) / invoiceData.length,
     dateRange: {
-      earliest: invoiceData.filter(inv => inv.date).length > 0 ? 
+      earliest: invoiceData.filter(inv => inv.date).length > 0 ?
         new Date(Math.min(...invoiceData.filter(inv => inv.date).map(inv => new Date(inv.date)))) : null,
-      latest: invoiceData.filter(inv => inv.date).length > 0 ? 
+      latest: invoiceData.filter(inv => inv.date).length > 0 ?
         new Date(Math.max(...invoiceData.filter(inv => inv.date).map(inv => new Date(inv.date)))) : null
     }
   };
@@ -320,7 +339,7 @@ const prepareInvoiceContext = (invoiceData) => {
 export const queryInvoiceData = async (req, res) => {
   try {
     const { query, timeFilter = 'alltime' } = req.body;
-    
+
     if (!query) {
       return res.status(400).json({
         success: false,
@@ -348,7 +367,7 @@ export const queryInvoiceData = async (req, res) => {
 
     // Prepare structured context
     const invoiceContext = prepareInvoiceContext(invoiceData);
-    
+
     // Create context string for the AI
     const contextString = `
 INVOICE DATA SUMMARY:
@@ -365,9 +384,9 @@ OVERALL METRICS:
 - Total Unpaid Amount: $${invoiceContext.overallSummary.totalUnpaidAmount.toLocaleString()}
 - Unique Customers: ${invoiceContext.overallSummary.uniqueCustomers}
 - Average Invoice Amount: $${invoiceContext.overallSummary.averageInvoiceAmount.toFixed(2)}
-${invoiceContext.overallSummary.dateRange.earliest ? 
-  `- Date Range: ${invoiceContext.overallSummary.dateRange.earliest.toDateString()} to ${invoiceContext.overallSummary.dateRange.latest.toDateString()}` : 
-  '- Date Range: Not available for all invoices'}
+${invoiceContext.overallSummary.dateRange.earliest ?
+        `- Date Range: ${invoiceContext.overallSummary.dateRange.earliest.toDateString()} to ${invoiceContext.overallSummary.dateRange.latest.toDateString()}` :
+        '- Date Range: Not available for all invoices'}
 
 CUSTOMER BREAKDOWN:
 ${Object.entries(invoiceContext.customerSummary).slice(0, 10).map(([customerName, customer]) => `
@@ -420,7 +439,7 @@ ${invoiceData.slice(0, 5).map(invoice => `
           When discussing amounts, always use proper currency formatting.`
         },
         {
-          role: "user", 
+          role: "user",
           content: `Based on this invoice data:\n\n${contextString}\n\nQuestion: ${query}`
         }
       ],
@@ -458,11 +477,36 @@ ${invoiceData.slice(0, 5).map(invoice => `
 };
 
 
+
+
+const downloadInvoice = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const owner = req.user?._id;
+
+  if (!owner) {
+    throw new ApiError(401, "Unauthorized request");
+  }
+
+  const invoice = await Invoice.findOne({ _id: id, owner }).populate('customer');
+
+  if (!invoice) {
+    throw new ApiError(404, "Invoice not found");
+  }
+
+  // TODO: Implement PDF generation later
+  // For now, just return invoice data
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { invoice }, "Invoice retrieved successfully. PDF generation will be implemented later."));
+});
+
+
 export {
-    addInvoice,
-    getInvoice,
-    getPaidInvoices,
-    getUnpaidInvoices,
-    countInvoices,
-    markPaidUnpaid
+  addInvoice,
+  getInvoice,
+  getPaidInvoices,
+  getUnpaidInvoices,
+  countInvoices,
+  markPaidUnpaid,
+  downloadInvoice
 }

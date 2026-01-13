@@ -4,11 +4,11 @@ import { addStaff, deleteStaff, getStaff, queryStaffData, staffCredit, staffDebi
 
 const router = Router()
 
-router.route('/add-staff').post(verifyJWT,addStaff)
-router.route('/get-staff').get(verifyJWT,getStaff)
-router.route('/staff-credit').post(verifyJWT,staffCredit)
-router.route('/staff-debit').post(verifyJWT,staffDebit)
-router.route('/delete-staff').post(verifyJWT,deleteStaff)
+router.route('/add-staff').post(verifyJWT, addStaff)
+router.route('/get-staff').get(verifyJWT, getStaff)
+router.route('/staff-credit').post(verifyJWT, staffCredit)
+router.route('/staff-debit').post(verifyJWT, staffDebit)
+router.route('/delete-staff').post(verifyJWT, deleteStaff)
 
 
 router.route('/query').post(verifyJWT, queryStaffData)

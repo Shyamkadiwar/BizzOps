@@ -1,65 +1,126 @@
 import mongoose, { Schema } from 'mongoose';
 import { Inventory } from './inventory.model.js';
 
-const salesSchema = new Schema({
+// Multi-Item Sales Schema
+const multiItemSalesSchema = new Schema({
     owner: {
         type: Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        required: true
     },
-    product: { 
+    items: [{
+        product: {
+            type: Schema.Types.ObjectId,
+            ref: 'Inventory',
+            required: true
+        },
+        productName: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        qty: {
+            type: Number,
+            required: true,
+            min: 1
+        },
+        price: {
+            type: Number,
+            required: true,
+            min: 0
+        },
+        cost: {
+            type: Number,
+            required: true,
+            min: 0
+        },
+        taxes: [{
+            name: {
+                type: String,
+                required: true,
+                trim: true
+            },
+            rate: {
+                type: Number,
+                default: 0,
+                min: 0,
+                max: 100
+            }
+        }],
+        itemTotal: {
+            type: Number,
+            required: true
+        },
+        itemProfit: {
+            type: Number,
+            required: true
+        }
+    }],
+    customer: {
         type: Schema.Types.ObjectId,
-        ref: 'Inventory',
-        required: true
+        ref: 'Customer',
+        required: false
     },
-    productName: {
+    customerName: {
         type: String,
-        required: true
+        required: false,
+        trim: true
     },
-    price: {
+    totalSale: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    totalCost: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    totalProfit: {
         type: Number,
         required: true
     },
-    profitInPercent: {
+    profitPercent: {
         type: Number,
         required: true
     },
-    qty: {
-        type: Number,
-        required: true
+    invoice: {
+        type: Schema.Types.ObjectId,
+        ref: 'Invoice',
+        required: false
+    },
+    paid: {
+        type: Boolean,
+        default: false
     },
     date: {
         type: Date,
         required: true
-    },
-    sale:{
-        type:Number,
-        required: true
-    },
-    profit:{
-        type:Number,
-        required:true
-    },
-    cost:{
-        type:Number,
-        required:true
     }
 }, { timestamps: true });
 
-// Post-save hook to update the inventory after sale
-salesSchema.post('save', async function (doc) {
+// Post-save hook to update inventory for all items
+multiItemSalesSchema.post('save', async function (doc) {
     try {
-        const inventoryItem = await Inventory.findById(doc.product);
-        
-        if (!inventoryItem) {
-            throw new Error('Inventory item not found');
+        for (const item of doc.items) {
+            const inventoryItem = await Inventory.findById(item.product);
+
+            if (!inventoryItem) {
+                console.error(`Inventory item not found: ${item.product}`);
+                continue;
+            }
+
+            inventoryItem.stockRemain -= item.qty;
+            await inventoryItem.save();
         }
-
-        inventoryItem.stockRemain -= doc.qty;
-
-        await inventoryItem.save();
     } catch (error) {
-        console.error('Error updating inventory after sale:', error);
+        console.error('Error updating inventory after multi-item sale:', error);
     }
 });
 
-export const Sales = mongoose.model('Sales', salesSchema);
+// Index for faster queries
+multiItemSalesSchema.index({ owner: 1, date: -1 });
+multiItemSalesSchema.index({ customer: 1 });
+
+// Export the unified Sales model (previously MultiItemSales)
+export const Sales = mongoose.model('Sales', multiItemSalesSchema);

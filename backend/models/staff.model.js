@@ -1,4 +1,4 @@
-import mongoose,{Schema} from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const staffSchema = new mongoose.Schema({
   name: {
@@ -7,16 +7,16 @@ const staffSchema = new mongoose.Schema({
   },
   owner: {
     type: Schema.Types.ObjectId,
-    ref : 'User'
+    ref: 'User'
   },
-  salary:{
-    type:Number,
-    required : true,
+  salary: {
+    type: Number,
+    required: true,
     default: 0
   },
-  debitCreditHistory:{
-    type:Number,
-    default:0
+  debitCreditHistory: {
+    type: Number,
+    default: 0
   },
   phone: {
     type: String,
@@ -28,4 +28,4 @@ const staffSchema = new mongoose.Schema({
   },
 });
 
-export const Staff = mongoose.model('Staff',staffSchema)
+export const Staff = mongoose.model('Staff', staffSchema)

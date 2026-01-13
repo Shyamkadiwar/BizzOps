@@ -63,12 +63,12 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
                 sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
                 path: '/'
             };
-            
+
             res.clearCookie('accessToken', options);
             res.clearCookie('refreshToken', options);
             res.clearCookie('sessionId', options);
         }
-        
+
         throw new ApiError(401, error?.message || 'Invalid access token');
     }
 });

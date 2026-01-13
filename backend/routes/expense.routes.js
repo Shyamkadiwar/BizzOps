@@ -4,12 +4,12 @@ import { addExpense, getExpense, getAllTimeExpense, getLast30DaysExpense, getOne
 
 const router = Router()
 
-router.route('/add-expense').post(verifyJWT,addExpense)
-router.route('/get-expense').get(verifyJWT,getExpense)
-router.route('/get-oneday-expense').get(verifyJWT,getOneDayExpense)
-router.route('/get-last30day-expense').get(verifyJWT,getLast30DaysExpense)
-router.route('/get-alltime-expense').get(verifyJWT,getAllTimeExpense)
-router.route('/get-daily-expense').get(verifyJWT,getDailyTotalExpenseValuePast30Days)
+router.route('/add-expense').post(verifyJWT, addExpense)
+router.route('/get-expense').get(verifyJWT, getExpense)
+router.route('/get-oneday-expense').get(verifyJWT, getOneDayExpense)
+router.route('/get-last30day-expense').get(verifyJWT, getLast30DaysExpense)
+router.route('/get-alltime-expense').get(verifyJWT, getAllTimeExpense)
+router.route('/get-daily-expense').get(verifyJWT, getDailyTotalExpenseValuePast30Days)
 
 
 router.route('/query').post(verifyJWT, queryExpenseData)

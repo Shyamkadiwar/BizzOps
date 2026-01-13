@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { 
-    changePassword, 
-    getCurrentUserDetails, 
-    loginUser, 
-    logoutUser, 
-    refreshAccessToken, 
-    registerUser, 
+import {
+    changePassword,
+    getCurrentUserDetails,
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    registerUser,
     updateAccountDetails,
     getActiveSessions,
     revokeSession,
@@ -22,11 +22,11 @@ router.route('/register').post(authLimiter, registerUser)
 router.route('/login').post(authLimiter, loginUser)
 
 // secured routes
-router.route('/logout').post(verifyJWT,logoutUser)
+router.route('/logout').post(verifyJWT, logoutUser)
 router.route('/refresh-token').post(refreshAccessToken)
-router.route('/change-password').post(verifyJWT,changePassword)
-router.route('/get-details').get(verifyJWT,getCurrentUserDetails)
-router.route('/update-account').post(verifyJWT,updateAccountDetails)
+router.route('/change-password').post(verifyJWT, changePassword)
+router.route('/get-details').get(verifyJWT, getCurrentUserDetails)
+router.route('/update-account').post(verifyJWT, updateAccountDetails)
 
 // session management routes
 router.route('/sessions').get(verifyJWT, sessionLimiter, getActiveSessions)

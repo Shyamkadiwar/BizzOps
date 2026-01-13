@@ -30,12 +30,10 @@ const generateAccessRefreshToken = async (userId, sessionId) => {
 
 const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password, businessName, phoneNo, address } = req.body;
-    
     // Check required string fields
     if ([name, email, password, businessName, address].some((field) => !field?.trim())) {
         throw new ApiError(400, "All fields are required");
     }
-    
     // Check phoneNo separately since it's a number
     if (!phoneNo) {
         throw new ApiError(400, "All fields are required");
@@ -52,7 +50,7 @@ const registerUser = asyncHandler(async (req, res) => {
         password,
         businessName,
         phoneNo,
-        address 
+        address
     });
 
     const createdUser = await User.findById(user._id).select("-password -refreshToken");
@@ -76,7 +74,6 @@ const loginUser = asyncHandler(async (req, res) => {
     if (!user) {
         throw new ApiError(404, "User not found");
     }
-    
     const isPasswordValid = await user.isPasswordCorrect(password);
     if (!isPasswordValid) {
         throw new ApiError(401, "Invalid credentials");
@@ -131,16 +128,16 @@ const loginUser = asyncHandler(async (req, res) => {
         .cookie('accessToken', accessToken, options)
         .cookie('refreshToken', refreshToken, refreshTokenOptions)
         .cookie('sessionId', sessionId, options)
-        .json(new ApiResponse(200, { 
+        .json(new ApiResponse(200, {
             user: loggedInUser,
             message: "Login successful"
             // Don't send tokens in response body when using cookies
         }, "User logged in successfully"));
 });
 
-const logoutUser = asyncHandler(async(req,res)=>{
+const logoutUser = asyncHandler(async (req, res) => {
     const sessionId = req.cookies?.sessionId || req.header('X-Session-ID');
-    
+
     await User.findByIdAndUpdate(
         req.user._id,
         {
@@ -152,23 +149,23 @@ const logoutUser = asyncHandler(async(req,res)=>{
             new: true
         }
     )
-    
+
     const options = {
-        httpOnly:true,
-        secure:true
+        httpOnly: true,
+        secure: true
     }
 
     return res
-    .status(200)
-    .clearCookie('accessToken',options)
-    .clearCookie('refreshToken',options)
-    .clearCookie('sessionId',options)
-    .json(new ApiResponse(200, {}, "User Logged Out"))
+        .status(200)
+        .clearCookie('accessToken', options)
+        .clearCookie('refreshToken', options)
+        .clearCookie('sessionId', options)
+        .json(new ApiResponse(200, {}, "User Logged Out"))
 });
 
-const refreshAccessToken = asyncHandler(async(req, res) => {
+const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
-    
+
     if (!incomingRefreshToken) {
         throw new ApiError(401, "Refresh token not found");
     }
@@ -176,7 +173,7 @@ const refreshAccessToken = asyncHandler(async(req, res) => {
     try {
         const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
         const user = await User.findById(decodedToken._id);
-        
+
         if (!user) {
             throw new ApiError(401, "Invalid refresh token");
         }
@@ -221,50 +218,50 @@ const refreshAccessToken = asyncHandler(async(req, res) => {
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             path: '/'
         };
-        
+
         res.clearCookie('accessToken', clearOptions);
         res.clearCookie('refreshToken', clearOptions);
         res.clearCookie('sessionId', clearOptions);
-        
+
         throw new ApiError(401, error.message || "Invalid refresh token");
     }
 });
 
 
-const changePassword = asyncHandler(async(req,res)=>{
-    const {oldPassword, newPassword} = req.body
+const changePassword = asyncHandler(async (req, res) => {
+    const { oldPassword, newPassword } = req.body
 
     const user = await User.findById(req.user?._id)
     const isPasswordValid = await user.isPasswordCorrect(oldPassword)
-    if(!isPasswordValid){
-        throw new ApiError(400,"Invalid password")
+    if (!isPasswordValid) {
+        throw new ApiError(400, "Invalid password")
     }
 
     user.password = newPassword;
-    await user.save({validateBeforeSave:true});
-    
+    await user.save({ validateBeforeSave: true });
+
     return res
-    .status(200)
-    .json(new ApiResponse(200,{},"Password changed successfull"))
+        .status(200)
+        .json(new ApiResponse(200, {}, "Password changed successfull"))
 });
 
-const getCurrentUserDetails = asyncHandler(async(req,res)=>{
+const getCurrentUserDetails = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user?._id).select("-password")
     return res
-    .status(200)
-    .json(new ApiResponse(200,user,"User details fetched Successful"))
+        .status(200)
+        .json(new ApiResponse(200, user, "User details fetched Successful"))
 });
 
-const updateAccountDetails = asyncHandler(async(req,res)=>{
-    const {name, email, businessName, phoneNo, address} = req.body
-    if(!name || !email || !businessName){
-        throw new ApiError(400,"All field are required")
+const updateAccountDetails = asyncHandler(async (req, res) => {
+    const { name, email, businessName, phoneNo, address } = req.body
+    if (!name || !email || !businessName) {
+        throw new ApiError(400, "All field are required")
     }
 
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set:{
+            $set: {
                 name,
                 email,
                 businessName,
@@ -272,24 +269,24 @@ const updateAccountDetails = asyncHandler(async(req,res)=>{
                 address
             }
         },
-        {new : true}
+        { new: true }
     ).select("-password")
 
     return res
-    .status(200)
-    .json(new ApiResponse(200, user, "User updated successful"))
+        .status(200)
+        .json(new ApiResponse(200, user, "User updated successful"))
 })
 
-const getActiveSessions = asyncHandler(async(req, res) => {
+const getActiveSessions = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id).select("activeSessions");
-    
+
     if (!user) {
         throw new ApiError(404, "User not found");
     }
 
     // Hide refresh tokens and mark current session
     const currentSessionId = req.cookies?.sessionId || req.header('X-Session-ID') || req.header('sessionId');
-    
+
     const activeSessions = user.activeSessions
         .map(session => ({
             sessionId: session.sessionId,
@@ -305,7 +302,7 @@ const getActiveSessions = asyncHandler(async(req, res) => {
         .json(new ApiResponse(200, activeSessions, "Active sessions fetched successfully"));
 });
 
-const revokeSession = asyncHandler(async(req, res) => {
+const revokeSession = asyncHandler(async (req, res) => {
     const { sessionId } = req.params;
     const currentSessionId = req.cookies?.sessionId || req.header('X-Session-ID');
 
@@ -330,7 +327,7 @@ const revokeSession = asyncHandler(async(req, res) => {
         .json(new ApiResponse(200, {}, "Session revoked successfully"));
 });
 
-const revokeAllSessions = asyncHandler(async(req, res) => {
+const revokeAllSessions = asyncHandler(async (req, res) => {
     const currentSessionId = req.cookies?.sessionId || req.header('X-Session-ID');
 
     if (!currentSessionId) {
@@ -346,15 +343,15 @@ const revokeAllSessions = asyncHandler(async(req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, { 
-            remainingSessions: result.remainingSessions 
+        .json(new ApiResponse(200, {
+            remainingSessions: result.remainingSessions
         }, "All other sessions revoked successfully"));
 });
 
 // Get session statistics for admin/monitoring purposes
-const getSessionStatistics = asyncHandler(async(req, res) => {
+const getSessionStatistics = asyncHandler(async (req, res) => {
     const stats = await getSessionStats();
-    
+
     if (stats.error) {
         throw new ApiError(500, stats.error);
     }
@@ -365,7 +362,7 @@ const getSessionStatistics = asyncHandler(async(req, res) => {
 });
 
 // Logout from all devices (including current session)
-const logoutFromAllDevices = asyncHandler(async(req, res) => {
+const logoutFromAllDevices = asyncHandler(async (req, res) => {
     const options = {
         httpOnly: true,
         secure: true
