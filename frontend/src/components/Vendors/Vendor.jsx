@@ -6,9 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { DataGrid } from '@mui/x-data-grid';
 import ProfessionalDataGrid from "../shared/ProfessionalDataGrid.jsx";
 import MuiModal from "../shared/MuiModal.jsx";
-import Sidebar from "../Sidebar.jsx";
-import CustomBtn from "../CustomBtn.jsx";
-import Account from "../Account.jsx";
+import Layout from "../Layout.jsx";
 import ConfirmDialog from '../shared/ConfirmDialog.jsx';
 import VendorDetailsModal from './VendorDetailsModal.jsx';
 import AddVendor from './AddVendor.jsx';
@@ -145,42 +143,36 @@ const Vendor = () => {
     ];
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            <Sidebar />
-            <div className="flex-1 overflow-y-auto">
-                <CustomBtn />
-                <Account />
-
-                <Box sx={{ p: 3, mt: 8 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                        <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                            Vendor Management
-                        </Typography>
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => setOpenModal(true)}
-                        >
-                            Add Vendor
-                        </Button>
-                    </Box>
-
-                    <Box sx={{ height: 600, width: '100%' }}>
-                        <ProfessionalDataGrid
-                            rows={vendors}
-                            columns={columns}
-                            loading={loading}
-                            initialState={{
-                                pagination: {
-                                    paginationModel: { pageSize: 10, page: 0 },
-                                },
-                            }}
-                            pageSizeOptions={[10, 25, 50, 100]}
-                            disableRowSelectionOnClick
-                        />
-                    </Box>
+        <Layout>
+            <Box sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                        Vendor Management
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => setOpenModal(true)}
+                    >
+                        Add Vendor
+                    </Button>
                 </Box>
-            </div>
+
+                <Box sx={{ height: 600, width: '100%' }}>
+                    <ProfessionalDataGrid
+                        rows={vendors}
+                        columns={columns}
+                        loading={loading}
+                        initialState={{
+                            pagination: {
+                                paginationModel: { pageSize: 10, page: 0 },
+                            },
+                        }}
+                        pageSizeOptions={[10, 25, 50, 100]}
+                        disableRowSelectionOnClick
+                    />
+                </Box>
+            </Box>
 
             <MuiModal
                 open={openModal}
@@ -207,7 +199,7 @@ const Vendor = () => {
                 }}
                 vendorId={selectedVendor}
             />
-        </div>
+        </Layout>
     );
 }
 

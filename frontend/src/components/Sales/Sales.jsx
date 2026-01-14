@@ -6,9 +6,7 @@ import { Add as AddIcon, Download as DownloadIcon } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddMultiItemSale from "./AddMultiItemSale.jsx";
 import MuiModal from "../shared/MuiModal";
-import Sidebar from "../Sidebar.jsx";
-import CustomBtn from "../CustomBtn.jsx";
-import Account from "../Account.jsx";
+import Layout from "../Layout.jsx";
 import ConfirmDialog from '../shared/ConfirmDialog.jsx';
 import CustomerDetailsModal from '../Customers/CustomerDetailsModal.jsx';
 
@@ -233,54 +231,48 @@ function Sales() {
     ];
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            <Sidebar />
-            <div className="flex-1 overflow-y-auto">
-                <CustomBtn />
-                <Account />
-
-                <Box sx={{ p: 3, mt: 8 }}>
-                    {/* Header with Action Buttons */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                        <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                            Sales Management
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Button
-                                variant="contained"
-                                startIcon={<AddIcon />}
-                                onClick={() => setOpenModal(true)}
-                                color="primary"
-                            >
-                                Add
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                startIcon={<DownloadIcon />}
-                                onClick={handleExport}
-                                color="warning"
-                            >
-                                Export
-                            </Button>
-                        </Box>
-                    </Box>
-
-                    <Box sx={{ height: 600, width: '100%' }}>
-                        <DataGrid
-                            rows={sales}
-                            columns={columns}
-                            loading={loading}
-                            initialState={{
-                                pagination: {
-                                    paginationModel: { pageSize: 10, page: 0 },
-                                },
-                            }}
-                            pageSizeOptions={[10, 25, 50, 100]}
-                            disableRowSelectionOnClick
-                        />
+        <Layout>
+            <Box sx={{ p: 3 }}>
+                {/* Header with Action Buttons */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                        Sales Management
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => setOpenModal(true)}
+                            color="primary"
+                        >
+                            Add
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            startIcon={<DownloadIcon />}
+                            onClick={handleExport}
+                            color="warning"
+                        >
+                            Export
+                        </Button>
                     </Box>
                 </Box>
-            </div>
+
+                <Box sx={{ height: 600, width: '100%' }}>
+                    <DataGrid
+                        rows={sales}
+                        columns={columns}
+                        loading={loading}
+                        initialState={{
+                            pagination: {
+                                paginationModel: { pageSize: 10, page: 0 },
+                            },
+                        }}
+                        pageSizeOptions={[10, 25, 50, 100]}
+                        disableRowSelectionOnClick
+                    />
+                </Box>
+            </Box>
 
             <MuiModal
                 open={openModal}
@@ -306,7 +298,7 @@ function Sales() {
                 }}
                 customerId={selectedCustomer}
             />
-        </div>
+        </Layout>
     );
 }
 

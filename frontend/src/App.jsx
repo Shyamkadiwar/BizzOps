@@ -18,6 +18,11 @@ import Customizes from "./components/Customize/Customize.jsx";
 import Demo from "./components/Demo.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
 import VendorPage from "./pages/VendorPage.jsx";
+import DealsPage from "./pages/DealsPage.jsx";
+import TaskPage from "./pages/TaskPage.jsx";
+import AppointmentPage from "./pages/AppointmentPage.jsx";
+import CalendarPage from "./pages/CalendarPage.jsx";
+import StaffTaskPage from "./pages/StaffTaskPage.jsx";
 
 function App() {
   return (
@@ -43,6 +48,11 @@ function App() {
         <Route path="/Vendor" element={<ProtectedRoute element={<VendorPage />} />} />
         <Route path="/Staff" element={<ProtectedRoute element={<StaffPage />} />} />
         <Route path="/Notes" element={<ProtectedRoute element={<Notes />} />} />
+        <Route path="/Deals" element={<ProtectedRoute element={<DealsPage />} />} />
+        <Route path="/Task" element={<ProtectedRoute element={<TaskPage />} />} />
+        <Route path="/Appointment" element={<ProtectedRoute element={<AppointmentPage />} />} />
+        <Route path="/Calendar" element={<ProtectedRoute element={<CalendarPage />} />} />
+        <Route path="/StaffTask" element={<ProtectedRoute element={<StaffTaskPage />} />} />
       </Routes>
     </Router>
   );

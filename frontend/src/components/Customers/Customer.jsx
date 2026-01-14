@@ -6,9 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddCustomers from "./AddCustomers.jsx";
 import ProfessionalDataGrid from "../shared/ProfessionalDataGrid";
 import MuiModal from "../shared/MuiModal";
-import Sidebar from "../Sidebar.jsx";
-import CustomBtn from "../CustomBtn.jsx";
-import Account from "../Account.jsx";
+import Layout from "../Layout.jsx";
 import ConfirmDialog from '../shared/ConfirmDialog.jsx';
 import CustomerDetailsModal from './CustomerDetailsModal.jsx';
 
@@ -210,37 +208,31 @@ function Customer() {
     ];
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            <Sidebar />
-            <div className="flex-1 overflow-y-auto">
-                <CustomBtn />
-                <Account />
-
-                <Box sx={{ p: 3, mt: 8 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                        <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                            Customer Management
-                        </Typography>
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => setOpenModal(true)}
-                        >
-                            Add Customer
-                        </Button>
-                    </Box>
-
-                    <ProfessionalDataGrid
-                        rows={customers}
-                        columns={columns}
-                        loading={loading}
-                        onAdd={() => setOpenModal(true)}
-                        onExport={handleExport}
-                        onImport={handleImport}
-                        pageSize={10}
-                    />
+        <Layout>
+            <Box sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                        Customer Management
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => setOpenModal(true)}
+                    >
+                        Add Customer
+                    </Button>
                 </Box>
-            </div>
+
+                <ProfessionalDataGrid
+                    rows={customers}
+                    columns={columns}
+                    loading={loading}
+                    onAdd={() => setOpenModal(true)}
+                    onExport={handleExport}
+                    onImport={handleImport}
+                    pageSize={10}
+                />
+            </Box>
 
             <MuiModal
                 open={openModal}
@@ -267,7 +259,7 @@ function Customer() {
                 }}
                 customerId={selectedCustomer}
             />
-        </div>
+        </Layout>
     );
 }
 

@@ -6,9 +6,7 @@ import { Add as AddIcon, Upload as UploadIcon, Download as DownloadIcon, AddCirc
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddInventory from "./AddInventory.jsx";
 import MuiModal from "../shared/MuiModal";
-import Sidebar from "../Sidebar.jsx";
-import CustomBtn from "../CustomBtn.jsx";
-import Account from "../Account.jsx";
+import Layout from "../Layout.jsx";
 import InventoryAgentChat from './InventoryAgentChat.jsx';
 import ConfirmDialog from "../shared/ConfirmDialog.jsx";
 import PromptDialog from "../shared/PromptDialog.jsx";
@@ -318,72 +316,66 @@ function Inventory() {
     ];
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            <Sidebar />
-            <div className="flex-1 overflow-y-auto">
-                <CustomBtn />
-                <Account />
-
-                <Box sx={{ p: 3, mt: 8 }}>
-                    {/* Header with Action Buttons */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                        <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                            Inventory Management
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Button
-                                variant="contained"
-                                startIcon={<AddIcon />}
-                                onClick={() => setOpenModal(true)}
-                                color="primary"
-                            >
-                                Add
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                startIcon={<UploadIcon />}
-                                onClick={handleImport}
-                                color="success"
-                            >
-                                Import
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                startIcon={<DownloadIcon />}
-                                onClick={handleExport}
-                                color="warning"
-                            >
-                                Export
-                            </Button>
-                        </Box>
-                    </Box>
-
-                    <Paper sx={{ p: 2, mb: 3, bgcolor: 'primary.main', color: 'white' }}>
-                        <Typography variant="h6">
-                            Total Inventory Value: ₹{totalInventoryValue.toLocaleString()}
-                        </Typography>
-                    </Paper>
-
-                    <Box sx={{ height: 600, width: '100%' }}>
-                        <DataGrid
-                            rows={inventoryItems}
-                            columns={columns}
-                            loading={loading}
-                            paginationMode="server"
-                            rowCount={totalCount}
-                            paginationModel={paginationModel}
-                            onPaginationModelChange={(model) => {
-                                setPaginationModel(model);
-                                fetchInventory(model.page, model.pageSize);
-                            }}
-                            pageSizeOptions={[10, 25, 50, 100]}
-                            disableRowSelectionOnClick
-                        />
+        <Layout>
+            <Box sx={{ p: 3 }}>
+                {/* Header with Action Buttons */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                        Inventory Management
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => setOpenModal(true)}
+                            color="primary"
+                        >
+                            Add
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            startIcon={<UploadIcon />}
+                            onClick={handleImport}
+                            color="success"
+                        >
+                            Import
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            startIcon={<DownloadIcon />}
+                            onClick={handleExport}
+                            color="warning"
+                        >
+                            Export
+                        </Button>
                     </Box>
                 </Box>
 
-                <InventoryAgentChat />
-            </div>
+                <Paper sx={{ p: 2, mb: 3, bgcolor: 'primary.main', color: 'white' }}>
+                    <Typography variant="h6">
+                        Total Inventory Value: ₹{totalInventoryValue.toLocaleString()}
+                    </Typography>
+                </Paper>
+
+                <Box sx={{ height: 600, width: '100%' }}>
+                    <DataGrid
+                        rows={inventoryItems}
+                        columns={columns}
+                        loading={loading}
+                        paginationMode="server"
+                        rowCount={totalCount}
+                        paginationModel={paginationModel}
+                        onPaginationModelChange={(model) => {
+                            setPaginationModel(model);
+                            fetchInventory(model.page, model.pageSize);
+                        }}
+                        pageSizeOptions={[10, 25, 50, 100]}
+                        disableRowSelectionOnClick
+                    />
+                </Box>
+            </Box>
+
+            <InventoryAgentChat />
 
             <MuiModal
                 open={openModal}
@@ -423,7 +415,7 @@ function Inventory() {
                 message={alertDialog.message}
                 severity={alertDialog.severity}
             />
-        </div>
+        </Layout>
     );
 }
 

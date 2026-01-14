@@ -7,7 +7,7 @@ import { useAuth } from "./Context/AuthContext";
 import Security from "./Security";
 
 function Account() {
-    const {logout} = useAuth()
+    const { logout } = useAuth()
     const navigate = useNavigate();
     const [isPopupVisible, setPopupVisible] = useState(false);
     const [isEditPopupVisible, setEditPopupVisible] = useState(false);
@@ -28,7 +28,7 @@ function Account() {
             if (response.data.statusCode === 200) {
                 setUserDetails(response.data.data);
                 setNewDetails(response.data.data);
-                
+
             }
         } catch (error) {
             console.error("Error while fetching data", error.response?.data || error.message);
@@ -100,7 +100,7 @@ function Account() {
 
     return (
         <>
-            <div className="absolute sm:top-5 sm:right-10 top-6 right-3">
+            <div>
                 <button
                     onClick={handleOpenPopup}
                     className="sm:w-11 sm:h-11 h-10 w-10 sm:text-lg text-sm bg-gradient-to-r from-blue-300 text-center to-indigo-300 text-gray-700-400 font-normal font-poppins rounded-full hover:bg-gradient-to-bl transition"
@@ -119,7 +119,7 @@ function Account() {
                         <p className="mt-2 text-center m-2 text-white text-lg">{userDetails.phoneNo}</p>
                         <p className="mt-2 text-center m-2 mb-10 text-white text-lg">{userDetails.address}</p>
                         {message && <p className="text-red-500 text-center">{message}</p>}
-                        
+
                         {/* Security Button */}
                         <div className="mb-4 flex justify-center">
                             <button
@@ -130,7 +130,7 @@ function Account() {
                                 Security & Sessions
                             </button>
                         </div>
-                        
+
                         <div className="mt-4 flex justify-end gap-4">
                             <button
                                 onClick={() => { handleEditOpen(); handleClosePopup(); }}
@@ -144,7 +144,7 @@ function Account() {
                             >
                                 Close
                             </button>
-                            <button 
+                            <button
                                 onClick={handleLogOut}
                                 className="text-[#f84242] font-normal hover:text-[#b64141] font-poppins"
                             >
@@ -157,9 +157,9 @@ function Account() {
             )}
 
             {/* Security Component */}
-            <Security 
-                isVisible={isSecurityVisible} 
-                onClose={() => setSecurityVisible(false)} 
+            <Security
+                isVisible={isSecurityVisible}
+                onClose={() => setSecurityVisible(false)}
             />
 
             {isEditPopupVisible && (
@@ -182,7 +182,7 @@ function Account() {
                                 placeholder="Email"
                                 required
                                 value={newDetails.email}
-                                onChange={(e) => setNewDetails({ ...newDetails, email: e.target.value })}   
+                                onChange={(e) => setNewDetails({ ...newDetails, email: e.target.value })}
                                 className="w-full text-sm p-3 pl-10 mb-4 bg-[#2b2b2e] shadow-xl text-white font-poppins font-normal placeholder-gray-700 rounded-2xl"
                             />
                             <label className='pl-1 text-xs font-poppins text-zinc-500 font-thin m-2'>Name</label>

@@ -7,9 +7,7 @@ import ProfessionalDataGrid from '../shared/ProfessionalDataGrid';
 import MuiModal from '../shared/MuiModal';
 import AddProduct from './AddProduct';
 import axios from 'axios';
-import Sidebar from '../Sidebar';
-import CustomBtn from '../CustomBtn';
-import Account from '../Account';
+import Layout from '../Layout';
 import ConfirmDialog from '../shared/ConfirmDialog.jsx';
 
 const Product = () => {
@@ -164,41 +162,35 @@ const Product = () => {
     ];
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            <Sidebar />
-            <div className="flex-1 overflow-y-auto">
-                <CustomBtn />
-                <Account />
-
-                <Box sx={{ p: 3, mt: 8 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                        <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                            Product Catalog
-                        </Typography>
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => {
-                                setSelectedProduct(null);
-                                setOpenModal(true);
-                            }}
-                        >
-                            Add Product
-                        </Button>
-                    </Box>
-
-                    <ProfessionalDataGrid
-                        rows={products}
-                        columns={columns}
-                        loading={loading}
-                        onAdd={() => {
+        <Layout>
+            <Box sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                        Product Catalog
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => {
                             setSelectedProduct(null);
                             setOpenModal(true);
                         }}
-                        pageSize={10}
-                    />
+                    >
+                        Add Product
+                    </Button>
                 </Box>
-            </div>
+
+                <ProfessionalDataGrid
+                    rows={products}
+                    columns={columns}
+                    loading={loading}
+                    onAdd={() => {
+                        setSelectedProduct(null);
+                        setOpenModal(true);
+                    }}
+                    pageSize={10}
+                />
+            </Box>
 
             <MuiModal
                 open={openModal}
@@ -229,7 +221,7 @@ const Product = () => {
                 title={confirmDialog.title}
                 message={confirmDialog.message}
             />
-        </div>
+        </Layout>
     );
 };
 

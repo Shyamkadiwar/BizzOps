@@ -4,9 +4,7 @@ import { Box, Typography, Chip, IconButton, Button } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { Download as DownloadIcon } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import Sidebar from "../Sidebar.jsx";
-import CustomBtn from "../CustomBtn.jsx";
-import Account from "../Account.jsx";
+import Layout from "../Layout.jsx";
 
 const token = localStorage.getItem('accessToken');
 
@@ -169,49 +167,43 @@ function Invoice() {
     ];
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            <Sidebar />
-            <div className="flex-1 overflow-y-auto">
-                <CustomBtn />
-                <Account />
-
-                <Box sx={{ p: 3, mt: 8 }}>
-                    {/* Header with Action Buttons */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                        <Typography variant="h4" sx={{ fontWeight: 600 }}>
-                            Invoice Management
-                        </Typography>
-                        <Button
-                            variant="outlined"
-                            startIcon={<DownloadIcon />}
-                            onClick={handleExportAll}
-                            color="warning"
-                        >
-                            Export
-                        </Button>
-                    </Box>
-
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        Invoices are automatically created from sales. Click on status to toggle paid/unpaid.
+        <Layout>
+            <Box sx={{ p: 3 }}>
+                {/* Header with Action Buttons */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h4" sx={{ fontWeight: 600 }}>
+                        Invoice Management
                     </Typography>
-
-                    <Box sx={{ height: 600, width: '100%' }}>
-                        <DataGrid
-                            rows={invoices}
-                            columns={columns}
-                            loading={loading}
-                            initialState={{
-                                pagination: {
-                                    paginationModel: { pageSize: 10, page: 0 },
-                                },
-                            }}
-                            pageSizeOptions={[10, 25, 50, 100]}
-                            disableRowSelectionOnClick
-                        />
-                    </Box>
+                    <Button
+                        variant="outlined"
+                        startIcon={<DownloadIcon />}
+                        onClick={handleExportAll}
+                        color="warning"
+                    >
+                        Export
+                    </Button>
                 </Box>
-            </div>
-        </div>
+
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Invoices are automatically created from sales. Click on status to toggle paid/unpaid.
+                </Typography>
+
+                <Box sx={{ height: 600, width: '100%' }}>
+                    <DataGrid
+                        rows={invoices}
+                        columns={columns}
+                        loading={loading}
+                        initialState={{
+                            pagination: {
+                                paginationModel: { pageSize: 10, page: 0 },
+                            },
+                        }}
+                        pageSizeOptions={[10, 25, 50, 100]}
+                        disableRowSelectionOnClick
+                    />
+                </Box>
+            </Box>
+        </Layout>
     );
 }
 

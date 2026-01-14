@@ -3,11 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
-import Sidebar from "../Sidebar";
-import CustomBtn from "../CustomBtn";
+import Layout from "../Layout";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Account from "../Account.jsx";
 
 function Report() {
     const navigate = useNavigate()
@@ -99,7 +97,7 @@ function Report() {
             setProfitPerOrder(totalProfit / orders);
             setExpenseRatio((totalExpense / totalSale) * 100);
             setPendingInvoiceRatio((unpaidInvoices / invoices) * 100);
-            setReturnOnSale((totalNetIncome/todaySale)*100)
+            setReturnOnSale((totalNetIncome / todaySale) * 100)
         }
     }, [totalSale, totalProfit, totalNetIncome, totalExpense, orders, invoices, unpaidInvoices]);
 
@@ -124,12 +122,9 @@ function Report() {
     }, [todaySale, todayProfit, totalExpense, orders]);
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-screen">
-            <Sidebar />
-            <div id="infoCards" className="overflow-y-auto h-[calc(100vh)] w-full sm:w-5/6 bg-[#141415]">
-                <CustomBtn />
-                <Account />
-                <h1 className="sm:m-10 m-4 mt-20 text-2xl font-medium font-poppins flex items-center text-white">
+        <Layout>
+            <div id="infoCards" className="overflow-y-auto bg-[#141415] p-4">
+                <h1 className="sm:m-10 m-4 text-2xl font-medium font-poppins flex items-center text-white">
                     <FontAwesomeIcon icon={faArrowLeft} className="text-md pr-2 cursor-pointer" onClick={() => navigate('/dashboard')} /> Report
                 </h1>
                 <div className="justify-center items-center flex flex-col">
@@ -145,7 +140,7 @@ function Report() {
                             <InputField label="Profit per Order" value={profitPerOrder.toFixed(0)} />
                             <InputField label="Expense Ratio" value={expenseRatio.toFixed(2)} />
                             <InputField label="Total Expense" value={totalExpense.toFixed(2)} />
-                            <InputField label="Total Net Income" value={(totalProfit-totalExpense).toFixed(0)} />
+                            <InputField label="Total Net Income" value={(totalProfit - totalExpense).toFixed(0)} />
                             <InputField label="Unpaid Invoices" value={unpaidInvoices.toFixed(0)} />
                             <InputField label="Return On Sale" value={returnOnSale !== null ? returnOnSale.toFixed(2) : 'Loading...'} />
                         </div>
@@ -162,7 +157,7 @@ function Report() {
                             <InputField label="Avg Sale per Order" value={monthlyAvgSalePerOrder.toFixed(2)} />
                             <InputField label="Profit per Order" value={monthlyProfitPerOrder.toFixed(0)} />
                             <InputField label="Expense Ratio" value={monthlyExpenseRatio.toFixed(2)} />
-                            <InputField label="Month Net Income" value={(monthProfit-monthExpense).toFixed(2)} />
+                            <InputField label="Month Net Income" value={(monthProfit - monthExpense).toFixed(2)} />
                         </div>
                     </div>
 
@@ -177,12 +172,12 @@ function Report() {
                             <InputField label="Avg Sale per Order" value={dailyAvgSalePerOrder.toFixed(2)} />
                             <InputField label="Profit per Order" value={dailyProfitPerOrder.toFixed(0)} />
                             <InputField label="Expense Ratio" value={dailyExpenseRatio.toFixed(2)} />
-                            <InputField label="Daily Net Income" value={(todayProfit-oneDayExpense).toFixed(2)} />
+                            <InputField label="Daily Net Income" value={(todayProfit - oneDayExpense).toFixed(2)} />
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </Layout>
     )
 }
 
