@@ -28,7 +28,6 @@ function Layout({ children }) {
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    p: 3,
                     width: { xs: '100%', sm: desktopOpen ? `calc(100% - 280px)` : `calc(100% - 80px)` },
                     backgroundColor: '#0f0f0f',
                     minHeight: '100vh',

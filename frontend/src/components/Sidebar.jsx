@@ -324,7 +324,7 @@ function Sidebar({ mobileOpen, onDrawerToggle, desktopOpen, onDesktopToggle }) {
                     '& .MuiDrawer-paper': {
                         boxSizing: 'border-box',
                         width: desktopOpen ? drawerWidth : miniDrawerWidth,
-                        backgroundColor: '#f5f5f5',
+                        backgroundColor: '#FFFFFF',
                         borderRight: '1px solid rgba(0, 0, 0, 0.08)',
                         transition: theme.transitions.create('width', {
                             easing: theme.transitions.easing.sharp,

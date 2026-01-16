@@ -232,7 +232,7 @@ function Sales() {
 
     return (
         <Layout>
-            <Box sx={{ p: 3 }}>
+            <Box sx={{ p: 6, background: '#F5F5F5' }}>
                 {/* Header with Action Buttons */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                     <Typography variant="h4" sx={{ fontWeight: 600 }}>
