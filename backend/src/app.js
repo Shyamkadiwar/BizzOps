@@ -48,6 +48,7 @@ import dealRouter from "../routes/deal.routes.js";
 import taskRouter from "../routes/task.routes.js";
 import appointmentRouter from "../routes/appointment.routes.js";
 import calendarRouter from "../routes/calendar.routes.js";
+import dashboardRouter from "../routes/dashboard.routes.js";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/inventory", inventoryRouter);
@@ -65,6 +66,7 @@ app.use("/api/v1/deals", dealRouter);
 app.use("/api/v1/tasks", taskRouter);
 app.use("/api/v1/appointments", appointmentRouter);
 app.use("/api/v1/calendar", calendarRouter);
+app.use("/api/v1/dashboard", dashboardRouter);
 
 // Global error handler
 app.use((err, req, res, next) => {
