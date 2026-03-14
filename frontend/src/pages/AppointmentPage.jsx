@@ -115,11 +115,12 @@ function AppointmentPage() {
 
     return (
         <Layout>
-            <Box sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                        Appointments
-                    </Typography>
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 p-6">
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Appointments</h1>
+                        <p className="text-sm text-gray-600">Schedule and manage appointments</p>
+                    </div>
                     <Button
                         variant="contained"
                         startIcon={<Add />}
@@ -128,67 +129,70 @@ function AppointmentPage() {
                     >
                         Add Appointment
                     </Button>
-                </Box>
+                </div>
 
                 {loading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
                         <CircularProgress />
                     </Box>
                 ) : (
-                    <TableContainer component={Paper}>
-                        <Table>
-                            <TableHead>
-                                <TableRow sx={{ backgroundColor: '#f9fafb' }}>
-                                    <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }}>Start Time</TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }}>End Time</TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }}>Location</TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {appointments.length > 0 ? (
-                                    appointments.map((appointment) => (
-                                        <TableRow key={appointment._id}>
-                                            <TableCell>{appointment.title}</TableCell>
-                                            <TableCell>
-                                                <Chip
-                                                    icon={getTypeIcon(appointment.type)}
-                                                    label={appointment.type}
-                                                    size="small"
-                                                    sx={{ backgroundColor: '#e0f2fe', color: '#0284c7' }}
-                                                />
-                                            </TableCell>
-                                            <TableCell>{formatDateTime(appointment.startTime)}</TableCell>
-                                            <TableCell>{formatDateTime(appointment.endTime)}</TableCell>
-                                            <TableCell>{appointment.location || '-'}</TableCell>
-                                            <TableCell>
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => {
-                                                        setSelectedAppointment(appointment);
-                                                        setEditModalOpen(true);
-                                                    }}
-                                                >
-                                                    <Edit fontSize="small" />
-                                                </IconButton>
-                                                <IconButton size="small" color="error" onClick={() => handleDelete(appointment._id)}>
-                                                    <Delete fontSize="small" />
-                                                </IconButton>
+                    <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-lg">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Appointment Records</h3>
+                        <TableContainer>
+                            <Table>
+                                <TableHead>
+                                    <TableRow sx={{ backgroundColor: 'rgba(249,250,251,0.7)' }}>
+                                        <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>Start Time</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>End Time</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>Location</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {appointments.length > 0 ? (
+                                        appointments.map((appointment) => (
+                                            <TableRow key={appointment._id} sx={{ '&:hover': { backgroundColor: 'rgba(249,250,251,0.5)' } }}>
+                                                <TableCell>{appointment.title}</TableCell>
+                                                <TableCell>
+                                                    <Chip
+                                                        icon={getTypeIcon(appointment.type)}
+                                                        label={appointment.type}
+                                                        size="small"
+                                                        sx={{ backgroundColor: '#e0f2fe', color: '#0284c7' }}
+                                                    />
+                                                </TableCell>
+                                                <TableCell>{formatDateTime(appointment.startTime)}</TableCell>
+                                                <TableCell>{formatDateTime(appointment.endTime)}</TableCell>
+                                                <TableCell>{appointment.location || '-'}</TableCell>
+                                                <TableCell>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => {
+                                                            setSelectedAppointment(appointment);
+                                                            setEditModalOpen(true);
+                                                        }}
+                                                    >
+                                                        <Edit fontSize="small" />
+                                                    </IconButton>
+                                                    <IconButton size="small" color="error" onClick={() => handleDelete(appointment._id)}>
+                                                        <Delete fontSize="small" />
+                                                    </IconButton>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={6} align="center">
+                                                No appointments found
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={6} align="center">
-                                            No appointments found
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </div>
                 )}
 
                 <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth>
@@ -262,7 +266,7 @@ function AppointmentPage() {
                         fetchAppointments();
                     }}
                 />
-            </Box>
+            </div>
         </Layout>
     );
 }

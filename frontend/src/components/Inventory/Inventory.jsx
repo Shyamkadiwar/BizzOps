@@ -236,7 +236,12 @@ function Inventory() {
             type: 'number',
             valueFormatter: (value) => `₹${value?.toLocaleString() || 0}`
         },
-        { field: 'vendor', headerName: 'Vendor', width: 150 },
+        {
+            field: 'vendor',
+            headerName: 'Vendor',
+            width: 150,
+            valueGetter: (value, row) => row.vendor?.name || 'N/A'
+        },
         {
             field: 'stockRemain',
             headerName: 'Stock',
@@ -268,6 +273,19 @@ function Inventory() {
                         <Chip key={idx} label={`${tax.name}: ${tax.rate}%`} size="small" variant="outlined" />
                     ))}
                 </Box>
+            )
+        },
+        {
+            field: 'paid',
+            headerName: 'Payment',
+            width: 110,
+            renderCell: (params) => (
+                <Chip
+                    label={params.value ? 'Paid' : 'Unpaid'}
+                    color={params.value ? 'success' : 'warning'}
+                    size="small"
+                    variant="filled"
+                />
             )
         },
         {

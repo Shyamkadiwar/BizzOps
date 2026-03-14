@@ -1,196 +1,203 @@
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
-import { useEffect } from "react";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+    Box, Typography, Tabs, Tab, CircularProgress, Chip
+} from "@mui/material";
+import {
+    TrendingUp, DollarSign, Wallet, TrendingDown, AlertCircle,
+    ShoppingCart, FileText, Users
+} from "lucide-react";
 import Layout from "../Layout";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
 function Report() {
-    const navigate = useNavigate()
-    const [totalSale, setTotalSales] = useState(0)
-    const [todaySale, setTodaySales] = useState(0)
-    const [MonthSale, setMonthSales] = useState(0)
-    const [totalProfit, setTotalProfit] = useState(0)
-    const [todayProfit, setTodayProfit] = useState(0)
-    const [monthProfit, setMonthProfit] = useState(0)
-    const [totalCost, setTotalCost] = useState(0)
-    const [totalNetIncome, setTotalNetIncome] = useState(0)
-    const [totalExpense, setTotalExpense] = useState(0)
-    const [monthExpense, setMonthTotalExpense] = useState(0)
-    const [oneDayExpense, setOneDayExpense] = useState(0)
-    const [orders, setOrders] = useState(0)
-    const [pendingOrders, setPendingOrders] = useState(0)
-    const [invoices, setInvoices] = useState(0)
-    const [unpaidInvoices, setUnpaidInvoices] = useState(0)
-    const [customers, setCustomers] = useState(0)
+    const [loading, setLoading] = useState(true);
+    const [tabValue, setTabValue] = useState(0);
+
+    const [totalSale, setTotalSales] = useState(0);
+    const [todaySale, setTodaySales] = useState(0);
+    const [MonthSale, setMonthSales] = useState(0);
+    const [totalProfit, setTotalProfit] = useState(0);
+    const [todayProfit, setTodayProfit] = useState(0);
+    const [monthProfit, setMonthProfit] = useState(0);
+    const [totalCost, setTotalCost] = useState(0);
+    const [totalExpense, setTotalExpense] = useState(0);
+    const [monthExpense, setMonthTotalExpense] = useState(0);
+    const [oneDayExpense, setOneDayExpense] = useState(0);
+    const [orders, setOrders] = useState(0);
+    const [pendingOrders, setPendingOrders] = useState(0);
+    const [invoices, setInvoices] = useState(0);
+    const [unpaidInvoices, setUnpaidInvoices] = useState(0);
+    const [customers, setCustomers] = useState(0);
 
     const fetchData = async () => {
+        setLoading(true);
         try {
-            const totalSaleResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sales/get-total-alltime-sale`, { withCredentials: true })
-            const monthSaleResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sales/get-total-last30Day-sale`, { withCredentials: true })
-            const todaySaleResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sales/get-total-oneday-sale`, { withCredentials: true })
-            const monthProfitResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sales/get-total-last30Day-profit`, { withCredentials: true })
-            const totalProfitResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sales/get-total-alltime-profit`, { withCredentials: true })
-            const todayProfitResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sales/get-total-one-profit`, { withCredentials: true })
-            const totalCostResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sales/get-total-alltime-cost`, { withCredentials: true })
-            const totalExpenseResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/expense/get-alltime-expense`, { withCredentials: true })
-            const monthExpenseResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/expense/get-last30day-expense`, { withCredentials: true })
-            const oneExpenseResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/expense/get-oneday-expense`, { withCredentials: true })
-            const orderResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/orders/count-order`, { withCredentials: true })
-            const pendingOrderResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/orders/get-pending-order`, { withCredentials: true })
-            const invoicesResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/invoice/count-invoice`, { withCredentials: true })
-            const unpaidInvoicesResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/invoice/unpaid-invoice`, { withCredentials: true })
-            const customersResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/customer/count-customer`, { withCredentials: true })
+            const [
+                totalSaleRes, monthSaleRes, todaySaleRes,
+                monthProfitRes, totalProfitRes, todayProfitRes,
+                totalCostRes, totalExpenseRes, monthExpenseRes, oneExpenseRes,
+                orderRes, pendingOrderRes, invoicesRes, unpaidInvoicesRes, customersRes
+            ] = await Promise.all([
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sales/get-total-alltime-sale`, { withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sales/get-total-last30Day-sale`, { withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sales/get-total-oneday-sale`, { withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sales/get-total-last30Day-profit`, { withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sales/get-total-alltime-profit`, { withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sales/get-total-one-profit`, { withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/sales/get-total-alltime-cost`, { withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/expense/get-alltime-expense`, { withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/expense/get-last30day-expense`, { withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/expense/get-oneday-expense`, { withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/orders/count-order`, { withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/orders/get-pending-order`, { withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/invoice/count-invoice`, { withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/invoice/unpaid-invoice`, { withCredentials: true }),
+                axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/v1/customer/count-customer`, { withCredentials: true })
+            ]);
 
-            setTotalSales(totalSaleResponse.data.data.totalSalesValue)
-            setMonthSales(monthSaleResponse.data.data.totalSalesValue)
-            setTodaySales(todaySaleResponse.data.data.totalSalesValue)
-            setTotalProfit(totalProfitResponse.data.data.totalProfitValue)
-            setMonthProfit(monthProfitResponse.data.data.totalProfitValue)
-            setTodayProfit(todayProfitResponse.data.data.totalProfitValue)
-            setTotalCost(totalCostResponse.data.data.totalCostValue)
-            setTotalExpense(totalExpenseResponse.data.data.totalExpenseValue)
-            setMonthTotalExpense(monthExpenseResponse.data.data.totalExpenseValue)
-            setOneDayExpense(oneExpenseResponse.data.data.totalExpenseValue)
-            setTotalNetIncome(totalProfit - totalExpense)
-            setOrders(orderResponse.data.data.totalOrders)
-            setPendingOrders(pendingOrderResponse.data.data.pendingCount)
-            setInvoices(invoicesResponse.data.data.invoiceCount)
-            setUnpaidInvoices(unpaidInvoicesResponse.data.data.totalUnpaidAmount)
-            setCustomers(customersResponse.data.data.count)
-        } catch (error) {
-            console.error("Error while fetching data: ", error)
-        }
-    }
+            setTotalSales(totalSaleRes.data.data.totalSalesValue);
+            setMonthSales(monthSaleRes.data.data.totalSalesValue);
+            setTodaySales(todaySaleRes.data.data.totalSalesValue);
+            setTotalProfit(totalProfitRes.data.data.totalProfitValue);
+            setMonthProfit(monthProfitRes.data.data.totalProfitValue);
+            setTodayProfit(todayProfitRes.data.data.totalProfitValue);
+            setTotalCost(totalCostRes.data.data.totalCostValue);
+            setTotalExpense(totalExpenseRes.data.data.totalExpenseValue);
+            setMonthTotalExpense(monthExpenseRes.data.data.totalExpenseValue);
+            setOneDayExpense(oneExpenseRes.data.data.totalExpenseValue);
+            setOrders(orderRes.data.data.totalOrders);
+            setPendingOrders(pendingOrderRes.data.data.pendingCount);
+            setInvoices(invoicesRes.data.data.invoiceCount);
+            setUnpaidInvoices(unpaidInvoicesRes.data.data.totalUnpaidAmount);
+            setCustomers(customersRes.data.data.count);
+        } catch (error) { console.error("Error:", error); }
+        finally { setLoading(false); }
+    };
 
-    useEffect(() => {
-        fetchData();
-    }, [])
+    useEffect(() => { fetchData(); }, []);
 
-    const [grossProfitMargin, setGrossProfitMargin] = useState(0);
-    const [netProfitMargin, setNetProfitMargin] = useState(0);
-    const [avgSalePerOrder, setAvgSalePerOrder] = useState(0);
-    const [profitPerOrder, setProfitPerOrder] = useState(0);
-    const [expenseRatio, setExpenseRatio] = useState(0);
-    const [returnOnSale, setReturnOnSale] = useState(null)
-    const [pendingInvoiceRatio, setPendingInvoiceRatio] = useState(0);
+    const safe = (v) => (v && isFinite(v) ? v : 0);
 
-    const [monthlyGrossProfitMargin, setMonthlyGrossProfitMargin] = useState(0);
-    const [monthlyNetProfitMargin, setMonthlyNetProfitMargin] = useState(0);
-    const [monthlyAvgSalePerOrder, setMonthlyAvgSalePerOrder] = useState(0);
-    const [monthlyProfitPerOrder, setMonthlyProfitPerOrder] = useState(0);
-    const [monthlyExpenseRatio, setMonthlyExpenseRatio] = useState(0);
+    const totalNetIncome = totalProfit - totalExpense;
+    const grossProfitMargin = safe((totalProfit / totalSale) * 100);
+    const netProfitMargin = safe(((totalProfit - totalExpense) / totalSale) * 100);
+    const avgSalePerOrder = safe(totalSale / orders);
+    const profitPerOrder = safe(totalProfit / orders);
+    const expenseRatio = safe((totalExpense / totalSale) * 100);
 
-    const [dailyGrossProfitMargin, setDailyGrossProfitMargin] = useState(0);
-    const [dailyNetProfitMargin, setDailyNetProfitMargin] = useState(0);
-    const [dailyAvgSalePerOrder, setDailyAvgSalePerOrder] = useState(0);
-    const [dailyProfitPerOrder, setDailyProfitPerOrder] = useState(0);
-    const [dailyExpenseRatio, setDailyExpenseRatio] = useState(0);
+    const mNetIncome = monthProfit - monthExpense;
+    const mGrossPM = safe((monthProfit / MonthSale) * 100);
+    const mNetPM = safe(((monthProfit - monthExpense) / MonthSale) * 100);
+    const mAvgSale = safe(MonthSale / orders);
+    const mProfitPerOrder = safe(monthProfit / orders);
+    const mExpRatio = safe((monthExpense / MonthSale) * 100);
 
-    useEffect(() => {
-        if (totalSale > 0) {
-            setGrossProfitMargin((totalProfit / totalSale) * 100);
-            setNetProfitMargin((totalNetIncome / totalSale) * 100);
-            setAvgSalePerOrder(totalSale / orders);
-            setProfitPerOrder(totalProfit / orders);
-            setExpenseRatio((totalExpense / totalSale) * 100);
-            setPendingInvoiceRatio((unpaidInvoices / invoices) * 100);
-            setReturnOnSale((totalNetIncome / todaySale) * 100)
-        }
-    }, [totalSale, totalProfit, totalNetIncome, totalExpense, orders, invoices, unpaidInvoices]);
+    const dNetIncome = todayProfit - oneDayExpense;
+    const dGrossPM = safe((todayProfit / todaySale) * 100);
+    const dNetPM = safe(((todayProfit - oneDayExpense) / todaySale) * 100);
+    const dAvgSale = safe(todaySale / orders);
+    const dProfitPerOrder = safe(todayProfit / orders);
+    const dExpRatio = safe((oneDayExpense / todaySale) * 100);
 
-    useEffect(() => {
-        if (MonthSale > 0) {
-            setMonthlyGrossProfitMargin((monthProfit / MonthSale) * 100);
-            setMonthlyNetProfitMargin((monthProfit - monthExpense) / MonthSale * 100);
-            setMonthlyAvgSalePerOrder(MonthSale / orders);
-            setMonthlyProfitPerOrder(monthProfit / orders);
-            setMonthlyExpenseRatio((totalExpense / MonthSale) * 100);
-        }
-    }, [MonthSale, monthProfit, totalExpense, orders]);
+    const MetricCard = ({ icon, label, value, prefix = '', suffix = '', color }) => (
+        <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-200">
+            <div className="flex items-center gap-3">
+                <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: `${color}20`, color }}
+                >
+                    {icon}
+                </div>
+                <div className="flex-1">
+                    <p className="text-xs text-gray-600 mb-1">{label}</p>
+                    <h3 className="text-xl font-bold text-gray-900">
+                        {prefix}{typeof value === 'number' ? value.toLocaleString(undefined, { maximumFractionDigits: 2 }) : value}{suffix}
+                    </h3>
+                </div>
+            </div>
+        </div>
+    );
 
-    useEffect(() => {
-        if (todaySale > 0) {
-            setDailyGrossProfitMargin((todayProfit / todaySale) * 100);
-            setDailyNetProfitMargin((todayProfit - totalExpense) / todaySale * 100);
-            setDailyAvgSalePerOrder(todaySale / orders);
-            setDailyProfitPerOrder(todayProfit / orders);
-            setDailyExpenseRatio((totalExpense / todaySale) * 100);
-        }
-    }, [todaySale, todayProfit, totalExpense, orders]);
+    const allTimeCards = [
+        { icon: <DollarSign size={20} />, label: 'Total Sale', value: totalSale, prefix: '₹', color: '#3B82F6' },
+        { icon: <TrendingUp size={20} />, label: 'Total Profit', value: totalProfit, prefix: '₹', color: '#10B981' },
+        { icon: <Wallet size={20} />, label: 'Total Cost', value: totalCost, prefix: '₹', color: '#EF4444' },
+        { icon: <AlertCircle size={20} />, label: 'Total Expense', value: totalExpense, prefix: '₹', color: '#F59E0B' },
+        { icon: <TrendingUp size={20} />, label: 'Net Income', value: totalNetIncome, prefix: '₹', color: totalNetIncome >= 0 ? '#10B981' : '#EF4444' },
+        { icon: <TrendingUp size={20} />, label: 'Gross Profit Margin', value: grossProfitMargin, suffix: '%', color: '#8B5CF6' },
+        { icon: <TrendingUp size={20} />, label: 'Net Profit Margin', value: netProfitMargin, suffix: '%', color: '#6366F1' },
+        { icon: <ShoppingCart size={20} />, label: 'Avg Sale/Order', value: avgSalePerOrder, prefix: '₹', color: '#0EA5E9' },
+        { icon: <DollarSign size={20} />, label: 'Profit/Order', value: profitPerOrder, prefix: '₹', color: '#14B8A6' },
+        { icon: <TrendingDown size={20} />, label: 'Expense Ratio', value: expenseRatio, suffix: '%', color: '#F97316' },
+        { icon: <FileText size={20} />, label: 'Unpaid Invoices', value: unpaidInvoices, prefix: '₹', color: '#EF4444' },
+        { icon: <ShoppingCart size={20} />, label: 'Total Orders', value: orders, color: '#3B82F6' },
+    ];
+
+    const monthCards = [
+        { icon: <DollarSign size={20} />, label: 'Month Sale', value: MonthSale, prefix: '₹', color: '#3B82F6' },
+        { icon: <TrendingUp size={20} />, label: 'Month Profit', value: monthProfit, prefix: '₹', color: '#10B981' },
+        { icon: <AlertCircle size={20} />, label: 'Month Expense', value: monthExpense, prefix: '₹', color: '#F59E0B' },
+        { icon: <TrendingUp size={20} />, label: 'Month Net Income', value: mNetIncome, prefix: '₹', color: mNetIncome >= 0 ? '#10B981' : '#EF4444' },
+        { icon: <TrendingUp size={20} />, label: 'Gross Profit Margin', value: mGrossPM, suffix: '%', color: '#8B5CF6' },
+        { icon: <TrendingUp size={20} />, label: 'Net Profit Margin', value: mNetPM, suffix: '%', color: '#6366F1' },
+        { icon: <ShoppingCart size={20} />, label: 'Avg Sale/Order', value: mAvgSale, prefix: '₹', color: '#0EA5E9' },
+        { icon: <DollarSign size={20} />, label: 'Profit/Order', value: mProfitPerOrder, prefix: '₹', color: '#14B8A6' },
+        { icon: <TrendingDown size={20} />, label: 'Expense Ratio', value: mExpRatio, suffix: '%', color: '#F97316' },
+    ];
+
+    const dailyCards = [
+        { icon: <DollarSign size={20} />, label: 'Daily Sale', value: todaySale, prefix: '₹', color: '#3B82F6' },
+        { icon: <TrendingUp size={20} />, label: 'Daily Profit', value: todayProfit, prefix: '₹', color: '#10B981' },
+        { icon: <AlertCircle size={20} />, label: 'Daily Expense', value: oneDayExpense, prefix: '₹', color: '#F59E0B' },
+        { icon: <TrendingUp size={20} />, label: 'Daily Net Income', value: dNetIncome, prefix: '₹', color: dNetIncome >= 0 ? '#10B981' : '#EF4444' },
+        { icon: <TrendingUp size={20} />, label: 'Gross Profit Margin', value: dGrossPM, suffix: '%', color: '#8B5CF6' },
+        { icon: <TrendingUp size={20} />, label: 'Net Profit Margin', value: dNetPM, suffix: '%', color: '#6366F1' },
+        { icon: <ShoppingCart size={20} />, label: 'Avg Sale/Order', value: dAvgSale, prefix: '₹', color: '#0EA5E9' },
+        { icon: <DollarSign size={20} />, label: 'Profit/Order', value: dProfitPerOrder, prefix: '₹', color: '#14B8A6' },
+        { icon: <TrendingDown size={20} />, label: 'Expense Ratio', value: dExpRatio, suffix: '%', color: '#F97316' },
+    ];
+
+    const tabCards = [allTimeCards, monthCards, dailyCards];
 
     return (
         <Layout>
-            <div id="infoCards" className="overflow-y-auto bg-[#141415] p-4">
-                <h1 className="sm:m-10 m-4 text-2xl font-medium font-poppins flex items-center text-white">
-                    <FontAwesomeIcon icon={faArrowLeft} className="text-md pr-2 cursor-pointer" onClick={() => navigate('/dashboard')} /> Report
-                </h1>
-                <div className="justify-center items-center flex flex-col">
-                    <div className="m-3 lg:m-5 w-11/12 lg:w-5/6 bg-[#28282B] rounded-xl p-4">
-                        <h1 className="text-base mt-3 lg:mt-5 font-medium font-poppins text-white text-center">All Time Report</h1>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 m-4">
-                            <InputField label="Total Sale" value={totalSale} />
-                            <InputField label="Total Profit" value={totalProfit.toFixed(2)} />
-                            <InputField label="Total Cost" value={totalCost.toFixed(2)} />
-                            <InputField label="Gross Profit Margin" value={grossProfitMargin.toFixed(0)} />
-                            <InputField label="Net Profit Margin" value={netProfitMargin.toFixed(2)} />
-                            <InputField label="Avg Sale per Order" value={avgSalePerOrder.toFixed(2)} />
-                            <InputField label="Profit per Order" value={profitPerOrder.toFixed(0)} />
-                            <InputField label="Expense Ratio" value={expenseRatio.toFixed(2)} />
-                            <InputField label="Total Expense" value={totalExpense.toFixed(2)} />
-                            <InputField label="Total Net Income" value={(totalProfit - totalExpense).toFixed(0)} />
-                            <InputField label="Unpaid Invoices" value={unpaidInvoices.toFixed(0)} />
-                            <InputField label="Return On Sale" value={returnOnSale !== null ? returnOnSale.toFixed(2) : 'Loading...'} />
-                        </div>
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Financial Report</h1>
+                        <p className="text-sm text-gray-600">Business performance overview</p>
                     </div>
-
-                    <div className="m-3 lg:m-5 w-11/12 lg:w-5/6 bg-[#28282B] rounded-xl p-4">
-                        <h1 className="text-base mt-3 lg:mt-5 font-medium font-poppins text-center text-white">Month Report</h1>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 m-4">
-                            <InputField label="Month Sale" value={MonthSale} />
-                            <InputField label="Month Profit" value={monthProfit.toFixed(2)} />
-                            <InputField label="Month Expense" value={monthExpense} />
-                            <InputField label="Gross Profit Margin" value={monthlyGrossProfitMargin.toFixed(0)} />
-                            <InputField label="Net Profit Margin" value={monthlyNetProfitMargin.toFixed(2)} />
-                            <InputField label="Avg Sale per Order" value={monthlyAvgSalePerOrder.toFixed(2)} />
-                            <InputField label="Profit per Order" value={monthlyProfitPerOrder.toFixed(0)} />
-                            <InputField label="Expense Ratio" value={monthlyExpenseRatio.toFixed(2)} />
-                            <InputField label="Month Net Income" value={(monthProfit - monthExpense).toFixed(2)} />
-                        </div>
-                    </div>
-
-                    <div className="m-3 lg:m-5 w-11/12 lg:w-5/6 bg-[#28282B] rounded-xl p-4">
-                        <h1 className="text-base mt-3 lg:mt-5 font-medium font-poppins text-center text-white">Daily Report</h1>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 m-4">
-                            <InputField label="Daily Sale" value={todaySale} />
-                            <InputField label="Daily Profit" value={todayProfit.toFixed(2)} />
-                            <InputField label="Daily Expense" value={oneDayExpense} />
-                            <InputField label="Gross Profit Margin" value={dailyGrossProfitMargin.toFixed(0)} />
-                            <InputField label="Net Profit Margin" value={dailyNetProfitMargin.toFixed(2)} />
-                            <InputField label="Avg Sale per Order" value={dailyAvgSalePerOrder.toFixed(2)} />
-                            <InputField label="Profit per Order" value={dailyProfitPerOrder.toFixed(0)} />
-                            <InputField label="Expense Ratio" value={dailyExpenseRatio.toFixed(2)} />
-                            <InputField label="Daily Net Income" value={(todayProfit - oneDayExpense).toFixed(2)} />
-                        </div>
+                    <div className="flex items-center gap-2">
+                        <Chip label={`${orders} Orders`} color="primary" variant="outlined" size="small" />
+                        <Chip label={`${customers} Customers`} color="success" variant="outlined" size="small" />
+                        <Chip label={`${pendingOrders} Pending`} color="warning" variant="outlined" size="small" />
                     </div>
                 </div>
+
+                {/* Tabs */}
+                <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-2xl shadow-lg mb-6">
+                    <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={{ px: 2 }}>
+                        <Tab label="All Time" />
+                        <Tab label="This Month" />
+                        <Tab label="Today" />
+                    </Tabs>
+                </div>
+
+                {loading ? (
+                    <div className="flex justify-center py-16">
+                        <CircularProgress />
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {tabCards[tabValue].map((card, idx) => (
+                            <MetricCard key={idx} {...card} />
+                        ))}
+                    </div>
+                )}
             </div>
         </Layout>
-    )
+    );
 }
 
-const InputField = ({ label, value }) => (
-    <div className="flex flex-row sm:gap-10 gap-6 items-center m-4">
-        <label className="mb-2 font-poppins font-medium text-white">{label}</label>
-        <input
-            type="text"
-            value={value}
-            readOnly
-            className="sm:w-1/3 w-1/2 text-center h-10 rounded-2xl bg-gray-200 font-poppins font-medium hover:border-black hover:border-2"
-        />
-    </div>
-)
-
-export default Report
+export default Report;

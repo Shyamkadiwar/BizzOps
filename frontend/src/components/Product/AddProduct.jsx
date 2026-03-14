@@ -27,7 +27,7 @@ const AddProduct = ({ product, onSuccess, onCancel }) => {
                 category: product.category || '',
                 cost: product.cost || '',
                 salePrice: product.salePrice || '',
-                vendor: product.vendor || '',
+                vendor: product.vendor?._id || product.vendor || '',
                 description: product.description || '',
                 taxes: product.taxes || []
             });

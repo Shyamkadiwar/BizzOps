@@ -153,11 +153,12 @@ function CalendarPage() {
 
     return (
         <Layout>
-            <Box sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                        Calendar
-                    </Typography>
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 p-6">
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Calendar</h1>
+                        <p className="text-sm text-gray-600">View all events in one place</p>
+                    </div>
                     <Button
                         variant="contained"
                         startIcon={<Add />}
@@ -169,30 +170,30 @@ function CalendarPage() {
                     >
                         Add Event
                     </Button>
-                </Box>
+                </div>
 
                 {/* Legend */}
-                <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ width: 16, height: 16, backgroundColor: '#8b5cf6', borderRadius: 1 }} />
-                        <Typography variant="body2">Tasks</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ width: 16, height: 16, backgroundColor: '#10b981', borderRadius: 1 }} />
-                        <Typography variant="body2">Appointments</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ width: 16, height: 16, backgroundColor: '#f59e0b', borderRadius: 1 }} />
-                        <Typography variant="body2">Deals</Typography>
-                    </Box>
-                </Box>
+                <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-xl p-3 shadow-md mb-4 flex gap-4">
+                    <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#8b5cf6' }} />
+                        <span className="text-sm text-gray-700">Tasks</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#10b981' }} />
+                        <span className="text-sm text-gray-700">Appointments</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded" style={{ backgroundColor: '#f59e0b' }} />
+                        <span className="text-sm text-gray-700">Deals</span>
+                    </div>
+                </div>
 
                 {loading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
                         <CircularProgress />
                     </Box>
                 ) : (
-                    <Paper sx={{ p: 2, height: 600 }}>
+                    <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-lg" style={{ height: 600 }}>
                         <BigCalendar
                             localizer={localizer}
                             events={events}
@@ -206,7 +207,7 @@ function CalendarPage() {
                             onSelectSlot={handleSelectSlot}
                             selectable
                         />
-                    </Paper>
+                    </div>
                 )}
 
                 {/* Modals */}
@@ -253,7 +254,7 @@ function CalendarPage() {
                         fetchEvents();
                     }}
                 />
-            </Box>
+            </div>
         </Layout>
     );
 }

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Chip, IconButton, Button } from '@mui/material';
+import { Box, Typography, Chip, IconButton, Button, Autocomplete, TextField } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import ProfessionalDataGrid from '../shared/ProfessionalDataGrid';
 import MuiModal from '../shared/MuiModal';
 import AddProduct from './AddProduct';
@@ -16,19 +17,22 @@ const Product = () => {
     const [openModal, setOpenModal] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", message: "", onConfirm: null });
+    const [vendors, setVendors] = useState([]);
+    const [selectedVendorFilter, setSelectedVendorFilter] = useState(null);
 
-    const fetchProducts = async () => {
+    const fetchProducts = async (vendorId = null) => {
         setLoading(true);
         try {
-            const response = await axios.get(
-                `${import.meta.env.VITE_BACKEND_URL}/api/v1/product/get-products?limit=1000`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-                    },
-                    withCredentials: true
-                }
-            );
+            let url;
+            if (vendorId) {
+                url = `${import.meta.env.VITE_BACKEND_URL}/api/v1/product/by-vendor/${vendorId}`;
+            } else {
+                url = `${import.meta.env.VITE_BACKEND_URL}/api/v1/product/get-products?limit=1000`;
+            }
+            const response = await axios.get(url, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
+                withCredentials: true
+            });
             const productsData = response.data.data.products || [];
             setProducts(productsData.map(product => ({ ...product, id: product._id })));
         } catch (error) {
@@ -38,9 +42,34 @@ const Product = () => {
         }
     };
 
+    const fetchVendors = async () => {
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_BACKEND_URL}/api/v1/vendor/list?limit=1000`,
+                {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
+                    withCredentials: true
+                }
+            );
+            setVendors(response.data.data.vendors || []);
+        } catch (error) {
+            console.error('Error fetching vendors:', error);
+        }
+    };
+
     useEffect(() => {
         fetchProducts();
+        fetchVendors();
     }, []);
+
+    const handleVendorFilterChange = (event, value) => {
+        setSelectedVendorFilter(value);
+        if (value) {
+            fetchProducts(value._id);
+        } else {
+            fetchProducts();
+        }
+    };
 
     const handleEdit = (product) => {
         setSelectedProduct(product);
@@ -57,13 +86,11 @@ const Product = () => {
                     await axios.delete(
                         `${import.meta.env.VITE_BACKEND_URL}/api/v1/product/delete-product/${id}`,
                         {
-                            headers: {
-                                Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-                            },
+                            headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
                             withCredentials: true
                         }
                     );
-                    fetchProducts();
+                    fetchProducts(selectedVendorFilter?._id || null);
                 } catch (error) {
                     console.error('Error deleting product:', error);
                     alert('Error deleting product');
@@ -114,11 +141,7 @@ const Product = () => {
             width: 150,
             filterable: true,
             valueGetter: (value, row) => {
-                // Handle vendor as object (populated) or string (ID)
-                if (typeof row.vendor === 'object' && row.vendor !== null) {
-                    return row.vendor.name || row.vendor._id || 'N/A';
-                }
-                return row.vendor || 'N/A';
+                return row.vendor?.name || 'N/A';
             }
         },
         {
@@ -168,17 +191,54 @@ const Product = () => {
                     <Typography variant="h4" sx={{ fontWeight: 600 }}>
                         Product Catalog
                     </Typography>
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={() => {
-                            setSelectedProduct(null);
-                            setOpenModal(true);
-                        }}
-                    >
-                        Add Product
-                    </Button>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <Autocomplete
+                            options={vendors}
+                            getOptionLabel={(option) => option.name || ''}
+                            value={selectedVendorFilter}
+                            onChange={handleVendorFilterChange}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Filter by Vendor"
+                                    placeholder="All Vendors"
+                                    size="small"
+                                    InputProps={{
+                                        ...params.InputProps,
+                                        startAdornment: (
+                                            <>
+                                                <FilterListIcon sx={{ color: 'action.active', mr: 0.5, fontSize: 20 }} />
+                                                {params.InputProps.startAdornment}
+                                            </>
+                                        )
+                                    }}
+                                />
+                            )}
+                            sx={{ width: 280 }}
+                        />
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => {
+                                setSelectedProduct(null);
+                                setOpenModal(true);
+                            }}
+                        >
+                            Add Product
+                        </Button>
+                    </Box>
                 </Box>
+
+                {selectedVendorFilter && (
+                    <Box sx={{ mb: 2 }}>
+                        <Chip
+                            label={`Showing products from: ${selectedVendorFilter.name}`}
+                            onDelete={() => handleVendorFilterChange(null, null)}
+                            color="primary"
+                            variant="outlined"
+                        />
+                    </Box>
+                )}
 
                 <ProfessionalDataGrid
                     rows={products}
@@ -205,7 +265,7 @@ const Product = () => {
                     onSuccess={() => {
                         setOpenModal(false);
                         setSelectedProduct(null);
-                        fetchProducts();
+                        fetchProducts(selectedVendorFilter?._id || null);
                     }}
                     onCancel={() => {
                         setOpenModal(false);

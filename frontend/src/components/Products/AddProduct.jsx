@@ -1,12 +1,13 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Box,
     TextField,
     Button,
     Grid,
     IconButton,
-    Typography
+    Typography,
+    Autocomplete
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -24,6 +25,25 @@ function AddProduct({ onProductAdded, onCancel }) {
     });
 
     const [alertDialog, setAlertDialog] = useState({ open: false, title: "", message: "", severity: "info" });
+    const [vendors, setVendors] = useState([]);
+
+    useEffect(() => {
+        fetchVendors();
+    }, []);
+
+    const fetchVendors = async () => {
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_BACKEND_URL}/api/v1/vendor/list`,
+                { withCredentials: true }
+            );
+            setVendors(response.data.data.vendors || []);
+        } catch (error) {
+            console.error("Error fetching vendors:", error);
+            setVendors([]);
+        }
+    };
+
 
     const handleAddTax = () => {
         setFormData({
@@ -162,12 +182,25 @@ function AddProduct({ onProductAdded, onCancel }) {
 
                 {/* Vendor */}
                 <Grid item xs={12} sm={6}>
-                    <TextField
-                        label="Vendor *"
-                        value={formData.vendor}
-                        onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
-                        required
-                        fullWidth
+                    <Autocomplete
+                        options={vendors}
+                        getOptionLabel={(option) => option.name || ''}
+                        value={vendors.find(v => v._id === formData.vendor) || null}
+                        onChange={(event, value) => setFormData({ ...formData, vendor: value?._id || '' })}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                label="Vendor *"
+                                required
+                                placeholder="Select or type vendor name..."
+                            />
+                        )}
+                        freeSolo
+                        onInputChange={(event, newInputValue, reason) => {
+                            if (reason === 'input' && !vendors.find(v => v.name === newInputValue)) {
+                                setFormData({ ...formData, vendor: newInputValue });
+                            }
+                        }}
                     />
                 </Grid>
 

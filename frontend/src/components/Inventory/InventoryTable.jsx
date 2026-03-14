@@ -136,7 +136,7 @@ function InventoryTable({ inventoryItems, onUpdateInventory }) {
                                         <td className="px-4 py-6 sm:py-3 text-white text-sm font-medium font-poppins">{inventory.item}</td>
                                         <td className="px-4 py-6 sm:py-3 text-white text-sm font-medium font-poppins">{inventory.category}</td>
                                         <td className="px-4 py-6 sm:py-3 text-white text-sm font-medium font-poppins">
-                                            {inventory.vendor?.name || inventory.vendorName || 'N/A'}
+                                            {inventory.vendor?.name || 'N/A'}
                                         </td>
                                         <td className="px-4 py-6 sm:py-3 text-white text-sm font-poppins font-bold">
                                             {inventory.stockRemain || 'N/A'}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../components/Layout";
-import { Box, Typography, Button, Paper, Grid, CircularProgress } from "@mui/material";
-import { Add } from "@mui/icons-material";
+import { CircularProgress } from "@mui/material";
+import { Plus, Handshake, Trophy, Clock, DollarSign } from "lucide-react";
 import DealsPipeline from "../components/Deals/DealsPipeline";
 import AddDealModal from "../components/Deals/AddDealModal";
 import DealDetailsModal from "../components/Deals/DealDetailsModal";
@@ -50,10 +50,8 @@ function DealsPage() {
 
     const handleDragEnd = async (result) => {
         if (!result.destination) return;
-
         const { draggableId, destination } = result;
         const newStatus = destination.droppableId;
-
         try {
             await axios.put(
                 `${import.meta.env.VITE_BACKEND_URL}/api/v1/deals/${draggableId}/status`,
@@ -64,7 +62,6 @@ function DealsPage() {
             fetchStats();
         } catch (error) {
             console.error('Error updating deal status:', error);
-            alert('Failed to update deal status');
         }
     };
 
@@ -80,7 +77,6 @@ function DealsPage() {
 
     const handleDeleteDeal = async (dealId) => {
         if (!window.confirm('Are you sure you want to delete this deal?')) return;
-
         try {
             await axios.delete(
                 `${import.meta.env.VITE_BACKEND_URL}/api/v1/deals/${dealId}`,
@@ -91,74 +87,57 @@ function DealsPage() {
             fetchStats();
         } catch (error) {
             console.error('Error deleting deal:', error);
-            alert('Failed to delete deal');
         }
     };
 
+    const statCards = stats ? [
+        { icon: <Handshake size={20} />, label: 'Total Deals', value: stats.total, color: '#3B82F6' },
+        { icon: <Trophy size={20} />, label: 'Won Deals', value: stats.byStatus.Won, color: '#10B981' },
+        { icon: <Clock size={20} />, label: 'In Progress', value: stats.byStatus.Prospect + stats.byStatus.Proposal, color: '#F59E0B' },
+        { icon: <DollarSign size={20} />, label: 'Total Value', value: `₹${stats.wonValue.toLocaleString()}`, color: '#10B981' },
+    ] : [];
+
     return (
         <Layout>
-            <Box sx={{ p: 3 }}>
-                {/* Header */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                        Deals Pipeline
-                    </Typography>
-                    <Button
-                        variant="contained"
-                        startIcon={<Add />}
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 p-6">
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Deals Pipeline</h1>
+                        <p className="text-sm text-gray-600">Track and manage your deals</p>
+                    </div>
+                    <button
                         onClick={() => setAddModalOpen(true)}
-                        sx={{
-                            backgroundColor: '#3b82f6',
-                            '&:hover': { backgroundColor: '#2563eb' }
-                        }}
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium transition-colors"
                     >
-                        Create New Deal
-                    </Button>
-                </Box>
+                        <Plus size={18} /> Create New Deal
+                    </button>
+                </div>
 
-                {/* Statistics */}
                 {stats && (
-                    <Grid container spacing={2} sx={{ mb: 3 }}>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Paper sx={{ p: 2, backgroundColor: '#f0f9ff' }}>
-                                <Typography variant="body2" sx={{ color: '#6b7280' }}>Total Deals</Typography>
-                                <Typography variant="h4" sx={{ fontWeight: 700, color: '#3b82f6' }}>
-                                    {stats.total}
-                                </Typography>
-                            </Paper>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Paper sx={{ p: 2, backgroundColor: '#f0fdf4' }}>
-                                <Typography variant="body2" sx={{ color: '#6b7280' }}>Won Deals</Typography>
-                                <Typography variant="h4" sx={{ fontWeight: 700, color: '#10b981' }}>
-                                    {stats.byStatus.Won}
-                                </Typography>
-                            </Paper>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Paper sx={{ p: 2, backgroundColor: '#fef3c7' }}>
-                                <Typography variant="body2" sx={{ color: '#6b7280' }}>In Progress</Typography>
-                                <Typography variant="h4" sx={{ fontWeight: 700, color: '#f59e0b' }}>
-                                    {stats.byStatus.Prospect + stats.byStatus.Proposal}
-                                </Typography>
-                            </Paper>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Paper sx={{ p: 2, backgroundColor: '#f0fdf4' }}>
-                                <Typography variant="body2" sx={{ color: '#6b7280' }}>Total Value</Typography>
-                                <Typography variant="h4" sx={{ fontWeight: 700, color: '#10b981' }}>
-                                    ₹{stats.wonValue.toLocaleString()}
-                                </Typography>
-                            </Paper>
-                        </Grid>
-                    </Grid>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        {statCards.map((card, idx) => (
+                            <div key={idx} className="bg-white/70 backdrop-blur-md border border-white/30 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-200">
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className="w-10 h-10 rounded-lg flex items-center justify-center"
+                                        style={{ backgroundColor: `${card.color}20`, color: card.color }}
+                                    >
+                                        {card.icon}
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-xs text-gray-600 mb-1">{card.label}</p>
+                                        <h3 className="text-xl font-bold text-gray-900">{card.value}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 )}
 
-                {/* Pipeline */}
                 {loading ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                    <div className="flex justify-center py-16">
                         <CircularProgress />
-                    </Box>
+                    </div>
                 ) : (
                     <DealsPipeline
                         deals={deals}
@@ -167,7 +146,6 @@ function DealsPage() {
                     />
                 )}
 
-                {/* Modals */}
                 <AddDealModal
                     open={addModalOpen}
                     onClose={() => setAddModalOpen(false)}
@@ -192,7 +170,7 @@ function DealsPage() {
                     }}
                     onDelete={handleDeleteDeal}
                 />
-            </Box>
+            </div>
         </Layout>
     );
 }

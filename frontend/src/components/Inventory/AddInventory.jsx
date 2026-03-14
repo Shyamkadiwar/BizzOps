@@ -8,7 +8,10 @@ import {
     IconButton,
     Typography,
     Autocomplete,
-    Paper
+    Paper,
+    Switch,
+    FormControlLabel,
+    Chip
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -25,7 +28,8 @@ function AddInventory({ onItemAdded, onCancel }) {
         vendor: "",
         taxes: [],
         stockRemain: "",
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        paid: false
     });
 
     const [products, setProducts] = useState([]);
@@ -80,7 +84,7 @@ function AddInventory({ onItemAdded, onCancel }) {
                 category: value.category,
                 cost: value.cost,
                 salePrice: value.salePrice,
-                vendor: value.vendor,
+                vendor: value.vendor?._id || value.vendor,
                 taxes: value.taxes || []
             });
         } else {
@@ -134,7 +138,8 @@ function AddInventory({ onItemAdded, onCancel }) {
             vendor: formData.vendor,
             taxes: formData.taxes,
             stockRemain: parseInt(formData.stockRemain),
-            date: formData.date
+            date: formData.date,
+            paid: formData.paid
         };
 
         try {
@@ -168,7 +173,8 @@ function AddInventory({ onItemAdded, onCancel }) {
                     vendor: "",
                     taxes: [],
                     stockRemain: "",
-                    date: new Date().toISOString().split('T')[0]
+                    date: new Date().toISOString().split('T')[0],
+                    paid: false
                 });
             }
         } catch (error) {
@@ -298,7 +304,7 @@ function AddInventory({ onItemAdded, onCancel }) {
                 </Grid>
 
                 {/* Date */}
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} sm={4}>
                     <TextField
                         label="Date"
                         type="date"
@@ -310,8 +316,41 @@ function AddInventory({ onItemAdded, onCancel }) {
                     />
                 </Grid>
 
+                {/* Paid/Unpaid Toggle */}
+                <Grid item xs={12} sm={4}>
+                    <Paper sx={{ p: 1.5, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        bgcolor: formData.paid ? 'success.lighter' : 'warning.lighter',
+                        border: '1px solid',
+                        borderColor: formData.paid ? 'success.light' : 'warning.light',
+                        borderRadius: 1
+                    }}>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={formData.paid}
+                                    onChange={(e) => setFormData({ ...formData, paid: e.target.checked })}
+                                    color={formData.paid ? 'success' : 'warning'}
+                                />
+                            }
+                            label={
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Typography variant="body2" fontWeight={600}>
+                                        Bill {formData.paid ? 'Paid' : 'Unpaid'}
+                                    </Typography>
+                                    <Chip
+                                        label={formData.paid ? 'PAID' : 'UNPAID'}
+                                        color={formData.paid ? 'success' : 'warning'}
+                                        size="small"
+                                        variant="filled"
+                                    />
+                                </Box>
+                            }
+                        />
+                    </Paper>
+                </Grid>
+
                 {/* Total Cost Display */}
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} sm={4}>
                     <Paper sx={{ p: 2, bgcolor: 'primary.light', height: '100%', display: 'flex', alignItems: 'center' }}>
                         <Typography variant="h6" sx={{ color: 'primary.contrastText' }}>
                             Total Cost: ₹{totalCost.toLocaleString()}
