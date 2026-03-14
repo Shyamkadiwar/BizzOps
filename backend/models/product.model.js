@@ -27,9 +27,9 @@ const productSchema = new Schema({
         min: 0
     },
     vendor: {
-        type: String,
-        required: true,
-        trim: true
+        type: Schema.Types.ObjectId,
+        ref: 'Vendor',
+        required: true
     },
     taxes: [{
         name: {

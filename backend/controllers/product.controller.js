@@ -11,31 +11,40 @@ export const createProduct = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All required fields must be provided");
     }
 
-    // Auto-create vendor if vendor is a string (vendor name)
+    // Resolve vendor - either ObjectId string or name string
     let vendorId = vendor;
 
     if (typeof vendor === 'string') {
         const Vendor = (await import('../models/vendor.model.js')).Vendor;
+        const mongoose = (await import('mongoose')).default;
 
-        // Check if vendor already exists
-        let existingVendor = await Vendor.findOne({ owner: req.user._id, name: vendor });
-
-        if (!existingVendor) {
-            // Create new vendor
-            try {
-                existingVendor = await Vendor.create({
-                    owner: req.user._id,
-                    name: vendor,
-                    email: `${vendor.toLowerCase().replace(/\s+/g, '')}@vendor.com`,
-                    phone: '0000000000'
-                });
-            } catch (error) {
-                console.log('Could not create vendor:', error.message);
+        if (mongoose.Types.ObjectId.isValid(vendor) && vendor.length === 24) {
+            // Vendor is an ObjectId - look up by _id
+            const vendorDoc = await Vendor.findOne({ _id: vendor, owner: req.user._id });
+            if (!vendorDoc) {
+                throw new ApiError(400, "Invalid vendor provided");
             }
-        }
+            vendorId = vendorDoc._id;
+        } else {
+            // Vendor is a name string - find or auto-create
+            let existingVendor = await Vendor.findOne({ owner: req.user._id, name: vendor });
 
-        if (existingVendor) {
-            vendorId = existingVendor._id;
+            if (!existingVendor) {
+                try {
+                    existingVendor = await Vendor.create({
+                        owner: req.user._id,
+                        name: vendor,
+                        email: `${vendor.toLowerCase().replace(/\s+/g, '')}@vendor.com`,
+                        phone: '0000000000'
+                    });
+                } catch (error) {
+                    console.log('Could not create vendor:', error.message);
+                }
+            }
+
+            if (existingVendor) {
+                vendorId = existingVendor._id;
+            }
         }
     }
 
@@ -62,6 +71,7 @@ export const getProducts = asyncHandler(async (req, res) => {
     const skip = (page - 1) * limit;
 
     const products = await Product.find({ owner: req.user._id })
+        .populate('vendor', 'name email phone')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
@@ -85,7 +95,7 @@ export const getProducts = asyncHandler(async (req, res) => {
 export const getProductById = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const product = await Product.findOne({ _id: id, owner: req.user._id });
+    const product = await Product.findOne({ _id: id, owner: req.user._id }).populate('vendor', 'name email phone');
 
     if (!product) {
         throw new ApiError(404, "Product not found");
@@ -111,7 +121,35 @@ export const updateProduct = asyncHandler(async (req, res) => {
     if (category) product.category = category;
     if (cost !== undefined) product.cost = cost;
     if (salePrice !== undefined) product.salePrice = salePrice;
-    if (vendor) product.vendor = vendor;
+
+    // Resolve vendor — could be ObjectId or name string
+    if (vendor) {
+        const Vendor = (await import('../models/vendor.model.js')).Vendor;
+        const mongoose = (await import('mongoose')).default;
+
+        if (typeof vendor === 'string' && mongoose.Types.ObjectId.isValid(vendor) && vendor.length === 24) {
+            product.vendor = vendor;
+        } else if (typeof vendor === 'string') {
+            let existingVendor = await Vendor.findOne({ owner: req.user._id, name: vendor });
+            if (!existingVendor) {
+                try {
+                    existingVendor = await Vendor.create({
+                        owner: req.user._id,
+                        name: vendor,
+                        email: `${vendor.toLowerCase().replace(/\s+/g, '')}@vendor.com`,
+                        phone: '0000000000'
+                    });
+                } catch (error) {
+                    console.log('Could not create vendor:', error.message);
+                }
+            }
+            if (existingVendor) {
+                product.vendor = existingVendor._id;
+            }
+        } else {
+            product.vendor = vendor;
+        }
+    }
     if (taxes) product.taxes = taxes;
     if (description !== undefined) product.description = description;
 
@@ -155,5 +193,33 @@ export const searchProducts = asyncHandler(async (req, res) => {
 
     return res.status(200).json(
         new ApiResponse(200, products, "Products found")
+    );
+});
+
+// Get products by vendor
+export const getProductsByVendor = asyncHandler(async (req, res) => {
+    const { vendorId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 100;
+    const skip = (page - 1) * limit;
+
+    const products = await Product.find({ owner: req.user._id, vendor: vendorId })
+        .populate('vendor', 'name email phone')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    const totalCount = await Product.countDocuments({ owner: req.user._id, vendor: vendorId });
+
+    return res.status(200).json(
+        new ApiResponse(200, {
+            products,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalCount / limit),
+                totalCount,
+                limit
+            }
+        }, "Vendor products fetched successfully")
     );
 });

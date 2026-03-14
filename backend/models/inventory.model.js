@@ -41,10 +41,6 @@ const inventorySchema = new Schema({
         ref: 'Vendor',
         required: false
     },
-    vendorName: {
-        type: String,
-        trim: true
-    },
     paid: {
         type: Boolean,
         default: false

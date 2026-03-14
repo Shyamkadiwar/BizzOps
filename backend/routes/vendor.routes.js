@@ -7,7 +7,8 @@ import {
     addVendorPayment,
     getVendorTransactions,
     getVendorPurchases,
-    deleteVendor
+    deleteVendor,
+    updateVendor
 } from "../controllers/vendor.controller.js";
 
 const router = Router();
@@ -19,5 +20,6 @@ router.route('/payment/:id').post(verifyJWT, addVendorPayment);
 router.route('/transactions/:id').get(verifyJWT, getVendorTransactions);
 router.route('/purchases/:id').get(verifyJWT, getVendorPurchases);
 router.route('/delete/:id').delete(verifyJWT, deleteVendor);
+router.route('/update/:id').put(verifyJWT, updateVendor);
 
 export default router;

@@ -18,7 +18,6 @@ const addInventoryItem = asyncHandler(async (req, res) => {
   // Handle vendor - either string (name) or ObjectId
   const Vendor = (await import('../models/vendor.model.js')).Vendor;
   let vendorId = vendor;
-  let vendorName = vendor;
   let vendorDoc = null;
 
   if (typeof vendor === 'string') {
@@ -32,7 +31,6 @@ const addInventoryItem = asyncHandler(async (req, res) => {
           throw new ApiError(400, "Invalid vendor provided");
         }
         vendorId = vendorDoc._id;
-        vendorName = vendorDoc.name;
       } catch (error) {
         throw new ApiError(400, "Invalid vendor provided");
       }
@@ -56,7 +54,6 @@ const addInventoryItem = asyncHandler(async (req, res) => {
 
       if (existingVendor) {
         vendorId = existingVendor._id;
-        vendorName = existingVendor.name;
         vendorDoc = existingVendor;
       }
     }
@@ -80,7 +77,6 @@ const addInventoryItem = asyncHandler(async (req, res) => {
     existingItem.cost = parseFloat(cost);
     existingItem.salePrice = parseFloat(salePrice);
     existingItem.vendor = vendorId;
-    existingItem.vendorName = vendorName;
     existingItem.taxes = taxes || [];
     existingItem.date = new Date(date);
     existingItem.paid = isPaid;
@@ -173,7 +169,6 @@ const addInventoryItem = asyncHandler(async (req, res) => {
     cost,
     salePrice,
     vendor: vendorId,
-    vendorName,
     taxes: taxes || [],
     stockRemain,
     paid: isPaid,

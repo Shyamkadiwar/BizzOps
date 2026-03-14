@@ -300,6 +300,37 @@ const deleteVendor = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, null, "Vendor deleted successfully"));
 });
 
+// Update vendor
+const updateVendor = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const owner = req.user?._id;
+    const { name, email, phone, address, city, state, gstNumber } = req.body;
+
+    if (!owner) {
+        throw new ApiError(401, "Unauthorized request");
+    }
+
+    const vendor = await Vendor.findOne({ _id: id, owner });
+
+    if (!vendor) {
+        throw new ApiError(404, "Vendor not found");
+    }
+
+    if (name) vendor.name = name;
+    if (email !== undefined) vendor.email = email;
+    if (phone !== undefined) vendor.phone = phone;
+    if (address !== undefined) vendor.address = address;
+    if (city !== undefined) vendor.city = city;
+    if (state !== undefined) vendor.state = state;
+    if (gstNumber !== undefined) vendor.gstNumber = gstNumber;
+
+    await vendor.save();
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, { vendor }, "Vendor updated successfully"));
+});
+
 export {
     createVendor,
     getVendors,
@@ -307,5 +338,6 @@ export {
     addVendorPayment,
     getVendorTransactions,
     getVendorPurchases,
-    deleteVendor
+    deleteVendor,
+    updateVendor
 };
