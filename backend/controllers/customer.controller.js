@@ -182,12 +182,36 @@ const addCustomerPayment = asyncHandler(async (req, res) => {
         date: date ? new Date(date) : new Date()
     });
 
+    // Auto-mark unpaid invoices as paid (FIFO - oldest first)
+    const Invoice = (await import('../models/invoice.model.js')).Invoice;
+    const unpaidInvoices = await Invoice.find({
+        owner,
+        customer: id,
+        paid: false
+    }).sort({ date: 1, createdAt: 1 });
+
+    let remainingAmount = parseFloat(amount);
+    const markedInvoices = [];
+
+    for (const invoice of unpaidInvoices) {
+        if (remainingAmount <= 0) break;
+
+        if (remainingAmount >= invoice.grandTotal) {
+            // Full payment for this invoice
+            invoice.paid = true;
+            await invoice.save();
+            remainingAmount -= invoice.grandTotal;
+            markedInvoices.push(invoice.invoiceNumber || invoice._id);
+        }
+    }
+
     return res
         .status(200)
         .json(new ApiResponse(200, {
             customer: updatedCustomer,
-            transaction
-        }, "Payment recorded successfully"));
+            transaction,
+            markedPaidInvoices: markedInvoices
+        }, `Payment recorded successfully${markedInvoices.length > 0 ? `. ${markedInvoices.length} invoice(s) marked as paid.` : ''}`));
 });
 
 // Get customer transactions with filters

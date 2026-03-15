@@ -55,15 +55,62 @@ const addInvoice = asyncHandler(async (req, res) => {
     grandTotal += itemGrandTotal;
   });
 
+  // Look up customer by name and link
+  const Customer = (await import('../models/customer.models.js')).Customer;
+  const CustomerTransaction = (await import('../models/customerTransaction.model.js')).CustomerTransaction;
+  let customerId = null;
+  let customerDoc = null;
+
+  if (name) {
+    customerDoc = await Customer.findOne({ owner, name: { $regex: new RegExp(`^${name.trim()}$`, 'i') } });
+    if (customerDoc) {
+      customerId = customerDoc._id;
+    }
+  }
+
   const invoice = await Invoice.create({
     owner,
     name,
+    customer: customerId,
     items,
     subTotal,
     grandTotal,
     paid,
     date
   });
+
+  // Update customer balance if customer exists
+  if (customerDoc) {
+    const updateFields = {
+      $inc: {
+        totalSales: grandTotal
+      }
+    };
+
+    // If unpaid, add to customer's outstanding balance
+    if (!paid) {
+      updateFields.$inc.balance = grandTotal;
+    }
+
+    const updatedCustomer = await Customer.findByIdAndUpdate(
+      customerId,
+      updateFields,
+      { new: true }
+    );
+
+    if (updatedCustomer) {
+      await CustomerTransaction.create({
+        owner,
+        customer: customerId,
+        type: 'sale',
+        amount: grandTotal,
+        balanceAfter: updatedCustomer.balance,
+        description: `Invoice ${paid ? '(Paid)' : '(Unpaid)'}: ${name} - ₹${grandTotal.toFixed(2)}`,
+        invoice: invoice._id,
+        date: date ? new Date(date) : new Date()
+      });
+    }
+  }
 
   return res
     .status(200)
@@ -185,8 +232,56 @@ const markPaidUnpaid = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Invoice not found");
   }
 
+  const wasPaid = invoice.paid;
   invoice.paid = !invoice.paid; // Toggle the paid status
   await invoice.save();
+
+  // Update customer balance if customer is linked
+  if (invoice.customer) {
+    const Customer = (await import('../models/customer.models.js')).Customer;
+    const CustomerTransaction = (await import('../models/customerTransaction.model.js')).CustomerTransaction;
+
+    const customerDoc = await Customer.findById(invoice.customer);
+
+    if (customerDoc) {
+      let balanceChange = 0;
+      let transactionType = '';
+      let description = '';
+
+      if (wasPaid && !invoice.paid) {
+        // Was paid, now unpaid → increase balance (customer owes money again)
+        balanceChange = invoice.grandTotal;
+        transactionType = 'debit';
+        description = `Invoice marked unpaid: ${invoice.name} - ₹${invoice.grandTotal.toFixed(2)}`;
+      } else if (!wasPaid && invoice.paid) {
+        // Was unpaid, now paid → decrease balance (customer paid up)
+        balanceChange = -Math.min(invoice.grandTotal, customerDoc.balance);
+        transactionType = 'payment';
+        description = `Invoice marked paid: ${invoice.name} - ₹${invoice.grandTotal.toFixed(2)}`;
+      }
+
+      if (balanceChange !== 0) {
+        const updatedCustomer = await Customer.findByIdAndUpdate(
+          invoice.customer,
+          { $inc: { balance: balanceChange } },
+          { new: true }
+        );
+
+        if (updatedCustomer) {
+          await CustomerTransaction.create({
+            owner,
+            customer: invoice.customer,
+            type: transactionType,
+            amount: balanceChange,
+            balanceAfter: updatedCustomer.balance,
+            description,
+            invoice: invoice._id,
+            date: new Date()
+          });
+        }
+      }
+    }
+  }
 
   return res
     .status(200)

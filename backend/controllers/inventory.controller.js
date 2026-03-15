@@ -298,8 +298,41 @@ const addStock = asyncHandler(async (req, res) => {
   }
 
   inventoryItem.stockRemain += newQty;
-
   await inventoryItem.save();
+
+  // Update vendor balance (adding stock = purchase from vendor)
+  if (inventoryItem.vendor) {
+    const Vendor = (await import('../models/vendor.model.js')).Vendor;
+    const VendorTransaction = (await import('../models/vendorTransaction.model.js')).VendorTransaction;
+
+    const purchaseAmount = (parseFloat(inventoryItem.cost) || 0) * newQty;
+
+    if (purchaseAmount > 0) {
+      const updatedVendor = await Vendor.findByIdAndUpdate(
+        inventoryItem.vendor,
+        {
+          $inc: {
+            balance: purchaseAmount,
+            totalPurchases: purchaseAmount
+          }
+        },
+        { new: true }
+      );
+
+      if (updatedVendor) {
+        await VendorTransaction.create({
+          owner,
+          vendor: inventoryItem.vendor,
+          type: 'purchase',
+          amount: purchaseAmount,
+          balanceAfter: updatedVendor.balance,
+          description: `Stock added: ${inventoryItem.item} (Qty: ${newQty})`,
+          inventory: inventoryItem._id,
+          date: new Date()
+        });
+      }
+    }
+  }
 
   return res
     .status(200)
@@ -326,8 +359,50 @@ const removeStock = asyncHandler(async (req, res) => {
   }
 
   inventoryItem.stockRemain -= newQty;
-
   await inventoryItem.save();
+
+  // Update vendor balance (removing stock = return/reversal)
+  if (inventoryItem.vendor) {
+    const Vendor = (await import('../models/vendor.model.js')).Vendor;
+    const VendorTransaction = (await import('../models/vendorTransaction.model.js')).VendorTransaction;
+
+    const returnAmount = (parseFloat(inventoryItem.cost) || 0) * newQty;
+
+    if (returnAmount > 0) {
+      // Fetch current vendor to clamp values
+      const vendorDoc = await Vendor.findById(inventoryItem.vendor);
+
+      if (vendorDoc) {
+        // Clamp decrements so balance and totalPurchases don't go below 0
+        const balanceDecrement = Math.min(returnAmount, vendorDoc.balance);
+        const purchaseDecrement = Math.min(returnAmount, vendorDoc.totalPurchases);
+
+        const updatedVendor = await Vendor.findByIdAndUpdate(
+          inventoryItem.vendor,
+          {
+            $inc: {
+              balance: -balanceDecrement,
+              totalPurchases: -purchaseDecrement
+            }
+          },
+          { new: true }
+        );
+
+        if (updatedVendor) {
+          await VendorTransaction.create({
+            owner,
+            vendor: inventoryItem.vendor,
+            type: 'debit',
+            amount: -returnAmount,
+            balanceAfter: updatedVendor.balance,
+            description: `Stock removed/returned: ${inventoryItem.item} (Qty: ${newQty})`,
+            inventory: inventoryItem._id,
+            date: new Date()
+          });
+        }
+      }
+    }
+  }
 
   return res
     .status(200)
