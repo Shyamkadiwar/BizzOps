@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../components/Layout";
-import { Box, Typography, Button, Paper, CircularProgress } from "@mui/material";
+import { Box, Typography, Paper, CircularProgress } from "@mui/material";
 import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { Add } from "@mui/icons-material";
+import { Plus } from 'lucide-react';
 import EventDetailsModal from "../components/Calendar/EventDetailsModal";
 import QuickAddEventModal from "../components/Calendar/QuickAddEventModal";
 import EditTaskModal from "../components/Tasks/EditTaskModal";
@@ -159,17 +159,13 @@ function CalendarPage() {
                         <h1 className="text-3xl font-bold text-gray-900">Calendar</h1>
                         <p className="text-sm text-gray-600">View all events in one place</p>
                     </div>
-                    <Button
-                        variant="contained"
-                        startIcon={<Add />}
-                        onClick={() => {
+                    <button onClick={() => {
                             setSelectedDate(new Date());
                             setQuickAddModalOpen(true);
                         }}
-                        sx={{ backgroundColor: '#8b5cf6', '&:hover': { backgroundColor: '#7c3aed' } }}
-                    >
-                        Add Event
-                    </Button>
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
+                        <Plus size={16} /> Add Event
+                    </button>
                 </div>
 
                 {/* Legend */}

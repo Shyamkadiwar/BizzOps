@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Box, Typography, Paper, Chip, IconButton, Button } from '@mui/material';
+import { Box, Typography, Paper, Chip, IconButton } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { Add as AddIcon, Upload as UploadIcon, Download as DownloadIcon, AddCircle, RemoveCircle } from '@mui/icons-material';
+import { AddCircle, RemoveCircle } from '@mui/icons-material';
+import { Plus, Upload, Download } from 'lucide-react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddInventory from "./AddInventory.jsx";
 import MuiModal from "../shared/MuiModal";
@@ -335,63 +336,96 @@ function Inventory() {
 
     return (
         <Layout>
-            <Box sx={{ p: 6, background: '#F5F5F5'}}>
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 p-6">
                 {/* Header with Action Buttons */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Typography variant="h4" sx={{ fontWeight: 600 }}>
                         Inventory Management
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => setOpenModal(true)}
-                            color="primary"
-                        >
-                            Add
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            startIcon={<UploadIcon />}
-                            onClick={handleImport}
-                            color="success"
-                        >
-                            Import
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            startIcon={<DownloadIcon />}
-                            onClick={handleExport}
-                            color="warning"
-                        >
-                            Export
-                        </Button>
-                    </Box>
+                    <div className="flex items-center gap-2">
+                        <button onClick={() => setOpenModal(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
+                            <Plus size={16} /> Add
+                        </button>
+                        <button onClick={handleImport}
+                            className="flex items-center gap-2 px-4 py-2 bg-white/70 backdrop-blur-md border border-gray-300 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
+                            <Upload size={16} /> Import
+                        </button>
+                        <button onClick={handleExport}
+                            className="flex items-center gap-2 px-4 py-2 bg-white/70 backdrop-blur-md border border-gray-300 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
+                            <Download size={16} /> Export
+                        </button>
+                    </div>
                 </Box>
 
-                <Paper sx={{ p: 2, mb: 3, bgcolor: 'primary.main', color: 'white' }}>
-                    <Typography variant="h6">
+                <div className="bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl p-4 mb-4 shadow-md">
+                    <p className="text-white text-sm font-semibold">
                         Total Inventory Value: ₹{totalInventoryValue.toLocaleString()}
-                    </Typography>
-                </Paper>
+                    </p>
+                </div>
 
-                <Box sx={{ height: 600, width: '100%'}}>
-                    <DataGrid
-                        rows={inventoryItems}
-                        columns={columns}
-                        loading={loading}
-                        paginationMode="server"
-                        rowCount={totalCount}
-                        paginationModel={paginationModel}
-                        onPaginationModelChange={(model) => {
-                            setPaginationModel(model);
-                            fetchInventory(model.page, model.pageSize);
-                        }}
-                        pageSizeOptions={[10, 25, 50, 100]}
-                        disableRowSelectionOnClick
-                    />
-                </Box>
-            </Box>
+                <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md overflow-hidden">
+                    <Box sx={{ height: 600, width: '100%' }}>
+                        <DataGrid
+                            rows={inventoryItems}
+                            columns={columns}
+                            loading={loading}
+                            paginationMode="server"
+                            rowCount={totalCount}
+                            paginationModel={paginationModel}
+                            onPaginationModelChange={(model) => {
+                                setPaginationModel(model);
+                                fetchInventory(model.page, model.pageSize);
+                            }}
+                            pageSizeOptions={[10, 25, 50, 100]}
+                            disableRowSelectionOnClick
+                            sx={{
+                                border: 'none',
+                                backgroundColor: 'transparent',
+                                '& .MuiDataGrid-columnHeaders': {
+                                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(99, 102, 241, 0.08))',
+                                    borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
+                                    fontWeight: 700,
+                                    color: '#475569',
+                                    letterSpacing: '0.05em',
+                                    minHeight: '44px !important',
+                                    maxHeight: '44px !important',
+                                },
+                                '& .MuiDataGrid-columnHeader': {
+                                    minHeight: '44px !important',
+                                    maxHeight: '44px !important',
+                                },
+                                '& .MuiDataGrid-row': {
+                                    borderBottom: '1px solid rgba(0, 0, 0, 0.04)',
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(59, 130, 246, 0.04)',
+                                    },
+                                    '&.Mui-selected': {
+                                        backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                                    },
+                                },
+                                '& .MuiDataGrid-cell': {
+                                    borderBottom: 'none',
+                                    color: '#334155',
+                                    padding: '8px 12px',
+                                },
+                                '& .MuiDataGrid-footerContainer': {
+                                    borderTop: '1px solid rgba(0, 0, 0, 0.06)',
+                                    background: 'rgba(248, 250, 252, 0.5)',
+                                },
+                                '& .MuiTablePagination-root': {
+                                },
+                                '& .MuiDataGrid-columnSeparator': {
+                                    display: 'none',
+                                },
+                                '& .MuiDataGrid-menuIcon': {
+                                    visibility: 'visible',
+                                },
+                            }}
+                        />
+                    </Box>
+                </div>
+            </div>
 
             <InventoryAgentChat />
 

@@ -1,96 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogContentText,
     DialogActions,
-    Button,
-    TextField
+    TextField,
+    Typography
 } from '@mui/material';
 
-function PromptDialog({ open, onClose, onConfirm, title, message, label, type = "text", defaultValue = "" }) {
+const PromptDialog = ({ open, onClose, onConfirm, title, message, label, type = 'text', defaultValue = '' }) => {
     const [value, setValue] = useState(defaultValue);
-    const [error, setError] = useState("");
+
+    useEffect(() => {
+        if (open) {
+            setValue(defaultValue);
+        }
+    }, [open, defaultValue]);
 
     const handleConfirm = () => {
-        // Validation
-        if (!value || value.trim() === "") {
-            setError("This field is required");
-            return;
-        }
-
-        if (type === "number") {
-            const numValue = parseFloat(value);
-            if (isNaN(numValue) || numValue <= 0) {
-                setError("Please enter a valid positive number");
-                return;
-            }
-        }
-
         onConfirm(value);
-        setValue(defaultValue);
-        setError("");
-        onClose();
-    };
-
-    const handleClose = () => {
-        setValue(defaultValue);
-        setError("");
-        onClose();
-    };
-
-    const handleKeyPress = (e) => {
-        if (e.key === 'Enter') {
-            handleConfirm();
-        }
+        setValue('');
     };
 
     return (
-        <Dialog
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="prompt-dialog-title"
-            maxWidth="sm"
-            fullWidth
-        >
-            <DialogTitle id="prompt-dialog-title">
-                {title}
-            </DialogTitle>
+        <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+            <DialogTitle sx={{ fontWeight: 600 }}>{title || 'Input Required'}</DialogTitle>
             <DialogContent>
-                {message && (
-                    <DialogContentText sx={{ mb: 2 }}>
-                        {message}
-                    </DialogContentText>
-                )}
+                {message && <Typography sx={{ mb: 2 }}>{message}</Typography>}
                 <TextField
                     autoFocus
-                    margin="dense"
-                    label={label}
+                    label={label || 'Value'}
                     type={type}
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
                     fullWidth
                     variant="outlined"
-                    value={value}
-                    onChange={(e) => {
-                        setValue(e.target.value);
-                        setError("");
-                    }}
-                    onKeyPress={handleKeyPress}
-                    error={!!error}
-                    helperText={error}
-                    inputProps={type === "number" ? { min: 0, step: 1 } : {}}
+                    sx={{ mt: 1 }}
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose} color="inherit">
+                <button onClick={onClose}
+                    className="px-4 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
                     Cancel
-                </Button>
-                <Button onClick={handleConfirm} color="primary" variant="contained">
+                </button>
+                <button onClick={handleConfirm}
+                    className="px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
                     Confirm
-                </Button>
+                </button>
             </DialogActions>
         </Dialog>
     );
-}
+};
 
 export default PromptDialog;

@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Box, Typography, Chip, Button, IconButton } from '@mui/material';
+import { Box, Typography, Chip, IconButton } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { Add as AddIcon, Download as DownloadIcon } from '@mui/icons-material';
+import { Plus, Download } from 'lucide-react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddMultiItemSale from "./AddMultiItemSale.jsx";
 import MuiModal from "../shared/MuiModal";
@@ -238,24 +238,16 @@ function Sales() {
                     <Typography variant="h4" sx={{ fontWeight: 600 }}>
                         Sales Management
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => setOpenModal(true)}
-                            color="primary"
-                        >
-                            Add
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            startIcon={<DownloadIcon />}
-                            onClick={handleExport}
-                            color="warning"
-                        >
-                            Export
-                        </Button>
-                    </Box>
+                    <div className="flex items-center gap-2">
+                        <button onClick={() => setOpenModal(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
+                            <Plus size={16} /> Add
+                        </button>
+                        <button onClick={handleExport}
+                            className="flex items-center gap-2 px-4 py-2 bg-white/70 backdrop-blur-md border border-gray-300 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
+                            <Download size={16} /> Export
+                        </button>
+                    </div>
                 </Box>
 
                 <Box sx={{ height: 600, width: '100%' }}>

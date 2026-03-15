@@ -1,15 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
-    Box, Typography, Chip, IconButton, Button, TextField, Grid
+    Box, Typography, Chip, IconButton, TextField, Grid
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import {
-    Add as AddIcon,
-    Download as DownloadIcon,
-    Upload as UploadIcon,
-    Delete as DeleteIcon
-} from '@mui/icons-material';
+import { Delete as DeleteIcon } from '@mui/icons-material';
+import { Plus, Download, Upload } from 'lucide-react';
 import MuiModal from "../shared/MuiModal";
 import Layout from '../Layout.jsx';
 import ConfirmDialog from '../shared/ConfirmDialog.jsx';
@@ -156,11 +152,26 @@ function Expenses() {
                         <h1 className="text-3xl font-bold text-gray-900">Expense Management</h1>
                         <p className="text-sm text-gray-600">Total Expenses: <strong>₹{totalExpenses.toLocaleString()}</strong></p>
                     </div>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenModal(true)}>Add Expense</Button>
-                        <Button variant="outlined" startIcon={<DownloadIcon />} onClick={handleExport} color="warning">Export</Button>
-                        <Button variant="outlined" startIcon={<UploadIcon />} onClick={handleImport} color="info">Import</Button>
-                    </Box>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setOpenModal(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white"
+                        >
+                            <Plus size={16} /> Add Expense
+                        </button>
+                        <button
+                            onClick={handleExport}
+                            className="flex items-center gap-2 px-4 py-2 bg-white/70 backdrop-blur-md border border-gray-300 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700"
+                        >
+                            <Download size={16} /> Export
+                        </button>
+                        <button
+                            onClick={handleImport}
+                            className="flex items-center gap-2 px-4 py-2 bg-white/70 backdrop-blur-md border border-gray-300 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700"
+                        >
+                            <Upload size={16} /> Import
+                        </button>
+                    </div>
                 </div>
 
                 <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-lg">
@@ -196,10 +207,16 @@ function Expenses() {
                                 onChange={(e) => setFormData({ ...formData, date: e.target.value })} fullWidth InputLabelProps={{ shrink: true }} required />
                         </Grid>
                     </Grid>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 1 }}>
-                        <Button onClick={() => setOpenModal(false)} variant="outlined">Cancel</Button>
-                        <Button onClick={handleSubmit} variant="contained">Add Expense</Button>
-                    </Box>
+                    <div className="flex justify-end gap-2 mt-1">
+                        <button onClick={() => setOpenModal(false)}
+                            className="px-4 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
+                            Cancel
+                        </button>
+                        <button onClick={handleSubmit}
+                            className="px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
+                            Add Expense
+                        </button>
+                    </div>
                 </Box>
             </MuiModal>
 

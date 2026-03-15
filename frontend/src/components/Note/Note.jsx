@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Button, Chip, CircularProgress, TextField } from '@mui/material';
+import { Chip, CircularProgress, TextField } from '@mui/material';
 import { Plus, Trash2, StickyNote } from 'lucide-react';
 import MuiModal from "../shared/MuiModal";
 import Layout from '../Layout.jsx';
@@ -89,7 +89,7 @@ function Notes() {
                     </div>
                     <button
                         onClick={() => setOpenAddModal(true)}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white"
                     >
                         <Plus size={18} /> Add Note
                     </button>
@@ -142,8 +142,14 @@ function Notes() {
                     <TextField label="Content *" value={formData.content}
                         onChange={(e) => setFormData({ ...formData, content: e.target.value })} fullWidth required multiline rows={5} />
                     <div className="flex justify-end gap-2">
-                        <Button onClick={() => setOpenAddModal(false)} variant="outlined">Cancel</Button>
-                        <Button onClick={handleAddNote} variant="contained">Add Note</Button>
+                        <button onClick={() => setOpenAddModal(false)}
+                            className="px-4 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
+                            Cancel
+                        </button>
+                        <button onClick={handleAddNote}
+                            className="px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
+                            Add Note
+                        </button>
                     </div>
                 </div>
             </MuiModal>
@@ -152,8 +158,14 @@ function Notes() {
             <MuiModal open={viewModalOpen} onClose={() => setViewModalOpen(false)} title={selectedNote?.title || 'Note'}
                 actions={
                     <>
-                        <Button color="error" onClick={() => handleDelete(selectedNote?._id)}>Delete</Button>
-                        <Button onClick={() => setViewModalOpen(false)}>Close</Button>
+                        <button onClick={() => handleDelete(selectedNote?._id)}
+                            className="px-4 py-2 bg-gradient-to-r from-red-500/80 to-rose-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-red-600/90 hover:to-rose-600/90 transition-all duration-200 text-sm font-medium text-white">
+                            Delete
+                        </button>
+                        <button onClick={() => setViewModalOpen(false)}
+                            className="px-4 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
+                            Close
+                        </button>
                     </>
                 }
             >

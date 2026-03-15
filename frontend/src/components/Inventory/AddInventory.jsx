@@ -3,7 +3,6 @@ import axios from "axios";
 import {
     Box,
     TextField,
-    Button,
     Grid,
     IconButton,
     Typography,
@@ -13,7 +12,7 @@ import {
     FormControlLabel,
     Chip
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Plus, Trash2 } from 'lucide-react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AlertDialog from '../shared/AlertDialog.jsx';
 
@@ -241,7 +240,7 @@ function AddInventory({ onItemAdded, onCancel }) {
                 </Grid>
 
                 {/* Vendor */}
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12}>
                     <Autocomplete
                         options={vendors}
                         getOptionLabel={(option) => option.name || ''}
@@ -363,9 +362,10 @@ function AddInventory({ onItemAdded, onCancel }) {
                     <Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                             <Typography variant="subtitle1" fontWeight="bold">Taxes (Optional)</Typography>
-                            <Button startIcon={<AddIcon />} onClick={handleAddTax} size="small" variant="outlined">
-                                Add Tax
-                            </Button>
+                            <button type="button" onClick={handleAddTax}
+                                className="flex items-center gap-1 px-3 py-1.5 bg-white/70 backdrop-blur-md border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-xs font-medium text-gray-600">
+                                <Plus size={14} /> Add Tax
+                            </button>
                         </Box>
                         {formData.taxes.map((tax, index) => (
                             <Box key={index} sx={{ display: 'flex', gap: 1, mb: 1 }}>
@@ -397,13 +397,15 @@ function AddInventory({ onItemAdded, onCancel }) {
             {/* Action Buttons */}
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}>
                 {onCancel && (
-                    <Button onClick={onCancel} variant="outlined">
+                    <button type="button" onClick={onCancel}
+                        className="px-5 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
                         Cancel
-                    </Button>
+                    </button>
                 )}
-                <Button type="submit" variant="contained">
+                <button type="submit"
+                    className="px-5 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
                     Add to Inventory
-                </Button>
+                </button>
             </Box>
 
             {/* Alert Dialog */}

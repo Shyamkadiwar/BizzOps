@@ -222,10 +222,14 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, initialStatus }) => {
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose}>Cancel</Button>
-                <Button onClick={handleSubmit} variant="contained" disabled={loading}>
+                <button onClick={handleClose}
+                    className="px-4 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
+                    Cancel
+                </button>
+                <button onClick={handleSubmit} disabled={loading}
+                    className="px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white disabled:opacity-50">
                     {loading ? 'Creating...' : 'Create Task'}
-                </Button>
+                </button>
             </DialogActions>
         </Dialog>
     );

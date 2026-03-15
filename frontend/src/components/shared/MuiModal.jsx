@@ -7,7 +7,7 @@ import {
     IconButton,
     Box
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { X } from 'lucide-react';
 
 const MuiModal = ({
     open,
@@ -15,7 +15,7 @@ const MuiModal = ({
     title,
     children,
     actions,
-    maxWidth = 'md',
+    maxWidth = 'lg',
     fullWidth = true
 }) => {
     return (
@@ -26,30 +26,73 @@ const MuiModal = ({
             fullWidth={fullWidth}
             PaperProps={{
                 sx: {
-                    borderRadius: 2,
-                    boxShadow: 24
+                    borderRadius: '1rem',
+                    background: 'rgba(255, 255, 255, 0.85)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)',
+                    overflow: 'hidden',
+                    minHeight: '300px',
+                }
+            }}
+            slotProps={{
+                backdrop: {
+                    sx: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.4)',
+                        backdropFilter: 'blur(4px)',
+                    }
                 }
             }}
         >
-            <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box component="span" sx={{ fontWeight: 600, fontSize: '1.25rem' }}>
+            <DialogTitle
+                sx={{
+                    m: 0,
+                    px: 3,
+                    py: 2.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.06), rgba(99, 102, 241, 0.06))',
+                    borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
+                }}
+            >
+                <Box component="span" sx={{ fontWeight: 700, fontSize: '1.1rem', color: '#1e293b' }}>
                     {title}
                 </Box>
                 <IconButton
                     aria-label="close"
                     onClick={onClose}
                     sx={{
-                        color: (theme) => theme.palette.grey[500],
+                        color: '#94a3b8',
+                        '&:hover': {
+                            color: '#475569',
+                            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                        },
+                        transition: 'all 0.2s',
                     }}
                 >
-                    <CloseIcon />
+                    <X size={18} />
                 </IconButton>
             </DialogTitle>
-            <DialogContent dividers>
+            <DialogContent
+                sx={{
+                    px: 3,
+                    py: 3,
+                    '&.MuiDialogContent-root': {
+                        paddingTop: '24px !important',
+                    },
+                }}
+            >
                 {children}
             </DialogContent>
             {actions && (
-                <DialogActions sx={{ px: 3, py: 2 }}>
+                <DialogActions sx={{
+                    px: 3,
+                    py: 2,
+                    borderTop: '1px solid rgba(0, 0, 0, 0.06)',
+                    background: 'rgba(248, 250, 252, 0.5)',
+                }}>
                     {actions}
                 </DialogActions>
             )}

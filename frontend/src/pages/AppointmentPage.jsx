@@ -3,7 +3,6 @@ import Layout from "../components/Layout";
 import {
     Box,
     Typography,
-    Button,
     Paper,
     Table,
     TableBody,
@@ -21,7 +20,8 @@ import {
     TextField,
     MenuItem
 } from "@mui/material";
-import { Add, Edit, Delete, VideoCall, Phone, Place } from "@mui/icons-material";
+import { Edit, Delete, VideoCall, Phone, Place } from "@mui/icons-material";
+import { Plus } from 'lucide-react';
 import EditAppointmentModal from "../components/Appointments/EditAppointmentModal";
 import axios from "axios";
 
@@ -121,14 +121,10 @@ function AppointmentPage() {
                         <h1 className="text-3xl font-bold text-gray-900">Appointments</h1>
                         <p className="text-sm text-gray-600">Schedule and manage appointments</p>
                     </div>
-                    <Button
-                        variant="contained"
-                        startIcon={<Add />}
-                        onClick={() => setModalOpen(true)}
-                        sx={{ backgroundColor: '#10b981', '&:hover': { backgroundColor: '#059669' } }}
-                    >
-                        Add Appointment
-                    </Button>
+                    <button onClick={() => setModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
+                        <Plus size={16} /> Add Appointment
+                    </button>
                 </div>
 
                 {loading ? (
@@ -253,8 +249,14 @@ function AppointmentPage() {
                         </Box>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setModalOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSubmit} variant="contained">Create</Button>
+                        <button onClick={() => setModalOpen(false)}
+                            className="px-4 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
+                            Cancel
+                        </button>
+                        <button onClick={handleSubmit}
+                            className="px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
+                            Create
+                        </button>
                     </DialogActions>
                 </Dialog>
 

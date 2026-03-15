@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
-    Box, Typography, IconButton, Button, TextField, Grid, Chip, Dialog, DialogTitle, DialogContent, DialogActions
+    Box, Typography, IconButton, TextField, Grid, Chip, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import {
-    Add as AddIcon, Delete as DeleteIcon,
+    Delete as DeleteIcon,
     AddCircle as CreditIcon, RemoveCircle as DebitIcon
 } from '@mui/icons-material';
+import { Plus } from 'lucide-react';
 import MuiModal from "../shared/MuiModal";
 import Layout from '../Layout.jsx';
 import ConfirmDialog from '../shared/ConfirmDialog.jsx';
@@ -120,12 +121,16 @@ function Staff() {
             field: 'actions', headerName: 'Actions', width: 180, sortable: false, filterable: false,
             renderCell: (params) => (
                 <Box sx={{ display: 'flex', gap: 0.5 }}>
-                    <Button size="small" variant="outlined" color="success" startIcon={<CreditIcon />}
+                    <button
                         onClick={() => setActionDialog({ open: true, staffId: params.row._id, action: 'credit', amount: '' })}
-                        sx={{ minWidth: 0, fontSize: '0.7rem', px: 1 }}>Credit</Button>
-                    <Button size="small" variant="outlined" color="error" startIcon={<DebitIcon />}
+                        className="flex items-center gap-1 px-2 py-1 bg-white/70 backdrop-blur-md border border-white/30 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-xs font-medium text-green-600">
+                        <CreditIcon sx={{ fontSize: 14 }} /> Credit
+                    </button>
+                    <button
                         onClick={() => setActionDialog({ open: true, staffId: params.row._id, action: 'debit', amount: '' })}
-                        sx={{ minWidth: 0, fontSize: '0.7rem', px: 1 }}>Debit</Button>
+                        className="flex items-center gap-1 px-2 py-1 bg-white/70 backdrop-blur-md border border-white/30 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-xs font-medium text-red-600">
+                        <DebitIcon sx={{ fontSize: 14 }} /> Debit
+                    </button>
                     <IconButton size="small" color="error" onClick={() => handleDelete(params.row._id)}><DeleteIcon fontSize="small" /></IconButton>
                 </Box>
             )
@@ -140,7 +145,10 @@ function Staff() {
                         <h1 className="text-3xl font-bold text-gray-900">Staff Management</h1>
                         <p className="text-sm text-gray-600">Manage team and payroll</p>
                     </div>
-                    <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenAddModal(true)}>Add Staff</Button>
+                    <button onClick={() => setOpenAddModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
+                        <Plus size={16} /> Add Staff
+                    </button>
                 </div>
 
                 <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-lg">
@@ -177,10 +185,16 @@ function Staff() {
                                 onChange={(e) => setFormData({ ...formData, salary: e.target.value })} fullWidth required inputProps={{ min: 0 }} />
                         </Grid>
                     </Grid>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 1 }}>
-                        <Button onClick={() => setOpenAddModal(false)} variant="outlined">Cancel</Button>
-                        <Button onClick={handleAddStaff} variant="contained">Add Staff</Button>
-                    </Box>
+                    <div className="flex justify-end gap-2 mt-1">
+                        <button onClick={() => setOpenAddModal(false)}
+                            className="px-4 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
+                            Cancel
+                        </button>
+                        <button onClick={handleAddStaff}
+                            className="px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
+                            Add Staff
+                        </button>
+                    </div>
                 </Box>
             </MuiModal>
 
@@ -193,10 +207,14 @@ function Staff() {
                         fullWidth sx={{ mt: 1 }} inputProps={{ min: 1 }} />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setActionDialog({ ...actionDialog, open: false })}>Cancel</Button>
-                    <Button onClick={handleCreditDebit} variant="contained" color={actionDialog.action === 'credit' ? 'success' : 'error'}>
+                    <button onClick={() => setActionDialog({ ...actionDialog, open: false })}
+                        className="px-4 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
+                        Cancel
+                    </button>
+                    <button onClick={handleCreditDebit}
+                        className={`px-4 py-2 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-white ${actionDialog.action === 'credit' ? 'bg-gradient-to-r from-green-500/80 to-emerald-500/80 hover:from-green-600/90 hover:to-emerald-600/90' : 'bg-gradient-to-r from-red-500/80 to-rose-500/80 hover:from-red-600/90 hover:to-rose-600/90'}`}>
                         {actionDialog.action === 'credit' ? 'Credit' : 'Debit'}
-                    </Button>
+                    </button>
                 </DialogActions>
             </Dialog>
 

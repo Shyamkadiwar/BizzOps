@@ -111,7 +111,7 @@ function TaskPage() {
                     </div>
                     <button
                         onClick={() => handleAddTask('Not Started')}
-                        className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl font-medium transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white"
                     >
                         <Plus size={18} /> Add Task
                     </button>
