@@ -124,6 +124,7 @@ const CustomerDetailsModal = ({ open, onClose, customerId }) => {
         setPaymentDialogOpen(false);
         fetchCustomerDetails();
         fetchTransactions();
+        fetchSales();
     };
 
     const transactionColumns = [

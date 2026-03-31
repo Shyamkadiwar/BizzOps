@@ -140,49 +140,15 @@ const getCustomerDetails = asyncHandler(async (req, res) => {
 });
 
 // Add payment from customer
-const addCustomerPayment = asyncHandler(async (req, res) => {
+// Get unpaid invoices for a customer
+const getCustomerUnpaidInvoices = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { amount, date, description } = req.body;
     const owner = req.user?._id;
 
     if (!owner) {
         throw new ApiError(401, "Unauthorized request");
     }
 
-    if (!amount || amount <= 0) {
-        throw new ApiError(400, "Valid payment amount is required");
-    }
-
-    const customer = await Customer.findOne({ _id: id, owner });
-
-    if (!customer) {
-        throw new ApiError(404, "Customer not found");
-    }
-
-    if (amount > customer.balance) {
-        throw new ApiError(400, "Payment amount cannot exceed customer balance");
-    }
-
-    // Update customer balance
-    const updatedCustomer = await Customer.findByIdAndUpdate(
-        id,
-        { $inc: { balance: -amount } },
-        { new: true }
-    );
-
-    // Create transaction record
-    const CustomerTransaction = (await import('../models/customerTransaction.model.js')).CustomerTransaction;
-    const transaction = await CustomerTransaction.create({
-        owner,
-        customer: id,
-        type: 'payment',
-        amount: -amount,
-        balanceAfter: updatedCustomer.balance,
-        description: description || 'Payment received',
-        date: date ? new Date(date) : new Date()
-    });
-
-    // Auto-mark unpaid invoices as paid (FIFO - oldest first)
     const Invoice = (await import('../models/invoice.model.js')).Invoice;
     const unpaidInvoices = await Invoice.find({
         owner,
@@ -190,28 +156,89 @@ const addCustomerPayment = asyncHandler(async (req, res) => {
         paid: false
     }).sort({ date: 1, createdAt: 1 });
 
-    let remainingAmount = parseFloat(amount);
-    const markedInvoices = [];
+    return res
+        .status(200)
+        .json(new ApiResponse(200, { invoices: unpaidInvoices }, "Unpaid invoices retrieved"));
+});
 
-    for (const invoice of unpaidInvoices) {
-        if (remainingAmount <= 0) break;
+const addCustomerPayment = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { invoiceIds, date } = req.body;
+    const owner = req.user?._id;
 
-        if (remainingAmount >= invoice.grandTotal) {
-            // Full payment for this invoice
-            invoice.paid = true;
-            await invoice.save();
-            remainingAmount -= invoice.grandTotal;
-            markedInvoices.push(invoice.invoiceNumber || invoice._id);
-        }
+    if (!owner) {
+        throw new ApiError(401, "Unauthorized request");
     }
+
+    if (!invoiceIds || !Array.isArray(invoiceIds) || invoiceIds.length === 0) {
+        throw new ApiError(400, "Please select at least one invoice to pay");
+    }
+
+    const customer = await Customer.findOne({ _id: id, owner });
+    if (!customer) {
+        throw new ApiError(404, "Customer not found");
+    }
+
+    const Invoice = (await import('../models/invoice.model.js')).Invoice;
+    const CustomerTransaction = (await import('../models/customerTransaction.model.js')).CustomerTransaction;
+
+    // Fetch the selected invoices and validate they are unpaid and belong to this customer
+    const invoices = await Invoice.find({
+        _id: { $in: invoiceIds },
+        owner,
+        customer: id,
+        paid: false
+    });
+
+    if (invoices.length !== invoiceIds.length) {
+        throw new ApiError(400, "Some selected invoices are invalid, already paid, or don't belong to this customer");
+    }
+
+    // Calculate total payment amount from selected invoices
+    const totalAmount = invoices.reduce((sum, inv) => sum + inv.grandTotal, 0);
+
+    if (totalAmount > customer.balance) {
+        throw new ApiError(400, "Total invoice amount exceeds customer balance");
+    }
+
+    const paidDate = date ? new Date(date) : new Date();
+
+    // Mark each selected invoice as paid with paidDate
+    const markedInvoices = [];
+    for (const invoice of invoices) {
+        invoice.paid = true;
+        invoice.paidDate = paidDate;
+        await invoice.save();
+        markedInvoices.push(invoice.invoiceNumber || invoice._id);
+    }
+
+    // Update customer balance
+    const updatedCustomer = await Customer.findByIdAndUpdate(
+        id,
+        { $inc: { balance: -totalAmount } },
+        { new: true }
+    );
+
+    // Create transaction record
+    const invoiceNames = invoices.map(inv => `#${inv.invoiceNumber || inv._id}`).join(', ');
+    const transaction = await CustomerTransaction.create({
+        owner,
+        customer: id,
+        type: 'payment',
+        amount: -totalAmount,
+        balanceAfter: updatedCustomer.balance,
+        description: `Payment for invoice(s): ${invoiceNames}`,
+        date: paidDate
+    });
 
     return res
         .status(200)
         .json(new ApiResponse(200, {
             customer: updatedCustomer,
             transaction,
-            markedPaidInvoices: markedInvoices
-        }, `Payment recorded successfully${markedInvoices.length > 0 ? `. ${markedInvoices.length} invoice(s) marked as paid.` : ''}`));
+            markedPaidInvoices: markedInvoices,
+            totalPaid: totalAmount
+        }, `${markedInvoices.length} invoice(s) paid successfully. Total: ₹${totalAmount.toLocaleString('en-IN')}`));
 });
 
 // Get customer transactions with filters
@@ -348,6 +375,7 @@ export {
     deleteCustomer,
     getCustomerDetails,
     addCustomerPayment,
+    getCustomerUnpaidInvoices,
     getCustomerTransactions,
     getCustomerSales
 };

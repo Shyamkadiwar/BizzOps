@@ -195,6 +195,27 @@ const addSale = asyncHandler(async (req, res) => {
         }
     }
 
+    // Send thank-you email to customer
+    if (customerData && customerData.email) {
+        try {
+            const { sendSalesThankYouEmail } = await import('../services/email.service.js');
+            const { User } = await import('../models/user.model.js');
+            const user = await User.findById(owner);
+            const updatedCust = await Customer.findById(customerId);
+            console.log('[EMAIL] Sending thank-you email to:', customerData.email);
+            await sendSalesThankYouEmail(
+                customerData.email,
+                customerData.name,
+                invoice,
+                updatedCust?.balance || 0,
+                user?.businessName || 'BizzOps'
+            );
+            console.log('[EMAIL] Thank-you email sent successfully');
+        } catch (emailErr) {
+            console.error('[EMAIL] Thank-you email failed:', emailErr.message);
+        }
+    }
+
     return res.status(201).json(
         new ApiResponse(201, {
             sale: newSale,

@@ -276,19 +276,19 @@ function Inventory() {
                 </Box>
             )
         },
-        {
-            field: 'paid',
-            headerName: 'Payment',
-            width: 110,
-            renderCell: (params) => (
-                <Chip
-                    label={params.value ? 'Paid' : 'Unpaid'}
-                    color={params.value ? 'success' : 'warning'}
-                    size="small"
-                    variant="filled"
-                />
-            )
-        },
+        // {
+        //     field: 'paid',
+        //     headerName: 'Payment',
+        //     width: 110,
+        //     renderCell: (params) => (
+        //         <Chip
+        //             label={params.value ? 'Paid' : 'Unpaid'}
+        //             color={params.value ? 'success' : 'warning'}
+        //             size="small"
+        //             variant="filled"
+        //         />
+        //     )
+        // },
         {
             field: 'stockAdjustment',
             headerName: 'Adjust Stock',

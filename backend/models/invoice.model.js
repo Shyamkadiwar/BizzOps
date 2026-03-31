@@ -65,6 +65,10 @@ const invoiceSchema = new Schema({
     required: true,
     default: false
   },
+  paidDate: {
+    type: Date,
+    required: false
+  },
   subTotal: {
     type: Number,
     required: true,
@@ -78,6 +82,10 @@ const invoiceSchema = new Schema({
   date: {
     type: Date,
     required: true
+  },
+  razorpayPaymentLinkId: {
+    type: String,
+    required: false
   }
 }, { timestamps: true });
 

@@ -7,6 +7,7 @@ import {
     deleteCustomer,
     getCustomerDetails,
     addCustomerPayment,
+    getCustomerUnpaidInvoices,
     getCustomerTransactions,
     getCustomerSales
 } from "../controllers/customer.controller.js";
@@ -19,6 +20,7 @@ router.route('/count-customer').get(verifyJWT, countCustomers)
 router.route('/delete-customer/:id').delete(verifyJWT, deleteCustomer)
 router.route('/details/:id').get(verifyJWT, getCustomerDetails)
 router.route('/payment/:id').post(verifyJWT, addCustomerPayment)
+router.route('/unpaid-invoices/:id').get(verifyJWT, getCustomerUnpaidInvoices)
 router.route('/transactions/:id').get(verifyJWT, getCustomerTransactions)
 router.route('/sales/:id').get(verifyJWT, getCustomerSales)
 

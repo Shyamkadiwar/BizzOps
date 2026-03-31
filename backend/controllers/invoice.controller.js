@@ -112,6 +112,29 @@ const addInvoice = asyncHandler(async (req, res) => {
     }
   }
 
+  // Send thank-you email to customer if they have an email
+  console.log('[EMAIL DEBUG] customerDoc:', customerDoc ? `found (${customerDoc.name}, email: ${customerDoc.email})` : 'NOT FOUND');
+  if (customerDoc && customerDoc.email) {
+    try {
+      const { sendSalesThankYouEmail } = await import('../services/email.service.js');
+      const user = await (await import('../models/user.model.js')).User.findById(owner);
+      const updatedCust = await Customer.findById(customerId);
+      console.log('[EMAIL DEBUG] Sending thank-you email to:', customerDoc.email);
+      await sendSalesThankYouEmail(
+        customerDoc.email,
+        customerDoc.name,
+        invoice,
+        updatedCust?.balance || 0,
+        user?.businessName || 'BizzOps'
+      );
+      console.log('[EMAIL DEBUG] Thank-you email sent successfully');
+    } catch (emailErr) {
+      console.error('[EMAIL DEBUG] Thank-you email FAILED:', emailErr.message, emailErr);
+    }
+  } else {
+    console.log('[EMAIL DEBUG] Skipping email - customerDoc:', !!customerDoc, ', email:', customerDoc?.email);
+  }
+
   return res
     .status(200)
     .json(new ApiResponse(200, { invoice }, "Invoice added successfully"));
