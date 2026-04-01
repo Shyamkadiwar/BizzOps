@@ -270,7 +270,7 @@ const getSales = asyncHandler(async (req, res) => {
                 qty: item.qty,
                 profitPercent: item.cost > 0 ? ((item.price - item.cost) / item.cost) * 100 : 0,
                 profit: item.itemProfit,
-                sale: item.itemTotal,
+                sale: item.itemTotal + (item.taxes ? item.taxes.reduce((sum, tax) => sum + (item.itemTotal * tax.rate / 100), 0) : 0),
                 invoice: sale.invoice,
                 paid: sale.paid,
                 date: sale.date,
