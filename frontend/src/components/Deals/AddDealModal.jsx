@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
     TextField,
     MenuItem,
     Box,
@@ -14,6 +9,7 @@ import {
     Autocomplete
 } from '@mui/material';
 import axios from 'axios';
+import MuiModal from '../shared/MuiModal.jsx';
 
 const AddDealModal = ({ open, onClose, onDealAdded }) => {
     const [formData, setFormData] = useState({
@@ -94,10 +90,23 @@ const AddDealModal = ({ open, onClose, onDealAdded }) => {
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-            <DialogTitle>Add New Deal</DialogTitle>
-            <DialogContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+        <MuiModal open={open} onClose={handleClose} title="Add New Deal"
+            actions={
+                <>
+                    <button onClick={handleClose}
+                        className="px-6 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium text-gray-700">
+                        Cancel
+                    </button>
+                    <button onClick={handleSubmit} disabled={loading}
+                        className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white disabled:opacity-50">
+                        {loading ? 'Creating...' : 'Create Deal'}
+                    </button>
+                </>
+            }
+        >
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                {/* Row 1: Title | Status | Customer */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
                     <TextField
                         label="Title"
                         value={formData.title}
@@ -105,16 +114,6 @@ const AddDealModal = ({ open, onClose, onDealAdded }) => {
                         required
                         fullWidth
                     />
-
-                    <TextField
-                        label="Description"
-                        value={formData.description}
-                        onChange={(e) => handleChange('description', e.target.value)}
-                        multiline
-                        rows={3}
-                        fullWidth
-                    />
-
                     <TextField
                         select
                         label="Status"
@@ -128,7 +127,6 @@ const AddDealModal = ({ open, onClose, onDealAdded }) => {
                         <MenuItem value="Won">Won</MenuItem>
                         <MenuItem value="Lost">Lost</MenuItem>
                     </TextField>
-
                     <Autocomplete
                         options={customers}
                         getOptionLabel={(option) => option.name || ''}
@@ -137,7 +135,10 @@ const AddDealModal = ({ open, onClose, onDealAdded }) => {
                         renderInput={(params) => <TextField {...params} label="Customer" />}
                         fullWidth
                     />
+                </Box>
 
+                {/* Row 2: Value | Expected Close Date | Probability display */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
                     <TextField
                         label="Value (₹)"
                         type="number"
@@ -145,20 +146,6 @@ const AddDealModal = ({ open, onClose, onDealAdded }) => {
                         onChange={(e) => handleChange('value', parseFloat(e.target.value) || 0)}
                         fullWidth
                     />
-
-                    <Box>
-                        <Typography gutterBottom>Probability: {formData.probability}%</Typography>
-                        <Slider
-                            value={formData.probability}
-                            onChange={(e, newValue) => handleChange('probability', newValue)}
-                            min={0}
-                            max={100}
-                            step={5}
-                            marks
-                            valueLabelDisplay="auto"
-                        />
-                    </Box>
-
                     <TextField
                         label="Expected Close Date"
                         type="date"
@@ -167,45 +154,59 @@ const AddDealModal = ({ open, onClose, onDealAdded }) => {
                         InputLabelProps={{ shrink: true }}
                         fullWidth
                     />
-
-                    <Autocomplete
-                        multiple
-                        freeSolo
-                        options={[]}
-                        value={formData.involvedPersons}
-                        onChange={(e, newValue) => handleChange('involvedPersons', newValue)}
-                        renderTags={(value, getTagProps) =>
-                            value.map((option, index) => (
-                                <Chip label={option} {...getTagProps({ index })} />
-                            ))
-                        }
-                        renderInput={(params) => (
-                            <TextField {...params} label="Involved Persons" placeholder="Type and press Enter" />
-                        )}
-                        fullWidth
-                    />
-
-                    <TextField
-                        label="Notes"
-                        value={formData.notes}
-                        onChange={(e) => handleChange('notes', e.target.value)}
-                        multiline
-                        rows={2}
-                        fullWidth
-                    />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        <Typography variant="body2" sx={{ mb: 0.5 }}>Probability: {formData.probability}%</Typography>
+                        <Slider
+                            value={formData.probability}
+                            onChange={(e, newValue) => handleChange('probability', newValue)}
+                            min={0}
+                            max={100}
+                            step={5}
+                            valueLabelDisplay="auto"
+                            size="small"
+                        />
+                    </Box>
                 </Box>
-            </DialogContent>
-            <DialogActions>
-                <button onClick={handleClose}
-                    className="px-4 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
-                    Cancel
-                </button>
-                <button onClick={handleSubmit} disabled={loading}
-                    className="px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white disabled:opacity-50">
-                    {loading ? 'Creating...' : 'Create Deal'}
-                </button>
-            </DialogActions>
-        </Dialog>
+
+                {/* Row 3: Description (Full Width) */}
+                <TextField
+                    label="Description"
+                    value={formData.description}
+                    onChange={(e) => handleChange('description', e.target.value)}
+                    multiline
+                    rows={3}
+                    fullWidth
+                />
+
+                {/* Row 4: Involved Persons (Full Width) */}
+                <Autocomplete
+                    multiple
+                    freeSolo
+                    options={[]}
+                    value={formData.involvedPersons}
+                    onChange={(e, newValue) => handleChange('involvedPersons', newValue)}
+                    renderTags={(value, getTagProps) =>
+                        value.map((option, index) => (
+                            <Chip label={option} {...getTagProps({ index })} />
+                        ))
+                    }
+                    renderInput={(params) => (
+                        <TextField {...params} label="Involved Persons" placeholder="Type and press Enter" />
+                    )}
+                    fullWidth
+                />
+
+                {/* Row 5: Notes (Full Width) */}
+                <TextField
+                    label="Notes"
+                    value={formData.notes}
+                    onChange={(e) => handleChange('notes', e.target.value)}
+                    multiline
+                    rows={2}
+                    fullWidth
+                />
+            </Box>
+        </MuiModal>
     );
 };
 

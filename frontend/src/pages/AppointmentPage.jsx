@@ -13,16 +13,13 @@ import {
     IconButton,
     Chip,
     CircularProgress,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     TextField,
     MenuItem
 } from "@mui/material";
 import { Edit, Delete, VideoCall, Phone, Place } from "@mui/icons-material";
 import { Plus } from 'lucide-react';
 import EditAppointmentModal from "../components/Appointments/EditAppointmentModal";
+import MuiModal from "../components/shared/MuiModal.jsx";
 import axios from "axios";
 
 function AppointmentPage() {
@@ -191,74 +188,43 @@ function AppointmentPage() {
                     </div>
                 )}
 
-                <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth>
-                    <DialogTitle>Add Appointment</DialogTitle>
-                    <DialogContent>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-                            <TextField
-                                label="Title"
-                                value={formData.title}
-                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                required
-                                fullWidth
-                            />
-                            <TextField
-                                label="Description"
-                                value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                multiline
-                                rows={2}
-                                fullWidth
-                            />
-                            <TextField
-                                select
-                                label="Type"
-                                value={formData.type}
-                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                fullWidth
-                            >
+                <MuiModal open={modalOpen} onClose={() => setModalOpen(false)} title="Add Appointment"
+                    actions={
+                        <>
+                            <button onClick={() => setModalOpen(false)}
+                                className="px-6 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium text-gray-700">
+                                Cancel
+                            </button>
+                            <button onClick={handleSubmit}
+                                className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white">
+                                Create Appointment
+                            </button>
+                        </>
+                    }
+                >
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                        {/* Row 1: Title | Type | Location */}
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                            <TextField label="Title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required fullWidth />
+                            <TextField select label="Type" value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })} fullWidth>
                                 <MenuItem value="Meeting">Meeting</MenuItem>
                                 <MenuItem value="Call">Call</MenuItem>
                                 <MenuItem value="Site Visit">Site Visit</MenuItem>
                                 <MenuItem value="Other">Other</MenuItem>
                             </TextField>
-                            <TextField
-                                label="Start Time"
-                                type="datetime-local"
-                                value={formData.startTime}
-                                onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                                InputLabelProps={{ shrink: true }}
-                                required
-                                fullWidth
-                            />
-                            <TextField
-                                label="End Time"
-                                type="datetime-local"
-                                value={formData.endTime}
-                                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                                InputLabelProps={{ shrink: true }}
-                                required
-                                fullWidth
-                            />
-                            <TextField
-                                label="Location"
-                                value={formData.location}
-                                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                fullWidth
-                            />
+                            <TextField label="Location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} fullWidth />
                         </Box>
-                    </DialogContent>
-                    <DialogActions>
-                        <button onClick={() => setModalOpen(false)}
-                            className="px-4 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
-                            Cancel
-                        </button>
-                        <button onClick={handleSubmit}
-                            className="px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
-                            Create
-                        </button>
-                    </DialogActions>
-                </Dialog>
+
+                        {/* Row 2: Start Time | End Time */}
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                            <TextField label="Start Time" type="datetime-local" value={formData.startTime} onChange={(e) => setFormData({ ...formData, startTime: e.target.value })} InputLabelProps={{ shrink: true }} required fullWidth />
+                            <TextField label="End Time" type="datetime-local" value={formData.endTime} onChange={(e) => setFormData({ ...formData, endTime: e.target.value })} InputLabelProps={{ shrink: true }} required fullWidth />
+                        </Box>
+
+                        {/* Row 3: Description */}
+                        <TextField label="Description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} multiline rows={2} fullWidth />
+                    </Box>
+                </MuiModal>
 
                 <EditAppointmentModal
                     open={editModalOpen}

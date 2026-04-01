@@ -3,7 +3,6 @@ import axios from "axios";
 import {
     Box,
     TextField,
-    Grid,
     IconButton,
     Typography,
     Autocomplete,
@@ -189,25 +188,24 @@ function AddInventory({ onItemAdded, onCancel }) {
 
     return (
         <Box component="form" onSubmit={handleAddInventory} sx={{ p: 2 }}>
-            <Grid container spacing={2}>
-                {/* Product Autocomplete (Optional) */}
-                <Grid item xs={12}>
-                    <Autocomplete
-                        options={products}
-                        getOptionLabel={(option) => `${option.name} - ${option.category}`}
-                        onChange={handleProductSelect}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Select Product (Optional - Auto-fills fields)"
-                                placeholder="Search products..."
-                            />
-                        )}
-                    />
-                </Grid>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
 
-                {/* Item Name */}
-                <Grid item xs={12} sm={6}>
+                {/* Row 1: Product Select (Full Width) */}
+                <Autocomplete
+                    options={products}
+                    getOptionLabel={(option) => `${option.name} - ${option.category}`}
+                    onChange={handleProductSelect}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Select Product (Optional - Auto-fills fields)"
+                            placeholder="Search products..."
+                        />
+                    )}
+                />
+
+                {/* Row 2: Item Name | Category | Warehouse */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
                     <TextField
                         label="Item Name"
                         value={formData.item}
@@ -215,10 +213,6 @@ function AddInventory({ onItemAdded, onCancel }) {
                         required
                         fullWidth
                     />
-                </Grid>
-
-                {/* Category */}
-                <Grid item xs={12} sm={6}>
                     <TextField
                         label="Category"
                         value={formData.category}
@@ -226,10 +220,6 @@ function AddInventory({ onItemAdded, onCancel }) {
                         required
                         fullWidth
                     />
-                </Grid>
-
-                {/* Warehouse */}
-                <Grid item xs={12} sm={6}>
                     <TextField
                         label="Warehouse"
                         value={formData.warehouse}
@@ -237,34 +227,32 @@ function AddInventory({ onItemAdded, onCancel }) {
                         required
                         fullWidth
                     />
-                </Grid>
+                </Box>
 
-                {/* Vendor */}
-                <Grid item xs={12}>
-                    <Autocomplete
-                        options={vendors}
-                        getOptionLabel={(option) => option.name || ''}
-                        value={vendors.find(v => v._id === formData.vendor) || null}
-                        onChange={(event, value) => setFormData({ ...formData, vendor: value?._id || '' })}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Vendor"
-                                required
-                                placeholder="Select or type vendor name..."
-                            />
-                        )}
-                        freeSolo
-                        onInputChange={(event, newInputValue, reason) => {
-                            if (reason === 'input' && !vendors.find(v => v.name === newInputValue)) {
-                                setFormData({ ...formData, vendor: newInputValue });
-                            }
-                        }}
-                    />
-                </Grid>
+                {/* Row 3: Vendor (Full Width) */}
+                <Autocomplete
+                    options={vendors}
+                    getOptionLabel={(option) => option.name || ''}
+                    value={vendors.find(v => v._id === formData.vendor) || null}
+                    onChange={(event, value) => setFormData({ ...formData, vendor: value?._id || '' })}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Vendor"
+                            required
+                            placeholder="Select or type vendor name..."
+                        />
+                    )}
+                    freeSolo
+                    onInputChange={(event, newInputValue, reason) => {
+                        if (reason === 'input' && !vendors.find(v => v.name === newInputValue)) {
+                            setFormData({ ...formData, vendor: newInputValue });
+                        }
+                    }}
+                />
 
-                {/* Cost Price */}
-                <Grid item xs={12} sm={4}>
+                {/* Row 4: Cost Price | Sale Price | Stock Quantity */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
                     <TextField
                         label="Cost Price"
                         type="number"
@@ -274,10 +262,6 @@ function AddInventory({ onItemAdded, onCancel }) {
                         fullWidth
                         inputProps={{ min: 0, step: 0.01 }}
                     />
-                </Grid>
-
-                {/* Sale Price */}
-                <Grid item xs={12} sm={4}>
                     <TextField
                         label="Sale Price"
                         type="number"
@@ -287,10 +271,6 @@ function AddInventory({ onItemAdded, onCancel }) {
                         fullWidth
                         inputProps={{ min: 0, step: 0.01 }}
                     />
-                </Grid>
-
-                {/* Stock Quantity */}
-                <Grid item xs={12} sm={4}>
                     <TextField
                         label="Stock Quantity"
                         type="number"
@@ -300,10 +280,10 @@ function AddInventory({ onItemAdded, onCancel }) {
                         fullWidth
                         inputProps={{ min: 0 }}
                     />
-                </Grid>
+                </Box>
 
-                {/* Date */}
-                <Grid item xs={12} sm={4}>
+                {/* Row 5: Date | Paid Toggle | Total Cost */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
                     <TextField
                         label="Date"
                         type="date"
@@ -313,11 +293,7 @@ function AddInventory({ onItemAdded, onCancel }) {
                         fullWidth
                         InputLabelProps={{ shrink: true }}
                     />
-                </Grid>
-
-                {/* Paid/Unpaid Toggle */}
-                <Grid item xs={12} sm={4}>
-                    <Paper sx={{ p: 1.5, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    <Paper sx={{ p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center',
                         bgcolor: formData.paid ? 'success.lighter' : 'warning.lighter',
                         border: '1px solid',
                         borderColor: formData.paid ? 'success.light' : 'warning.light',
@@ -346,64 +322,58 @@ function AddInventory({ onItemAdded, onCancel }) {
                             }
                         />
                     </Paper>
-                </Grid>
-
-                {/* Total Cost Display */}
-                <Grid item xs={12} sm={4}>
-                    <Paper sx={{ p: 2, bgcolor: 'primary.light', height: '100%', display: 'flex', alignItems: 'center' }}>
+                    <Paper sx={{ p: 2, bgcolor: 'primary.light', display: 'flex', alignItems: 'center' }}>
                         <Typography variant="h6" sx={{ color: 'primary.contrastText' }}>
                             Total Cost: ₹{totalCost.toLocaleString()}
                         </Typography>
                     </Paper>
-                </Grid>
+                </Box>
 
                 {/* Taxes Section */}
-                <Grid item xs={12}>
-                    <Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                            <Typography variant="subtitle1" fontWeight="bold">Taxes (Optional)</Typography>
-                            <button type="button" onClick={handleAddTax}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-white/70 backdrop-blur-md border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-xs font-medium text-gray-600">
-                                <Plus size={14} /> Add Tax
-                            </button>
-                        </Box>
-                        {formData.taxes.map((tax, index) => (
-                            <Box key={index} sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                                <TextField
-                                    label="Tax Name (e.g., GST, CGST)"
-                                    value={tax.name}
-                                    onChange={(e) => handleTaxChange(index, 'name', e.target.value)}
-                                    size="small"
-                                    fullWidth
-                                />
-                                <TextField
-                                    label="Rate (%)"
-                                    type="number"
-                                    value={tax.rate}
-                                    onChange={(e) => handleTaxChange(index, 'rate', e.target.value)}
-                                    size="small"
-                                    sx={{ width: 120 }}
-                                    inputProps={{ min: 0, max: 100, step: 0.01 }}
-                                />
-                                <IconButton onClick={() => handleRemoveTax(index)} size="small" color="error">
-                                    <DeleteIcon />
-                                </IconButton>
-                            </Box>
-                        ))}
+                <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="subtitle1" fontWeight="bold">Taxes (Optional)</Typography>
+                        <button type="button" onClick={handleAddTax}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-xs font-medium text-gray-600">
+                            <Plus size={14} /> Add Tax
+                        </button>
                     </Box>
-                </Grid>
-            </Grid>
+                    {formData.taxes.map((tax, index) => (
+                        <Box key={index} sx={{ display: 'grid', gridTemplateColumns: '1fr 200px auto', gap: 1, mb: 1 }}>
+                            <TextField
+                                label="Tax Name (e.g., GST, CGST)"
+                                value={tax.name}
+                                onChange={(e) => handleTaxChange(index, 'name', e.target.value)}
+                                size="small"
+                                fullWidth
+                            />
+                            <TextField
+                                label="Rate (%)"
+                                type="number"
+                                value={tax.rate}
+                                onChange={(e) => handleTaxChange(index, 'rate', e.target.value)}
+                                size="small"
+                                fullWidth
+                                inputProps={{ min: 0, max: 100, step: 0.01 }}
+                            />
+                            <IconButton onClick={() => handleRemoveTax(index)} size="small" color="error">
+                                <DeleteIcon />
+                            </IconButton>
+                        </Box>
+                    ))}
+                </Box>
+            </Box>
 
             {/* Action Buttons */}
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
                 {onCancel && (
                     <button type="button" onClick={onCancel}
-                        className="px-5 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
+                        className="px-6 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium text-gray-700">
                         Cancel
                     </button>
                 )}
                 <button type="submit"
-                    className="px-5 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
+                    className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white">
                     Add to Inventory
                 </button>
             </Box>

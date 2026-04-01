@@ -1,104 +1,116 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { Box, TextField } from '@mui/material';
+import AlertDialog from '../shared/AlertDialog.jsx';
 
 function AddStaff({ onStaffAdded }) {
-    const [name, setName] = useState('');
-    const [salary, setSalary] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [isPopupVisible, setPopupVisible] = useState(false);
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        salary: ''
+    });
+    const [alertDialog, setAlertDialog] = useState({ open: false, title: "", message: "", severity: "info" });
 
     const handleAddStaff = async (e) => {
         e.preventDefault();
-        const data = { 
-            name, 
-            email, 
-            phone, 
-            salary: Number(salary),
-            debitCreditHistory: Number(salary)
+
+        if (!formData.name || !formData.email || !formData.phone || !formData.salary) {
+            setAlertDialog({
+                open: true,
+                title: "Validation Error",
+                message: "Please fill all required fields",
+                severity: "warning"
+            });
+            return;
+        }
+
+        const data = {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            salary: Number(formData.salary),
+            debitCreditHistory: Number(formData.salary)
         };
+
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/staff/add-staff`, data, { withCredentials: true });
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/v1/staff/add-staff`,
+                data,
+                { withCredentials: true }
+            );
             if (response.data.statusCode === 200) {
                 onStaffAdded(response.data.data);
-                setPopupVisible(true);
-                resetForm();
+                setAlertDialog({
+                    open: true,
+                    title: "Success",
+                    message: "Staff added successfully!",
+                    severity: "success"
+                });
+                setFormData({ name: '', email: '', phone: '', salary: '' });
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
             }
         } catch (error) {
             console.error("Error while adding staff", error.response?.data || error.message);
+            setAlertDialog({
+                open: true,
+                title: "Error",
+                message: error.response?.data?.message || "Error adding staff",
+                severity: "error"
+            });
         }
     };
 
-    const resetForm = () => {
-        setName('');
-        setSalary('');
-        setEmail('');
-        setPhone('');
-    };
-
-    const handleClosePopup = () => {
-        setPopupVisible(false);
-        window.location.reload()
-    };
-
     return (
-        <>
-            <form onSubmit={handleAddStaff} className="space-y-4 sm:mb-2 mb-4">
-                <input
-                    type="text"
-                    placeholder="Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+        <Box component="form" onSubmit={handleAddStaff} sx={{ p: 2 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: 2, alignItems: 'start' }}>
+                <TextField
+                    label="Name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
-                    className="sm:w-1/5  text-center bg-[#2b2b2e] shadow-xl h-10 m-2 rounded-2xl font-poppins font-normal text-white"
+                    fullWidth
                 />
-                <input
+                <TextField
+                    label="Email"
                     type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
-                    className="sm:w-auto w-5/6 text-center h-10 m-2 bg-[#2b2b2e] shadow-xl rounded-2xl font-poppins font-normal text-white"
+                    fullWidth
                 />
-                <input
-                    type="text"
-                    placeholder="Phone"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                <TextField
+                    label="Phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     required
-                    className="sm:w-1/5 w-2/4 text-center h-10 m-2 rounded-2xl bg-[#2b2b2e] shadow-xl font-poppins font-normal text-white"
+                    fullWidth
                 />
-                <input
+                <TextField
+                    label="Salary"
                     type="number"
-                    placeholder="Salary"
-                    value={salary}
-                    onChange={(e) => setSalary(e.target.value)}
+                    value={formData.salary}
+                    onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
                     required
-                    className="sm:w-2/12 w-2/5 text-center pl-4 h-10 m-2 rounded-2xl bg-[#2b2b2e] shadow-xl font-poppins font-normal text-white"
+                    fullWidth
                 />
-                <button type="submit" className="bg-white shadow-xl h-9 w-1/4 m-4 hover:bg-blue-200 text-black sm:w-1/12 rounded-xl">
+                <button type="submit"
+                    className="px-5 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white whitespace-nowrap">
                     Add Staff
                 </button>
-            </form>
+            </Box>
 
-            {isPopupVisible && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-                    <div className="bg-[#28282B] rounded p-6 max-w-sm sm:w-full w-4/5">
-                        <h2 className="text-lg font-poppins text-white font-bold">Success!</h2>
-                        <p className="mt-2 font-poppins text-white">Staff added successfully.</p>
-                        <div className="mt-4 flex justify-end">
-                            <button
-                                onClick={handleClosePopup}
-                                className="text-blue-500 font-semibold hover:text-blue-300"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </>
+            <AlertDialog
+                open={alertDialog.open}
+                onClose={() => setAlertDialog({ ...alertDialog, open: false })}
+                title={alertDialog.title}
+                message={alertDialog.message}
+                severity={alertDialog.severity}
+            />
+        </Box>
     );
 }
 
-export default AddStaff;                                    
+export default AddStaff;

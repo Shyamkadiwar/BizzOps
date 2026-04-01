@@ -3,12 +3,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
     Box,
     TextField,
-    Button,
-    Grid,
     Autocomplete,
     Paper,
     Typography,
-    Chip,
     FormControlLabel,
     Checkbox,
     IconButton,
@@ -19,7 +16,7 @@ import {
     TableHead,
     TableRow
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Plus } from 'lucide-react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AlertDialog from '../shared/AlertDialog.jsx';
 
@@ -223,9 +220,10 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
 
     return (
         <Box component="form" onSubmit={handleSubmit} sx={{ p: 2 }}>
-            <Grid container spacing={2}>
-                {/* Product Selection */}
-                <Grid item xs={12} sm={6}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+
+                {/* Row 1: Product | Quantity | Add Button */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 2, alignItems: 'start' }}>
                     <Autocomplete
                         options={inventory}
                         getOptionLabel={(option) => `${option.item} - Stock: ${option.stockRemain} - ₹${option.salePrice}`}
@@ -241,10 +239,6 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
                             />
                         )}
                     />
-                </Grid>
-
-                {/* Quantity */}
-                <Grid item xs={12} sm={4}>
                     <TextField
                         label="Quantity"
                         type="number"
@@ -257,90 +251,79 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
                         }}
                         helperText={selectedInventoryItem ? `Available: ${selectedInventoryItem.stockRemain}` : ''}
                     />
-                </Grid>
-
-                {/* Add Item Button */}
-                <Grid item xs={12} sm={2}>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        fullWidth
-                        sx={{ height: '56px' }}
+                    <button
+                        type="button"
                         onClick={handleAddItem}
-                        startIcon={<AddIcon />}
                         disabled={!currentItem.product || !currentItem.qty}
+                        className="px-5 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                     >
-                        Add
-                    </Button>
-                </Grid>
+                        <Plus size={16} /> Add
+                    </button>
+                </Box>
 
                 {/* Items List */}
                 {items.length > 0 && (
-                    <Grid item xs={12}>
-                        <Paper sx={{ p: 2 }}>
-                            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                                Items Added ({items.length})
-                            </Typography>
-                            <TableContainer>
-                                <Table size="small">
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell>Product</TableCell>
-                                            <TableCell align="right">Qty</TableCell>
-                                            <TableCell align="right">Price</TableCell>
-                                            <TableCell align="right">Total</TableCell>
-                                            <TableCell align="center">Action</TableCell>
+                    <Paper sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                            Items Added ({items.length})
+                        </Typography>
+                        <TableContainer>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Product</TableCell>
+                                        <TableCell align="right">Qty</TableCell>
+                                        <TableCell align="right">Price</TableCell>
+                                        <TableCell align="right">Total</TableCell>
+                                        <TableCell align="center">Action</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {items.map((item, index) => (
+                                        <TableRow key={index}>
+                                            <TableCell>{item.productName}</TableCell>
+                                            <TableCell align="right">{item.qty}</TableCell>
+                                            <TableCell align="right">₹{item.price.toLocaleString()}</TableCell>
+                                            <TableCell align="right">₹{(item.price * item.qty).toLocaleString()}</TableCell>
+                                            <TableCell align="center">
+                                                <IconButton
+                                                    size="small"
+                                                    color="error"
+                                                    onClick={() => handleRemoveItem(index)}
+                                                >
+                                                    <DeleteIcon />
+                                                </IconButton>
+                                            </TableCell>
                                         </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {items.map((item, index) => (
-                                            <TableRow key={index}>
-                                                <TableCell>{item.productName}</TableCell>
-                                                <TableCell align="right">{item.qty}</TableCell>
-                                                <TableCell align="right">₹{item.price.toLocaleString()}</TableCell>
-                                                <TableCell align="right">₹{(item.price * item.qty).toLocaleString()}</TableCell>
-                                                <TableCell align="center">
-                                                    <IconButton
-                                                        size="small"
-                                                        color="error"
-                                                        onClick={() => handleRemoveItem(index)}
-                                                    >
-                                                        <DeleteIcon />
-                                                    </IconButton>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
 
-                            {/* Totals */}
-                            <Box sx={{ mt: 2, p: 2, bgcolor: 'success.light', borderRadius: 1 }}>
-                                <Grid container spacing={1}>
-                                    <Grid item xs={6} sm={3}>
-                                        <Typography variant="body2" color="text.secondary">Total Sale:</Typography>
-                                        <Typography variant="h6" color="primary">₹{totalSale.toLocaleString()}</Typography>
-                                    </Grid>
-                                    <Grid item xs={6} sm={3}>
-                                        <Typography variant="body2" color="text.secondary">Total Cost:</Typography>
-                                        <Typography variant="h6">₹{totalCost.toLocaleString()}</Typography>
-                                    </Grid>
-                                    <Grid item xs={6} sm={3}>
-                                        <Typography variant="body2" color="text.secondary">Profit:</Typography>
-                                        <Typography variant="h6" color="success.dark">₹{totalProfit.toLocaleString()}</Typography>
-                                    </Grid>
-                                    <Grid item xs={6} sm={3}>
-                                        <Typography variant="body2" color="text.secondary">Profit %:</Typography>
-                                        <Typography variant="h6" color="success.dark">{profitPercent.toFixed(2)}%</Typography>
-                                    </Grid>
-                                </Grid>
+                        {/* Totals */}
+                        <Box sx={{ mt: 2, p: 2, bgcolor: 'success.light', borderRadius: '10px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 2 }}>
+                            <Box>
+                                <Typography variant="body2" color="text.secondary">Total Sale:</Typography>
+                                <Typography variant="h6" color="primary">₹{totalSale.toLocaleString()}</Typography>
                             </Box>
-                        </Paper>
-                    </Grid>
+                            <Box>
+                                <Typography variant="body2" color="text.secondary">Total Cost:</Typography>
+                                <Typography variant="h6">₹{totalCost.toLocaleString()}</Typography>
+                            </Box>
+                            <Box>
+                                <Typography variant="body2" color="text.secondary">Profit:</Typography>
+                                <Typography variant="h6" color="success.dark">₹{totalProfit.toLocaleString()}</Typography>
+                            </Box>
+                            <Box>
+                                <Typography variant="body2" color="text.secondary">Profit %:</Typography>
+                                <Typography variant="h6" color="success.dark">{profitPercent.toFixed(2)}%</Typography>
+                            </Box>
+                        </Box>
+                    </Paper>
                 )}
 
-                {/* Date */}
-                <Grid item xs={12} sm={6}>
+                {/* Row 2: Date | Paid | Customer Select */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, alignItems: 'center' }}>
                     <TextField
                         label="Date"
                         type="date"
@@ -350,10 +333,6 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
                         fullWidth
                         InputLabelProps={{ shrink: true }}
                     />
-                </Grid>
-
-                {/* Paid Status */}
-                <Grid item xs={12} sm={6}>
                     <FormControlLabel
                         control={
                             <Checkbox
@@ -364,10 +343,6 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
                         }
                         label="Mark as Paid"
                     />
-                </Grid>
-
-                {/* Customer Selection */}
-                <Grid item xs={12} sm={6}>
                     <Autocomplete
                         options={customers}
                         getOptionLabel={(option) => `${option.name} - ${option.phone}`}
@@ -387,65 +362,56 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
                             />
                         )}
                     />
-                </Grid>
+                </Box>
 
-                {/* Manual Customer Name */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        label="Or Enter Customer Name"
-                        value={formData.customerName}
-                        onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                        fullWidth
-                        disabled={!!formData.customer}
-                    />
-                </Grid>
+                {/* Row 3: Manual Customer Name (if no customer selected) */}
+                <TextField
+                    label="Or Enter Customer Name"
+                    value={formData.customerName}
+                    onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                    fullWidth
+                    disabled={!!formData.customer}
+                />
 
-                {/* Customer Details (if new customer) */}
+                {/* Row 4: New Customer Details (if typing new customer name) */}
                 {!formData.customer && formData.customerName && (
-                    <>
-                        <Grid item xs={12} sm={4}>
-                            <TextField
-                                label="Customer Email"
-                                type="email"
-                                value={formData.customerEmail}
-                                onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
-                                fullWidth
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <TextField
-                                label="Customer Phone"
-                                value={formData.customerPhone}
-                                onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-                                fullWidth
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <TextField
-                                label="Customer City"
-                                value={formData.customerCity}
-                                onChange={(e) => setFormData({ ...formData, customerCity: e.target.value })}
-                                fullWidth
-                            />
-                        </Grid>
-                    </>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                        <TextField
+                            label="Customer Email"
+                            type="email"
+                            value={formData.customerEmail}
+                            onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
+                            fullWidth
+                        />
+                        <TextField
+                            label="Customer Phone"
+                            value={formData.customerPhone}
+                            onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+                            fullWidth
+                        />
+                        <TextField
+                            label="Customer City"
+                            value={formData.customerCity}
+                            onChange={(e) => setFormData({ ...formData, customerCity: e.target.value })}
+                            fullWidth
+                        />
+                    </Box>
                 )}
-            </Grid>
+            </Box>
 
             {/* Action Buttons */}
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
                 {onCancel && (
-                    <Button onClick={onCancel} variant="outlined">
+                    <button type="button" onClick={onCancel}
+                        className="px-6 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium text-gray-700">
                         Cancel
-                    </Button>
+                    </button>
                 )}
-                <Button
-                    type="submit"
-                    variant="contained"
+                <button type="submit"
                     disabled={items.length === 0}
-                >
+                    className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed">
                     Create Sale & Invoice ({items.length} items)
-                </Button>
+                </button>
             </Box>
 
             {/* Alert Dialog */}

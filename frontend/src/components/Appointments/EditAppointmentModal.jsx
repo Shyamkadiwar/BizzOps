@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
     TextField,
     MenuItem,
     Box,
     Autocomplete
 } from '@mui/material';
 import axios from 'axios';
+import MuiModal from '../shared/MuiModal.jsx';
 
 const EditAppointmentModal = ({ open, onClose, appointment, onAppointmentUpdated }) => {
     const [formData, setFormData] = useState({
@@ -29,7 +25,6 @@ const EditAppointmentModal = ({ open, onClose, appointment, onAppointmentUpdated
 
     useEffect(() => {
         if (open && appointment) {
-            // Format datetime for input
             const formatDateTime = (dateString) => {
                 if (!dateString) return '';
                 const date = new Date(dateString);
@@ -101,108 +96,50 @@ const EditAppointmentModal = ({ open, onClose, appointment, onAppointmentUpdated
     if (!appointment) return null;
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Edit Appointment</DialogTitle>
-            <DialogContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-                    <TextField
-                        label="Title"
-                        value={formData.title}
-                        onChange={(e) => handleChange('title', e.target.value)}
-                        required
-                        fullWidth
-                    />
-
-                    <TextField
-                        label="Description"
-                        value={formData.description}
-                        onChange={(e) => handleChange('description', e.target.value)}
-                        multiline
-                        rows={2}
-                        fullWidth
-                    />
-
-                    <TextField
-                        select
-                        label="Type"
-                        value={formData.type}
-                        onChange={(e) => handleChange('type', e.target.value)}
-                        fullWidth
-                    >
+        <MuiModal open={open} onClose={onClose} title="Edit Appointment"
+            actions={
+                <>
+                    <button onClick={onClose}
+                        className="px-6 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium text-gray-700">
+                        Cancel
+                    </button>
+                    <button onClick={handleSubmit} disabled={loading}
+                        className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white disabled:opacity-50">
+                        {loading ? 'Updating...' : 'Update Appointment'}
+                    </button>
+                </>
+            }
+        >
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                {/* Row 1: Title | Type | Customer */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                    <TextField label="Title" value={formData.title} onChange={(e) => handleChange('title', e.target.value)} required fullWidth />
+                    <TextField select label="Type" value={formData.type} onChange={(e) => handleChange('type', e.target.value)} fullWidth>
                         <MenuItem value="Meeting">Meeting</MenuItem>
                         <MenuItem value="Call">Call</MenuItem>
                         <MenuItem value="Site Visit">Site Visit</MenuItem>
                         <MenuItem value="Other">Other</MenuItem>
                     </TextField>
-
-                    <TextField
-                        label="Start Time"
-                        type="datetime-local"
-                        value={formData.startTime}
-                        onChange={(e) => handleChange('startTime', e.target.value)}
-                        InputLabelProps={{ shrink: true }}
-                        required
-                        fullWidth
-                    />
-
-                    <TextField
-                        label="End Time"
-                        type="datetime-local"
-                        value={formData.endTime}
-                        onChange={(e) => handleChange('endTime', e.target.value)}
-                        InputLabelProps={{ shrink: true }}
-                        required
-                        fullWidth
-                    />
-
-                    <TextField
-                        label="Location"
-                        value={formData.location}
-                        onChange={(e) => handleChange('location', e.target.value)}
-                        fullWidth
-                    />
-
-                    <Autocomplete
-                        options={customers}
-                        getOptionLabel={(option) => option.name || ''}
-                        value={formData.customer}
-                        onChange={(e, newValue) => handleChange('customer', newValue)}
-                        renderInput={(params) => <TextField {...params} label="Customer" />}
-                        fullWidth
-                    />
-
-                    <Autocomplete
-                        multiple
-                        freeSolo
-                        options={[]}
-                        value={formData.attendees}
-                        onChange={(e, newValue) => handleChange('attendees', newValue)}
-                        renderInput={(params) => (
-                            <TextField {...params} label="Attendees" placeholder="Type and press Enter" />
-                        )}
-                        fullWidth
-                    />
-
-                    <TextField
-                        label="Reminder (minutes before)"
-                        type="number"
-                        value={formData.reminder}
-                        onChange={(e) => handleChange('reminder', parseInt(e.target.value) || 15)}
-                        fullWidth
-                    />
+                    <Autocomplete options={customers} getOptionLabel={(option) => option.name || ''} value={formData.customer} onChange={(e, newValue) => handleChange('customer', newValue)} renderInput={(params) => <TextField {...params} label="Customer" />} fullWidth />
                 </Box>
-            </DialogContent>
-            <DialogActions>
-                <button onClick={onClose}
-                    className="px-4 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
-                    Cancel
-                </button>
-                <button onClick={handleSubmit} disabled={loading}
-                    className="px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white disabled:opacity-50">
-                    {loading ? 'Updating...' : 'Update Appointment'}
-                </button>
-            </DialogActions>
-        </Dialog>
+
+                {/* Row 2: Start Time | End Time | Location */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                    <TextField label="Start Time" type="datetime-local" value={formData.startTime} onChange={(e) => handleChange('startTime', e.target.value)} InputLabelProps={{ shrink: true }} required fullWidth />
+                    <TextField label="End Time" type="datetime-local" value={formData.endTime} onChange={(e) => handleChange('endTime', e.target.value)} InputLabelProps={{ shrink: true }} required fullWidth />
+                    <TextField label="Location" value={formData.location} onChange={(e) => handleChange('location', e.target.value)} fullWidth />
+                </Box>
+
+                {/* Row 3: Attendees | Reminder */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 2 }}>
+                    <Autocomplete multiple freeSolo options={[]} value={formData.attendees} onChange={(e, newValue) => handleChange('attendees', newValue)} renderInput={(params) => (<TextField {...params} label="Attendees" placeholder="Type and press Enter" />)} fullWidth />
+                    <TextField label="Reminder (minutes before)" type="number" value={formData.reminder} onChange={(e) => handleChange('reminder', parseInt(e.target.value) || 15)} fullWidth />
+                </Box>
+
+                {/* Row 4: Description */}
+                <TextField label="Description" value={formData.description} onChange={(e) => handleChange('description', e.target.value)} multiline rows={2} fullWidth />
+            </Box>
+        </MuiModal>
     );
 };
 

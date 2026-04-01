@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Grid } from '@mui/material';
+import { Box, TextField } from '@mui/material';
 import axios from 'axios';
 import AlertDialog from '../shared/AlertDialog.jsx';
 
@@ -63,8 +63,10 @@ const AddVendor = ({ onSuccess, onCancel }) => {
 
     return (
         <Box component="form" onSubmit={handleSubmit} sx={{ p: 2 }}>
-            <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+
+                {/* Row 1: Name | Email | Phone */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
                     <TextField
                         label="Vendor Name"
                         value={formData.name}
@@ -72,8 +74,6 @@ const AddVendor = ({ onSuccess, onCancel }) => {
                         required
                         fullWidth
                     />
-                </Grid>
-                <Grid item xs={12} sm={6}>
                     <TextField
                         label="Email"
                         type="email"
@@ -81,56 +81,57 @@ const AddVendor = ({ onSuccess, onCancel }) => {
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         fullWidth
                     />
-                </Grid>
-                <Grid item xs={12} sm={6}>
                     <TextField
                         label="Phone"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         fullWidth
                     />
-                </Grid>
-                <Grid item xs={12} sm={6}>
+                </Box>
+
+                {/* Row 2: City | State | GST Number */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
                     <TextField
                         label="City"
                         value={formData.city}
                         onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                         fullWidth
                     />
-                </Grid>
-                <Grid item xs={12} sm={6}>
                     <TextField
                         label="State"
                         value={formData.state}
                         onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                         fullWidth
                     />
-                </Grid>
-                <Grid item xs={12} sm={6}>
                     <TextField
                         label="GST Number"
                         value={formData.gstNumber}
                         onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
                         fullWidth
                     />
-                </Grid>
-                <Grid item xs={12}>
-                    <TextField
-                        label="Address"
-                        value={formData.address}
-                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                        fullWidth
-                        multiline
-                        rows={2}
-                    />
-                </Grid>
-            </Grid>
+                </Box>
 
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}>
-                <Button onClick={onCancel}>Cancel</Button>
-                <Button type="submit" variant="contained">
+                {/* Row 3: Address (Full Width) */}
+                <TextField
+                    label="Address"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    fullWidth
+                    multiline
+                    rows={2}
+                />
+            </Box>
+
+            {/* Action Buttons */}
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
+                <button type="button" onClick={onCancel}
+                    className="px-6 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium text-gray-700">
+                    Cancel
+                </button>
+                <button type="submit"
+                    className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white">
                     Add Vendor
-                </Button>
+                </button>
             </Box>
 
             <AlertDialog

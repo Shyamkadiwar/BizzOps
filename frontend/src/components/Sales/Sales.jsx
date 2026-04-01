@@ -9,6 +9,8 @@ import MuiModal from "../shared/MuiModal";
 import Layout from "../Layout.jsx";
 import ConfirmDialog from '../shared/ConfirmDialog.jsx';
 import CustomerDetailsModal from '../Customers/CustomerDetailsModal.jsx';
+import ProfessionalDataGrid from "../shared/ProfessionalDataGrid.jsx";
+
 
 const token = localStorage.getItem('accessToken');
 
@@ -232,7 +234,7 @@ function Sales() {
 
     return (
         <Layout>
-            <Box sx={{ p: 6, background: '#F5F5F5' }}>
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 p-6">
                 {/* Header with Action Buttons */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                     <Typography variant="h4" sx={{ fontWeight: 600 }}>
@@ -251,7 +253,7 @@ function Sales() {
                 </Box>
 
                 <Box sx={{ height: 600, width: '100%' }}>
-                    <DataGrid
+                    <ProfessionalDataGrid
                         rows={sales}
                         columns={columns}
                         loading={loading}
@@ -264,7 +266,7 @@ function Sales() {
                         disableRowSelectionOnClick
                     />
                 </Box>
-            </Box>
+            </div>
 
             <MuiModal
                 open={openModal}

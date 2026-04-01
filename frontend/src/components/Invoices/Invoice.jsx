@@ -5,6 +5,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import { Download } from 'lucide-react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from "../Layout.jsx";
+import ProfessionalDataGrid from "../shared/ProfessionalDataGrid.jsx";
 
 const token = localStorage.getItem('accessToken');
 
@@ -439,7 +440,7 @@ function Invoice() {
 
     return (
         <Layout>
-            <Box sx={{ p: 6, background: '#F5F5F5' }}>
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 p-6">
                 {/* Header with Action Buttons */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Typography variant="h4" sx={{ fontWeight: 600 }}>
@@ -456,20 +457,20 @@ function Invoice() {
                 </Typography>
 
                 <Box sx={{ height: 600, width: '100%' }}>
-                    <DataGrid
-                        rows={invoices}
-                        columns={columns}
-                        loading={loading}
-                        initialState={{
-                            pagination: {
-                                paginationModel: { pageSize: 10, page: 0 },
-                            },
-                        }}
-                        pageSizeOptions={[10, 25, 50, 100]}
-                        disableRowSelectionOnClick
-                    />
+                    <ProfessionalDataGrid
+                                            rows={invoices}
+                                            columns={columns}
+                                            loading={loading}
+                                            initialState={{
+                                                pagination: {
+                                                    paginationModel: { pageSize: 10, page: 0 },
+                                                },
+                                            }}
+                                            pageSizeOptions={[10, 25, 50, 100]}
+                                            disableRowSelectionOnClick
+                                        />
                 </Box>
-            </Box>
+            </div>
         </Layout>
     );
 }

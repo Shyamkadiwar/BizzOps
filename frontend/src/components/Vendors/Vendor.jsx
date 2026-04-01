@@ -144,7 +144,7 @@ const Vendor = () => {
 
     return (
         <Layout>
-            <Box sx={{ p: 6, background: '#F5F5F5' }}>
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 p-6">
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                     <Typography variant="h4" sx={{ fontWeight: 600 }}>
                         Vendor Management
@@ -169,7 +169,7 @@ const Vendor = () => {
                         disableRowSelectionOnClick
                     />
                 </Box>
-            </Box>
+            </div>
 
             <MuiModal
                 open={openModal}

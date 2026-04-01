@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { Box, TextField, Button, Grid } from '@mui/material';
+import { Box, TextField } from '@mui/material';
 import AlertDialog from '../shared/AlertDialog.jsx';
 
 function AddCustomers({ addNewCustomer, onCancel }) {
@@ -78,9 +78,10 @@ function AddCustomers({ addNewCustomer, onCancel }) {
 
     return (
         <Box component="form" onSubmit={handleAddCustomer} sx={{ p: 2 }}>
-            <Grid container spacing={2}>
-                {/* Required Fields */}
-                <Grid item xs={12} sm={6}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+
+                {/* Row 1: Name | Email | Phone */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
                     <TextField
                         label="Name"
                         value={formData.name}
@@ -88,8 +89,6 @@ function AddCustomers({ addNewCustomer, onCancel }) {
                         required
                         fullWidth
                     />
-                </Grid>
-                <Grid item xs={12} sm={6}>
                     <TextField
                         label="Email"
                         type="email"
@@ -98,8 +97,6 @@ function AddCustomers({ addNewCustomer, onCancel }) {
                         required
                         fullWidth
                     />
-                </Grid>
-                <Grid item xs={12} sm={6}>
                     <TextField
                         label="Phone"
                         value={formData.phone}
@@ -107,8 +104,10 @@ function AddCustomers({ addNewCustomer, onCancel }) {
                         required
                         fullWidth
                     />
-                </Grid>
-                <Grid item xs={12} sm={6}>
+                </Box>
+
+                {/* Row 2: City | State | Pincode */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
                     <TextField
                         label="City"
                         value={formData.city}
@@ -116,73 +115,69 @@ function AddCustomers({ addNewCustomer, onCancel }) {
                         required
                         fullWidth
                     />
-                </Grid>
-
-                {/* Optional Fields */}
-                <Grid item xs={12}>
-                    <TextField
-                        label="Address"
-                        value={formData.address}
-                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                        fullWidth
-                        multiline
-                        rows={2}
-                    />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        label="Company"
-                        value={formData.company}
-                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                        fullWidth
-                    />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        label="GST Number"
-                        value={formData.gstNumber}
-                        onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
-                        fullWidth
-                    />
-                </Grid>
-                <Grid item xs={12} sm={6}>
                     <TextField
                         label="State"
                         value={formData.state}
                         onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                         fullWidth
                     />
-                </Grid>
-                <Grid item xs={12} sm={6}>
                     <TextField
                         label="Pincode"
                         value={formData.pincode}
                         onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
                         fullWidth
                     />
-                </Grid>
-                <Grid item xs={12}>
+                </Box>
+
+                {/* Row 3: Company | GST Number (2 cols) */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
                     <TextField
-                        label="Notes"
-                        value={formData.notes}
-                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                        label="Company"
+                        value={formData.company}
+                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                         fullWidth
-                        multiline
-                        rows={3}
                     />
-                </Grid>
-            </Grid>
+                    <TextField
+                        label="GST Number"
+                        value={formData.gstNumber}
+                        onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
+                        fullWidth
+                    />
+                </Box>
+
+                {/* Row 4: Address (Full Width) */}
+                <TextField
+                    label="Address"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    fullWidth
+                    multiline
+                    rows={2}
+                />
+
+                {/* Row 5: Notes (Full Width) */}
+                <TextField
+                    label="Notes"
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    fullWidth
+                    multiline
+                    rows={3}
+                />
+            </Box>
 
             {/* Action Buttons */}
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
                 {onCancel && (
-                    <Button onClick={onCancel} variant="outlined">
+                    <button type="button" onClick={onCancel}
+                        className="px-6 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium text-gray-700">
                         Cancel
-                    </Button>
+                    </button>
                 )}
-                <Button type="submit" variant="contained">
+                <button type="submit"
+                    className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white">
                     Add Customer
-                </Button>
+                </button>
             </Box>
 
             {/* Alert Dialog */}

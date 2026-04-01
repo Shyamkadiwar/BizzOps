@@ -3,13 +3,11 @@ import React, { useState, useEffect } from "react";
 import {
     Box,
     TextField,
-    Button,
-    Grid,
     IconButton,
     Typography,
     Autocomplete
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Plus } from 'lucide-react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AlertDialog from '../shared/AlertDialog.jsx';
 
@@ -131,9 +129,10 @@ function AddProduct({ onProductAdded, onCancel }) {
 
     return (
         <Box component="form" onSubmit={handleSubmit} sx={{ p: 2 }}>
-            <Grid container spacing={2}>
-                {/* Product Name */}
-                <Grid item xs={12} sm={6}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+
+                {/* Row 1: Product Name | Category | Vendor */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
                     <TextField
                         label="Product Name *"
                         value={formData.name}
@@ -141,10 +140,6 @@ function AddProduct({ onProductAdded, onCancel }) {
                         required
                         fullWidth
                     />
-                </Grid>
-
-                {/* Category */}
-                <Grid item xs={12} sm={6}>
                     <TextField
                         label="Category *"
                         value={formData.category}
@@ -152,36 +147,6 @@ function AddProduct({ onProductAdded, onCancel }) {
                         required
                         fullWidth
                     />
-                </Grid>
-
-                {/* Cost */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        label="Cost Price *"
-                        type="number"
-                        value={formData.cost}
-                        onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
-                        required
-                        fullWidth
-                        inputProps={{ min: 0, step: "0.01" }}
-                    />
-                </Grid>
-
-                {/* Sale Price */}
-                <Grid item xs={12} sm={6}>
-                    <TextField
-                        label="Sale Price *"
-                        type="number"
-                        value={formData.salePrice}
-                        onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
-                        required
-                        fullWidth
-                        inputProps={{ min: 0, step: "0.01" }}
-                    />
-                </Grid>
-
-                {/* Vendor */}
-                <Grid item xs={12} sm={6}>
                     <Autocomplete
                         options={vendors}
                         getOptionLabel={(option) => option.name || ''}
@@ -192,7 +157,7 @@ function AddProduct({ onProductAdded, onCancel }) {
                                 {...params}
                                 label="Vendor *"
                                 required
-                                placeholder="Select or type vendor name..."
+                                placeholder="Select vendor..."
                             />
                         )}
                         freeSolo
@@ -202,70 +167,83 @@ function AddProduct({ onProductAdded, onCancel }) {
                             }
                         }}
                     />
-                </Grid>
+                </Box>
 
-                {/* Description */}
-                <Grid item xs={12} sm={6}>
+                {/* Row 2: Cost Price | Sale Price | Description */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                    <TextField
+                        label="Cost Price *"
+                        type="number"
+                        value={formData.cost}
+                        onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
+                        required
+                        fullWidth
+                        inputProps={{ min: 0, step: "0.01" }}
+                    />
+                    <TextField
+                        label="Sale Price *"
+                        type="number"
+                        value={formData.salePrice}
+                        onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+                        required
+                        fullWidth
+                        inputProps={{ min: 0, step: "0.01" }}
+                    />
                     <TextField
                         label="Description"
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         fullWidth
-                        multiline
-                        rows={1}
                     />
-                </Grid>
+                </Box>
 
                 {/* Taxes Section */}
-                <Grid item xs={12}>
+                <Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="subtitle2">Taxes</Typography>
-                        <Button
-                            size="small"
-                            startIcon={<AddIcon />}
-                            onClick={handleAddTax}
-                        >
-                            Add Tax
-                        </Button>
+                        <Typography variant="subtitle1" fontWeight="bold">Taxes (Optional)</Typography>
+                        <button type="button" onClick={handleAddTax}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-xs font-medium text-gray-600">
+                            <Plus size={14} /> Add Tax
+                        </button>
                     </Box>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        {formData.taxes.map((tax, index) => (
-                            <Box key={index} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                <TextField
-                                    label="Tax Name"
-                                    value={tax.name}
-                                    onChange={(e) => handleTaxChange(index, 'name', e.target.value)}
-                                    size="small"
-                                    sx={{ flex: 1 }}
-                                />
-                                <TextField
-                                    label="Rate (%)"
-                                    type="number"
-                                    value={tax.rate}
-                                    onChange={(e) => handleTaxChange(index, 'rate', e.target.value)}
-                                    size="small"
-                                    sx={{ width: 120 }}
-                                    inputProps={{ min: 0, max: 100, step: 0.01 }}
-                                />
-                                <IconButton onClick={() => handleRemoveTax(index)} size="small" color="error">
-                                    <DeleteIcon />
-                                </IconButton>
-                            </Box>
-                        ))}
-                    </Box>
-                </Grid>
-            </Grid>
+                    {formData.taxes.map((tax, index) => (
+                        <Box key={index} sx={{ display: 'grid', gridTemplateColumns: '1fr 200px auto', gap: 1, mb: 1 }}>
+                            <TextField
+                                label="Tax Name (e.g., GST, CGST)"
+                                value={tax.name}
+                                onChange={(e) => handleTaxChange(index, 'name', e.target.value)}
+                                size="small"
+                                fullWidth
+                            />
+                            <TextField
+                                label="Rate (%)"
+                                type="number"
+                                value={tax.rate}
+                                onChange={(e) => handleTaxChange(index, 'rate', e.target.value)}
+                                size="small"
+                                fullWidth
+                                inputProps={{ min: 0, max: 100, step: 0.01 }}
+                            />
+                            <IconButton onClick={() => handleRemoveTax(index)} size="small" color="error">
+                                <DeleteIcon />
+                            </IconButton>
+                        </Box>
+                    ))}
+                </Box>
+            </Box>
 
             {/* Action Buttons */}
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
                 {onCancel && (
-                    <Button onClick={onCancel} variant="outlined">
+                    <button type="button" onClick={onCancel}
+                        className="px-6 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium text-gray-700">
                         Cancel
-                    </Button>
+                    </button>
                 )}
-                <Button type="submit" variant="contained">
+                <button type="submit"
+                    className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white">
                     Create Product
-                </Button>
+                </button>
             </Box>
 
             {/* Alert Dialog */}

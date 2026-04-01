@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
     TextField,
     MenuItem,
     Box,
@@ -14,6 +9,7 @@ import {
 } from '@mui/material';
 import { Add, Close } from '@mui/icons-material';
 import axios from 'axios';
+import MuiModal from '../shared/MuiModal.jsx';
 
 const AddTaskModal = ({ open, onClose, onTaskAdded, initialStatus }) => {
     const [formData, setFormData] = useState({
@@ -114,124 +110,65 @@ const AddTaskModal = ({ open, onClose, onTaskAdded, initialStatus }) => {
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-            <DialogTitle>Add New Task</DialogTitle>
-            <DialogContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-                    <TextField
-                        label="Task Name"
-                        value={formData.name}
-                        onChange={(e) => handleChange('name', e.target.value)}
-                        required
-                        fullWidth
-                    />
+        <MuiModal open={open} onClose={handleClose} title="Add New Task"
+            actions={
+                <>
+                    <button onClick={handleClose}
+                        className="px-6 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium text-gray-700">
+                        Cancel
+                    </button>
+                    <button onClick={handleSubmit} disabled={loading}
+                        className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white disabled:opacity-50">
+                        {loading ? 'Creating...' : 'Create Task'}
+                    </button>
+                </>
+            }
+        >
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                {/* Row 1: Task Name | Priority | Status */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                    <TextField label="Task Name" value={formData.name} onChange={(e) => handleChange('name', e.target.value)} required fullWidth />
+                    <TextField select label="Priority" value={formData.priority} onChange={(e) => handleChange('priority', e.target.value)} fullWidth>
+                        <MenuItem value="Low">Low</MenuItem>
+                        <MenuItem value="Medium">Medium</MenuItem>
+                        <MenuItem value="High">High</MenuItem>
+                        <MenuItem value="Urgent">Urgent</MenuItem>
+                    </TextField>
+                    <TextField select label="Status" value={formData.status} onChange={(e) => handleChange('status', e.target.value)} fullWidth>
+                        <MenuItem value="Not Started">Not Started</MenuItem>
+                        <MenuItem value="In Progress">In Progress</MenuItem>
+                        <MenuItem value="Waiting">Waiting</MenuItem>
+                        <MenuItem value="Done">Done</MenuItem>
+                    </TextField>
+                </Box>
 
-                    <TextField
-                        label="Description"
-                        value={formData.description}
-                        onChange={(e) => handleChange('description', e.target.value)}
-                        multiline
-                        rows={3}
-                        fullWidth
-                    />
+                {/* Row 2: Due Date | Assigned To */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+                    <TextField label="Due Date" type="date" value={formData.dueDate} onChange={(e) => handleChange('dueDate', e.target.value)} InputLabelProps={{ shrink: true }} required fullWidth />
+                    <TextField select label="Assigned To" value={formData.assignedTo?._id || ''} onChange={(e) => { const user = users.find(u => u._id === e.target.value); handleChange('assignedTo', user); }} fullWidth>
+                        <MenuItem value="">None</MenuItem>
+                        {users.map((user) => (<MenuItem key={user._id} value={user._id}>{user.name}</MenuItem>))}
+                    </TextField>
+                </Box>
 
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                        <TextField
-                            select
-                            label="Priority"
-                            value={formData.priority}
-                            onChange={(e) => handleChange('priority', e.target.value)}
-                            fullWidth
-                        >
-                            <MenuItem value="Low">Low</MenuItem>
-                            <MenuItem value="Medium">Medium</MenuItem>
-                            <MenuItem value="High">High</MenuItem>
-                            <MenuItem value="Urgent">Urgent</MenuItem>
-                        </TextField>
+                {/* Row 3: Description */}
+                <TextField label="Description" value={formData.description} onChange={(e) => handleChange('description', e.target.value)} multiline rows={3} fullWidth />
 
-                        <TextField
-                            select
-                            label="Status"
-                            value={formData.status}
-                            onChange={(e) => handleChange('status', e.target.value)}
-                            fullWidth
-                        >
-                            <MenuItem value="Not Started">Not Started</MenuItem>
-                            <MenuItem value="In Progress">In Progress</MenuItem>
-                            <MenuItem value="Waiting">Waiting</MenuItem>
-                            <MenuItem value="Done">Done</MenuItem>
-                        </TextField>
+                {/* Subtasks */}
+                <Box>
+                    <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>Subtasks</Typography>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 1, mb: 1 }}>
+                        <TextField size="small" placeholder="Add subtask" value={newSubtask} onChange={(e) => setNewSubtask(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAddSubtask()} fullWidth />
+                        <IconButton onClick={handleAddSubtask} color="primary"><Add /></IconButton>
                     </Box>
-
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                        <TextField
-                            label="Due Date"
-                            type="date"
-                            value={formData.dueDate}
-                            onChange={(e) => handleChange('dueDate', e.target.value)}
-                            InputLabelProps={{ shrink: true }}
-                            required
-                            fullWidth
-                        />
-
-                        <TextField
-                            select
-                            label="Assigned To"
-                            value={formData.assignedTo?._id || ''}
-                            onChange={(e) => {
-                                const user = users.find(u => u._id === e.target.value);
-                                handleChange('assignedTo', user);
-                            }}
-                            fullWidth
-                        >
-                            <MenuItem value="">None</MenuItem>
-                            {users.map((user) => (
-                                <MenuItem key={user._id} value={user._id}>
-                                    {user.name}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                    </Box>
-
-                    <Box>
-                        <Typography variant="subtitle2" sx={{ mb: 1 }}>Subtasks</Typography>
-                        <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                            <TextField
-                                size="small"
-                                placeholder="Add subtask"
-                                value={newSubtask}
-                                onChange={(e) => setNewSubtask(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleAddSubtask()}
-                                fullWidth
-                            />
-                            <IconButton onClick={handleAddSubtask} color="primary">
-                                <Add />
-                            </IconButton>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                            {formData.subtasks.map((subtask, index) => (
-                                <Chip
-                                    key={index}
-                                    label={subtask.title}
-                                    onDelete={() => handleRemoveSubtask(index)}
-                                    size="small"
-                                />
-                            ))}
-                        </Box>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        {formData.subtasks.map((subtask, index) => (
+                            <Chip key={index} label={subtask.title} onDelete={() => handleRemoveSubtask(index)} size="small" />
+                        ))}
                     </Box>
                 </Box>
-            </DialogContent>
-            <DialogActions>
-                <button onClick={handleClose}
-                    className="px-4 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
-                    Cancel
-                </button>
-                <button onClick={handleSubmit} disabled={loading}
-                    className="px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white disabled:opacity-50">
-                    {loading ? 'Creating...' : 'Create Task'}
-                </button>
-            </DialogActions>
-        </Dialog>
+            </Box>
+        </MuiModal>
     );
 };
 
