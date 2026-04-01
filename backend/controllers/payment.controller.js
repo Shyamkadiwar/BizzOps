@@ -100,31 +100,41 @@ const createPaymentLink = asyncHandler(async (req, res) => {
  */
 const handleWebhook = async (req, res) => {
     try {
+        console.log('[WEBHOOK] Received Razorpay webhook');
         const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET;
+
+        // req.body is a raw Buffer from express.raw()
+        const rawBody = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : 
+                         typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
 
         // Verify signature
         const signature = req.headers['x-razorpay-signature'];
         if (!signature) {
+            console.log('[WEBHOOK] Missing x-razorpay-signature header');
             return res.status(400).json({ error: 'Missing signature' });
         }
 
-        const body = req.body; // This will be raw buffer for webhook route
         const expectedSignature = crypto
             .createHmac('sha256', webhookSecret)
-            .update(typeof body === 'string' ? body : JSON.stringify(body))
+            .update(rawBody)
             .digest('hex');
 
         if (signature !== expectedSignature) {
-            console.error('Webhook signature mismatch');
+            console.error('[WEBHOOK] Signature mismatch');
+            console.error('[WEBHOOK] Expected:', expectedSignature);
+            console.error('[WEBHOOK] Received:', signature);
             return res.status(400).json({ error: 'Invalid signature' });
         }
 
-        const event = typeof body === 'string' ? JSON.parse(body) : body;
+        console.log('[WEBHOOK] Signature verified ✅');
+        const event = JSON.parse(rawBody);
+        console.log('[WEBHOOK] Event type:', event.event);
 
         // Handle payment_link.paid event
         if (event.event === 'payment_link.paid') {
             const paymentLinkEntity = event.payload?.payment_link?.entity;
             if (!paymentLinkEntity) {
+                console.log('[WEBHOOK] No payment link entity in payload');
                 return res.status(200).json({ status: 'ok', note: 'No payment link entity' });
             }
 
@@ -136,10 +146,13 @@ const handleWebhook = async (req, res) => {
             try {
                 invoiceIds = JSON.parse(notes.invoice_ids || '[]');
             } catch (e) {
-                console.error('Failed to parse invoice_ids from notes');
+                console.error('[WEBHOOK] Failed to parse invoice_ids from notes');
             }
 
+            console.log('[WEBHOOK] Owner:', ownerId, '| Customer:', customerId, '| Invoices:', invoiceIds);
+
             if (!ownerId || !customerId || invoiceIds.length === 0) {
+                console.log('[WEBHOOK] Missing metadata in notes');
                 return res.status(200).json({ status: 'ok', note: 'Missing metadata' });
             }
 
@@ -149,6 +162,8 @@ const handleWebhook = async (req, res) => {
                 owner: ownerId,
                 paid: false
             });
+
+            console.log('[WEBHOOK] Found', invoices.length, 'unpaid invoices to mark as paid');
 
             const paidDate = new Date();
             let totalPaid = 0;
@@ -165,6 +180,8 @@ const handleWebhook = async (req, res) => {
             if (customer && totalPaid > 0) {
                 customer.balance = Math.max(0, customer.balance - totalPaid);
                 await customer.save();
+
+                console.log('[WEBHOOK] Customer balance updated to:', customer.balance);
 
                 // Create transaction record
                 const { CustomerTransaction } = await import('../models/customerTransaction.model.js');
@@ -189,17 +206,18 @@ const handleWebhook = async (req, res) => {
                         customer.balance,
                         user?.businessName || 'BizzOps'
                     );
+                    console.log('[WEBHOOK] Confirmation email sent ✅');
                 } catch (emailErr) {
-                    console.error('Confirmation email failed:', emailErr.message);
+                    console.error('[WEBHOOK] Confirmation email failed:', emailErr.message);
                 }
             }
 
-            console.log(`✅ Webhook processed: ${invoices.length} invoices paid, total ₹${totalPaid}`);
+            console.log(`[WEBHOOK] ✅ Processed: ${invoices.length} invoices paid, total ₹${totalPaid}`);
         }
 
         return res.status(200).json({ status: 'ok' });
     } catch (error) {
-        console.error('Webhook error:', error);
+        console.error('[WEBHOOK] Error:', error);
         return res.status(200).json({ status: 'ok', error: error.message });
     }
 };
