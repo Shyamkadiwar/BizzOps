@@ -8,6 +8,16 @@ dotenv.config();
 
 const app = express();
 
+import { handleWebhook } from "../controllers/payment.controller.js";
+app.post("/api/v1/payment/webhook",
+  express.raw({ type: '*/*' }),  // Accept any content type as raw buffer
+  handleWebhook
+);
+// GET endpoint to test if webhook route is reachable on deployed server
+app.get("/api/v1/payment/webhook", (req, res) => {
+  res.status(200).json({ status: 'active', message: 'Razorpay webhook endpoint is reachable', timestamp: new Date().toISOString() });
+});
+
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
   : [];
@@ -24,10 +34,6 @@ const corsOptions = {
   credentials: true,
 };
 app.use(cors(corsOptions));
-
-// Razorpay webhook needs raw body for signature verification — must be BEFORE express.json()
-import { handleWebhook } from "../controllers/payment.controller.js";
-app.post("/api/v1/payment/webhook", express.raw({ type: 'application/json' }), handleWebhook);
 
 // Middleware
 app.use(express.json({ limit: '16kb' }));
