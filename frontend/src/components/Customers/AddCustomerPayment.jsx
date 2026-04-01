@@ -13,7 +13,7 @@ import {
     CircularProgress,
     Divider
 } from '@mui/material';
-import { Send as SendIcon } from '@mui/icons-material';
+import { Send as SendIcon, Sync as SyncIcon } from '@mui/icons-material';
 import axios from 'axios';
 import AlertDialog from '../shared/AlertDialog';
 
@@ -24,15 +24,15 @@ const AddCustomerPayment = ({ open, onClose, customerId, customerName, currentBa
     const [loadingInvoices, setLoadingInvoices] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [sendingLink, setSendingLink] = useState(false);
+    const [verifying, setVerifying] = useState(false);
     const [alertDialog, setAlertDialog] = useState({ open: false, title: '', message: '', severity: 'info' });
 
     const token = localStorage.getItem('accessToken');
 
     useEffect(() => {
         if (open && customerId) {
-            fetchUnpaidInvoices();
-            setSelectedInvoices([]);
-            setPaymentDate(new Date().toISOString().split('T')[0]);
+            // Auto-verify pending Razorpay payments when dialog opens
+            handleVerifyPayments(true);
         }
     }, [open, customerId]);
 
@@ -114,10 +114,10 @@ const AddCustomerPayment = ({ open, onClose, customerId, customerName, currentBa
             setAlertDialog({
                 open: true,
                 title: '📧 Payment Link Sent!',
-                message: `Payment link for ₹${data.amount.toLocaleString('en-IN')} sent to customer\'s email.\n\nLink: ${data.paymentLink}`,
+                message: `Payment link for ₹${data.amount.toLocaleString('en-IN')} sent to customer's email.\n\nLink: ${data.paymentLink}`,
                 severity: 'success'
             });
-            setTimeout(() => { setSelectedInvoices([]); onSuccess(); }, 2000);
+            setTimeout(() => { setSelectedInvoices([]); fetchUnpaidInvoices(); }, 2000);
         } catch (error) {
             setAlertDialog({ open: true, title: 'Error', message: error.response?.data?.message || 'Failed to create payment link', severity: 'error' });
         } finally {
@@ -125,10 +125,59 @@ const AddCustomerPayment = ({ open, onClose, customerId, customerName, currentBa
         }
     };
 
+    // Verify pending Razorpay payments by checking Razorpay API
+    const handleVerifyPayments = async (silent = false) => {
+        setVerifying(true);
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/v1/payment/verify`,
+                { customerId },
+                { headers: { 'Authorization': token }, withCredentials: true }
+            );
+            const data = response.data.data;
+
+            if (data.updated > 0 && !silent) {
+                setAlertDialog({
+                    open: true,
+                    title: '✅ Payments Verified!',
+                    message: response.data.message,
+                    severity: 'success'
+                });
+                // Refresh parent data
+                setTimeout(() => onSuccess(), 1500);
+            } else if (data.updated > 0 && silent) {
+                // Silent mode - just refresh
+                onSuccess();
+                return; // onSuccess will re-open or refresh
+            }
+        } catch (error) {
+            console.error('Error verifying payments:', error);
+        } finally {
+            setVerifying(false);
+            // Always fetch fresh invoices after verification
+            fetchUnpaidInvoices();
+            setSelectedInvoices([]);
+            setPaymentDate(new Date().toISOString().split('T')[0]);
+        }
+    };
+
     return (
         <>
             <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-                <DialogTitle>Record Payment — {customerName}</DialogTitle>
+                <DialogTitle>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>Record Payment — {customerName}</span>
+                        <Button
+                            size="small"
+                            startIcon={verifying ? <CircularProgress size={14} /> : <SyncIcon />}
+                            onClick={() => handleVerifyPayments(false)}
+                            disabled={verifying}
+                            sx={{ textTransform: 'none', fontSize: '0.75rem' }}
+                        >
+                            {verifying ? 'Checking...' : 'Verify Payments'}
+                        </Button>
+                    </Box>
+                </DialogTitle>
                 <form onSubmit={handleSubmit}>
                     <DialogContent>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -182,6 +231,7 @@ const AddCustomerPayment = ({ open, onClose, customerId, customerName, currentBa
                                 <Box sx={{ maxHeight: 300, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 1 }}>
                                     {unpaidInvoices.map((invoice) => {
                                         const isSelected = selectedInvoices.includes(invoice._id);
+                                        const hasPaymentLink = !!invoice.razorpayPaymentLinkId;
                                         return (
                                             <Box
                                                 key={invoice._id}
@@ -198,9 +248,14 @@ const AddCustomerPayment = ({ open, onClose, customerId, customerName, currentBa
                                                 <Checkbox checked={isSelected} size="small" sx={{ p: 0 }} />
                                                 <Box sx={{ flex: 1, minWidth: 0 }}>
                                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <Typography variant="body2" fontWeight={600}>
-                                                            Invoice #{invoice.invoiceNumber || 'N/A'}
-                                                        </Typography>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                            <Typography variant="body2" fontWeight={600}>
+                                                                Invoice #{invoice.invoiceNumber || 'N/A'}
+                                                            </Typography>
+                                                            {hasPaymentLink && (
+                                                                <Chip label="Link Sent" size="small" color="info" variant="outlined" sx={{ fontSize: '0.6rem', height: 18 }} />
+                                                            )}
+                                                        </Box>
                                                         <Typography variant="body2" fontWeight={700} color="error.main">
                                                             ₹{invoice.grandTotal.toLocaleString('en-IN')}
                                                         </Typography>

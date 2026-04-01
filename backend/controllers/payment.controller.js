@@ -222,4 +222,109 @@ const handleWebhook = async (req, res) => {
     }
 };
 
-export { createPaymentLink, handleWebhook };
+/**
+ * Verify payment status by checking Razorpay API directly
+ * Called from frontend to check if a payment link has been paid
+ */
+const verifyPayment = asyncHandler(async (req, res) => {
+    const { customerId } = req.body;
+    const owner = req.user?._id;
+
+    if (!owner) throw new ApiError(401, "Unauthorized request");
+    if (!customerId) throw new ApiError(400, "Customer ID is required");
+
+    // Find all invoices for this customer that have a Razorpay payment link and are unpaid
+    const invoices = await Invoice.find({
+        owner,
+        customer: customerId,
+        paid: false,
+        razorpayPaymentLinkId: { $exists: true, $ne: null }
+    });
+
+    if (invoices.length === 0) {
+        return res.status(200).json(new ApiResponse(200, { updated: 0 }, "No pending payment links found"));
+    }
+
+    // Group invoices by payment link ID
+    const linkGroups = {};
+    for (const inv of invoices) {
+        const linkId = inv.razorpayPaymentLinkId;
+        if (!linkGroups[linkId]) linkGroups[linkId] = [];
+        linkGroups[linkId].push(inv);
+    }
+
+    let totalUpdated = 0;
+    let totalPaid = 0;
+
+    for (const [linkId, linkedInvoices] of Object.entries(linkGroups)) {
+        try {
+            // Fetch payment link status from Razorpay API
+            const paymentLink = await razorpay.paymentLink.fetch(linkId);
+            console.log(`[VERIFY] Payment link ${linkId}: status = ${paymentLink.status}`);
+
+            if (paymentLink.status === 'paid') {
+                const paidDate = new Date();
+
+                // Mark all linked invoices as paid
+                for (const invoice of linkedInvoices) {
+                    invoice.paid = true;
+                    invoice.paidDate = paidDate;
+                    await invoice.save();
+                    totalPaid += invoice.grandTotal;
+                    totalUpdated++;
+                }
+            }
+        } catch (err) {
+            console.error(`[VERIFY] Error checking payment link ${linkId}:`, err.message);
+        }
+    }
+
+    // If any invoices were newly marked as paid, update customer balance
+    if (totalPaid > 0) {
+        const customer = await Customer.findById(customerId);
+        if (customer) {
+            customer.balance = Math.max(0, customer.balance - totalPaid);
+            await customer.save();
+
+            // Create transaction record
+            const { CustomerTransaction } = await import('../models/customerTransaction.model.js');
+            await CustomerTransaction.create({
+                owner,
+                customer: customerId,
+                type: 'payment',
+                amount: -totalPaid,
+                balanceAfter: customer.balance,
+                description: `Online payment via Razorpay (${totalUpdated} invoice(s))`,
+                date: new Date()
+            });
+
+            // Send confirmation email
+            const user = await User.findById(owner);
+            const paidInvoices = invoices.filter(inv => inv.paid);
+            if (customer.email && paidInvoices.length > 0) {
+                try {
+                    await sendPaymentConfirmationEmail(
+                        customer.email,
+                        customer.name,
+                        paidInvoices,
+                        totalPaid,
+                        customer.balance,
+                        user?.businessName || 'BizzOps'
+                    );
+                } catch (emailErr) {
+                    console.error('[VERIFY] Confirmation email failed:', emailErr.message);
+                }
+            }
+        }
+    }
+
+    return res.status(200).json(new ApiResponse(200, {
+        updated: totalUpdated,
+        totalPaid
+    }, totalUpdated > 0
+        ? `${totalUpdated} invoice(s) verified as paid. ₹${totalPaid.toLocaleString('en-IN')} updated.`
+        : "No new payments found"
+    ));
+});
+
+export { createPaymentLink, handleWebhook, verifyPayment };
