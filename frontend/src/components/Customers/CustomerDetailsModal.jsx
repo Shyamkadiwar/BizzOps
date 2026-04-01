@@ -51,27 +51,11 @@ const CustomerDetailsModal = ({ open, onClose, customerId }) => {
 
     useEffect(() => {
         if (open && customerId) {
-            // Auto-verify any pending Razorpay payments first, then fetch fresh data
-            autoVerifyPayments().then(() => {
-                fetchCustomerDetails();
-                fetchTransactions();
-                fetchSales();
-            });
+            fetchCustomerDetails();
+            fetchTransactions();
+            fetchSales();
         }
     }, [open, customerId]);
-
-    // Silently check Razorpay for completed payments and update
-    const autoVerifyPayments = async () => {
-        try {
-            await axios.post(
-                `${import.meta.env.VITE_BACKEND_URL}/api/v1/payment/verify`,
-                { customerId },
-                { headers: { 'Authorization': token }, withCredentials: true }
-            );
-        } catch (error) {
-            // Silent - don't block UI if verify fails
-        }
-    };
 
     const fetchCustomerDetails = async () => {
         setLoading(true);
