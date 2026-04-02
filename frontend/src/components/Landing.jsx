@@ -126,7 +126,7 @@ function Landing() {
                     <span className="text-gradient">Smarter and Faster</span>
                 </h1>
                 <p className="text-lg md:text-xl text-gray-500 mb-10 max-w-3xl mx-auto animate-fade-in-up delay-200 font-medium">
-                    BizzOps consolidates 12+ critical business functions—from sales tracking to AI-driven insights—into a single, unified platform tailored for SMEs.
+                    BizzOps consolidates 12+ critical business functions from sales tracking to AI-driven insights into a single, unified platform tailored for SMEs.
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-in-up delay-300">
                     <button onClick={() => navigate('/register')} className="bg-gray-900 text-white font-semibold px-8 py-4 rounded-full hover:bg-indigo-600 transition-all hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(79,70,229,0.3)] flex items-center justify-center gap-2">
@@ -164,7 +164,7 @@ function Landing() {
                 <div className="text-center max-w-3xl mx-auto mb-16">
                     <h2 className="text-indigo-600 font-bold mb-3 uppercase tracking-widest text-xs">The BizzOps Difference</h2>
                     <h3 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">Built for scale. <br /> Engineered for simplicity.</h3>
-                    <p className="text-gray-500 text-lg">Replace disjointed tools like Tally, WhatsApp, and spreadsheets with a cohesive, AI-driven engine.</p>
+                    <p className="text-gray-500 text-lg">Replace disjointed tools like Tally, WhatsApp, and spreadsheets with a cohesive, AI driven engine.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
@@ -175,7 +175,7 @@ function Landing() {
                         </div>
                         <h4 className="text-2xl font-bold text-gray-900 mb-3">Agentic AI Intelligence</h4>
                         <p className="text-gray-500 text-lg leading-relaxed max-w-xl">
-                            Our LangChain-powered AI doesn't just chat. It analyzes your inventory, flags low stock, generated smart insights, and uses Gemini Pro to process scanned invoices directly into your database.
+                            Our LangChain powered AI doesn't just chat. It analyzes your inventory, flags low stock, generated smart insights, and uses Gemini Pro to process scanned invoices directly into your database.
                         </p>
                     </div>
 
@@ -231,11 +231,11 @@ function Landing() {
                     {[
                         // Row 1
                         { icon: ShoppingCart, name: "Sales Management", desc: "Execute multi-item sales, track individual product margins, and automatically deduct from inventory in real time." },
-                        { icon: Package, name: "Inventory Management", desc: "Gain complete control with smart stock aggregation, value tracking, and AI-powered low stock predictions." },
-                        { icon: FileText, name: "Auto-Invoicing", desc: "Instantly generate professional, business-branded PDF invoices with auto-calculated per-item taxes on every sale." },
+                        { icon: Package, name: "Inventory Management", desc: "Gain complete control with smart stock aggregation, value tracking, and AI powered low stock predictions." },
+                        { icon: FileText, name: "Auto-Invoicing", desc: "Instantly generate professional, business branded PDF invoices with auto calculated per-item taxes on every sale." },
                         { icon: Users, name: "CRM", desc: "Centralize your customer data. Track lifetime value, retention rates, and automatically update individual balances." },
                         // Row 2 (New modules)
-                        { icon: LayoutGrid, name: "Dashboard", desc: "Get a comprehensive 0-100 Business Health Score with real-time KPI metrics, revenue charts, and live sparklines." },
+                        { icon: LayoutGrid, name: "Dashboard", desc: "Get a comprehensive 0-100 Business Health Score with real time KPI metrics, revenue charts, and live sparklines." },
                         { icon: LineChart, name: "Financial Reports", desc: "Analyze your financial health with deep dive reports comparing revenue against expenses and overall margins." },
                         { icon: Mail, name: "Email Service", desc: "Effortlessly dispatch automated purchase orders to vendors and payment request links seamlessly to your customers." },
                         { icon: CreditCard, name: "Payment Tracking", desc: "Automatically match customer payments received via requested emails to immediately clear pending invoices." },
@@ -245,7 +245,7 @@ function Landing() {
                         { icon: Tag, name: "Product Catalog", desc: "Showcase your entire offering with categories, best-seller analytics, and automated margin calculations." },
                         { icon: ClipboardList, name: "Order Fulfillment", desc: "Manage operational orders with absolute precision. Track pending vs fulfilled metrics and average completion times." },
                         // Row 4
-                        { icon: PieChart, name: "Deals Pipeline", desc: "A visual Kanban-style CRM. Push deals through custom stages, track conversion rates, and forecast pipeline value." },
+                        { icon: PieChart, name: "Deals Pipeline", desc: "A visual Kanban style CRM. Push deals through custom stages, track conversion rates, and forecast pipeline value." },
                         { icon: CheckCircle, name: "Task Management", desc: "Enforce accountability. Assign specific tasks to your staff, set priority deadlines, and monitor completion metrics." },
                         { icon: Calendar, name: "Appointments", desc: "An interactive, drag-and-drop scheduling calendar directly linked to customer profiles for frictionless booking." },
                         { icon: Shield, name: "Staff Tracking", desc: "Manage your workforce effectively. View active staff profiles, role privileges, and detailed productivity scoring." },
@@ -266,7 +266,7 @@ function Landing() {
                 <div className="text-center max-w-3xl mx-auto mb-16">
                     <h2 className="text-indigo-600 font-bold mb-3 uppercase tracking-widest text-xs">Affordable Scale</h2>
                     <h3 className="text-4xl font-extrabold text-gray-900 mb-6">Simple, transparent pricing</h3>
-                    <p className="text-gray-500 text-lg">Stop paying per-module. Get the entire suite at one SME-friendly price.</p>
+                    <p className="text-gray-500 text-lg">Stop paying per-module. Get the entire suite at one SME friendly price.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -344,7 +344,7 @@ function Landing() {
                         <div className="col-span-1 md:col-span-2">
                             <img src={logo} className="h-8 mb-6 opacity-80 object-contain" alt="Bizzops Logo" />
                             <p className="text-gray-500 max-w-sm mb-6 leading-relaxed">
-                                The AI-powered, all-in-one business operating system seamlessly replacing disjointed spreadsheets and fragmented tools for SMEs worldwide.
+                                The AI powered, all in one business operating system seamlessly replacing disjointed spreadsheets and fragmented tools for SMEs worldwide.
                             </p>
                             <div className="flex gap-4">
                                 <a href="https://x.com/KadiwarShyam" target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
