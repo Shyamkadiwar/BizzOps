@@ -258,11 +258,11 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
                         disabled={!currentItem.product || !currentItem.qty}
                         startIcon={<Plus size={16} />}
                         sx={{
-                            background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
+                            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
                             color: '#fff', textTransform: 'none', fontWeight: 600, borderRadius: '10px',
                             px: 3, py: 1.5, height: '56px',
-                            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.25)',
-                            '&:hover': { background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)' },
+                            boxShadow: '0 4px 12px rgba(15, 23, 42, 0.25)',
+                            '&:hover': { background: 'linear-gradient(135deg, #000000 0%, #0f172a 100%)' },
                             '&.Mui-disabled': { background: '#cbd5e1', color: '#94a3b8' }
                         }}
                     >
@@ -272,28 +272,28 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
 
                 {/* Items List */}
                 {items.length > 0 && (
-                    <Paper sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                            Items Added ({items.length})
+                    <Box sx={{ p: 2.5, borderRadius: '16px', background: 'rgba(255, 255, 255, 0.6)', border: '1px solid rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(12px)', boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.05)' }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px', mb: 2 }}>
+                            Items Included ({items.length})
                         </Typography>
-                        <TableContainer>
-                            <Table size="small">
+                        <TableContainer sx={{ background: 'transparent' }}>
+                            <Table size="small" sx={{ '& .MuiTableCell-root': { borderBottom: '1px solid rgba(0,0,0,0.06)' } }}>
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell>Product</TableCell>
-                                        <TableCell align="right">Qty</TableCell>
-                                        <TableCell align="right">Price</TableCell>
-                                        <TableCell align="right">Total</TableCell>
-                                        <TableCell align="center">Action</TableCell>
+                                        <TableCell sx={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Product</TableCell>
+                                        <TableCell align="right" sx={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Qty</TableCell>
+                                        <TableCell align="right" sx={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Price</TableCell>
+                                        <TableCell align="right" sx={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Total</TableCell>
+                                        <TableCell align="center" sx={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>Action</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {items.map((item, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell>{item.productName}</TableCell>
-                                            <TableCell align="right">{item.qty}</TableCell>
-                                            <TableCell align="right">₹{item.price.toLocaleString()}</TableCell>
-                                            <TableCell align="right">₹{(item.price * item.qty).toLocaleString()}</TableCell>
+                                        <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                            <TableCell sx={{ fontWeight: 600, color: '#1e293b' }}>{item.productName}</TableCell>
+                                            <TableCell align="right" sx={{ fontWeight: 600, color: '#475569' }}>{item.qty}</TableCell>
+                                            <TableCell align="right" sx={{ fontWeight: 500, color: '#475569' }}>₹{item.price.toLocaleString()}</TableCell>
+                                            <TableCell align="right" sx={{ fontWeight: 700, color: '#0f172a' }}>₹{(item.price * item.qty).toLocaleString()}</TableCell>
                                             <TableCell align="center">
                                                 <IconButton
                                                     size="small"
@@ -310,25 +310,25 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
                         </TableContainer>
 
                         {/* Totals */}
-                        <Box sx={{ mt: 2, p: 2, background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)', borderRadius: '10px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 2, border: '1px solid #e2e8f0' }}>
+                        <Box sx={{ mt: 3, p: 2.5, background: 'rgba(255, 255, 255, 0.8)', borderRadius: '14px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 2, border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
                             <Box>
-                                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>Total Sale:</Typography>
-                                <Typography variant="h6" sx={{ color: '#0f172a', fontWeight: 700 }}>₹{totalSale.toLocaleString()}</Typography>
+                                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Sale</Typography>
+                                <Typography variant="h6" sx={{ color: '#0f172a', fontWeight: 800, mt: 0.5 }}>₹{totalSale.toLocaleString()}</Typography>
                             </Box>
                             <Box>
-                                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>Total Cost:</Typography>
-                                <Typography variant="h6" sx={{ color: '#64748b', fontWeight: 600 }}>₹{totalCost.toLocaleString()}</Typography>
+                                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Cost</Typography>
+                                <Typography variant="h6" sx={{ color: '#64748b', fontWeight: 600, mt: 0.5 }}>₹{totalCost.toLocaleString()}</Typography>
                             </Box>
                             <Box>
-                                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>Profit:</Typography>
-                                <Typography variant="h6" sx={{ color: '#10b981', fontWeight: 700 }}>₹{totalProfit.toLocaleString()}</Typography>
+                                <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Net Profit</Typography>
+                                <Typography variant="h6" sx={{ color: '#10b981', fontWeight: 800, mt: 0.5 }}>₹{totalProfit.toLocaleString()}</Typography>
                             </Box>
                             <Box>
-                                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>Profit %:</Typography>
-                                <Typography variant="h6" sx={{ color: '#10b981', fontWeight: 700 }}>{profitPercent.toFixed(2)}%</Typography>
+                                <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Margin</Typography>
+                                <Typography variant="h6" sx={{ color: '#10b981', fontWeight: 800, mt: 0.5 }}>{profitPercent.toFixed(2)}%</Typography>
                             </Box>
                         </Box>
-                    </Paper>
+                    </Box>
                 )}
 
                 {/* Row 2: Date | Paid | Customer Select */}

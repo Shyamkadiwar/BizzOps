@@ -2,6 +2,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from 'cors';
 import dotenv from 'dotenv';
+import connectDB from '../db/index.js';
 
 // Load environment variables
 dotenv.config();
@@ -23,10 +24,34 @@ const allowedOrigins = process.env.CORS_ORIGIN
   : [];
 
 const corsOptions = {
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    console.warn(`CORS blocked origin: ${origin}`);
+    return callback(new Error(`CORS policy: origin ${origin} not allowed`));
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 };
+
+// Handle preflight OPTIONS requests for ALL routes BEFORE other middleware
+app.options('*', cors(corsOptions));
 app.use(cors(corsOptions));
+
+// Lazy DB connection middleware — ensures DB is connected on every cold start
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error('DB connection failed on request:', error);
+    res.status(503).json({ message: 'Database unavailable. Please try again.' });
+  }
+});
 
 // Middleware
 app.use(express.json({ limit: '16kb' }));

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import path from "path";
+import os from "os";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import {
     importInventory,
@@ -15,10 +16,13 @@ import {
 
 const router = Router();
 
-// Configure multer for file uploads
+// Use /tmp in production (Vercel serverless — only /tmp is writable)
+// Use ./uploads in local development
+const uploadDir = process.env.NODE_ENV === 'production' ? os.tmpdir() : 'uploads/';
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/');
+        cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
         cb(null, Date.now() + path.extname(file.originalname));
