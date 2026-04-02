@@ -195,20 +195,28 @@ const addSale = asyncHandler(async (req, res) => {
         }
     }
 
-    // Send thank-you email to customer
+    // Send thank-you email to customer with PDF attachment
     if (customerData && customerData.email) {
         try {
             const { sendSalesThankYouEmail } = await import('../services/email.service.js');
+            const { generateInvoicePDFBuffer } = await import('../utils/pdfGenerator.js');
             const { User } = await import('../models/user.model.js');
+            
             const user = await User.findById(owner);
             const updatedCust = await Customer.findById(customerId);
-            console.log('[EMAIL] Sending thank-you email to:', customerData.email);
+            
+            console.log('[EMAIL] Generating PDF for invoice:', invoice._id);
+            const pdfBuffer = await generateInvoicePDFBuffer(invoice, user);
+
+            console.log('[EMAIL] Sending thank-you email with PDF to:', customerData.email);
             await sendSalesThankYouEmail(
                 customerData.email,
                 customerData.name,
                 invoice,
                 updatedCust?.balance || 0,
-                user?.businessName || 'BizzOps'
+                user?.businessName || 'BizzOps',
+                pdfBuffer,
+                user?.website || process.env.FRONTEND_URL || 'example.com'
             );
             console.log('[EMAIL] Thank-you email sent successfully');
         } catch (emailErr) {
@@ -251,7 +259,7 @@ const getSales = asyncHandler(async (req, res) => {
     const allSales = await Sales.find(filter)
         .populate('customer')
         .populate('items.product')
-        .sort({ date: -1 });
+        .sort({ date: -1, createdAt: -1 });
 
     // Transform multi-item sales into individual rows (one per item)
     const transformedSales = [];

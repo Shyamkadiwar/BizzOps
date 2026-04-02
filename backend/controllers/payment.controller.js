@@ -1,7 +1,7 @@
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import razorpay from "../config/razorpay.js";
+import Razorpay from "razorpay";
 import crypto from "crypto";
 import { Invoice } from "../models/invoice.model.js";
 import { Customer } from "../models/customer.models.js";
@@ -24,9 +24,13 @@ const createPaymentLink = asyncHandler(async (req, res) => {
     if (!customer) throw new ApiError(404, "Customer not found");
     if (!customer.email) throw new ApiError(400, "Customer does not have an email address");
 
-    // Fetch user details for business name
+    // Fetch user details for business name & razorpay keys
     const user = await User.findById(owner);
-    const businessName = user?.businessName || 'BizzOps';
+    if (!user) throw new ApiError(404, "Owner not found");
+    if (!user.razorpayKeyId || !user.razorpayKeySecret) {
+        throw new ApiError(400, "Payment gateway is not configured. Please add your Razorpay keys in Settings.");
+    }
+    const businessName = user.businessName || 'BizzOps';
 
     // Fetch selected invoices
     const invoices = await Invoice.find({
@@ -43,9 +47,15 @@ const createPaymentLink = asyncHandler(async (req, res) => {
     const totalAmount = invoices.reduce((sum, inv) => sum + inv.grandTotal, 0);
     const amountInPaise = Math.round(totalAmount * 100);
 
+    // Initialize User-specific Razorpay instance
+    const rp = new Razorpay({
+        key_id: user.razorpayKeyId,
+        key_secret: user.razorpayKeySecret
+    });
+
     // Create Razorpay payment link
     const invoiceNumbers = invoices.map(inv => inv.invoiceNumber || inv._id).join(', ');
-    const paymentLink = await razorpay.paymentLink.create({
+    const paymentLink = await rp.paymentLink.create({
         amount: amountInPaise,
         currency: 'INR',
         accept_partial: false,
@@ -101,13 +111,43 @@ const createPaymentLink = asyncHandler(async (req, res) => {
 const handleWebhook = async (req, res) => {
     try {
         console.log('[WEBHOOK] Received Razorpay webhook');
-        const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET;
 
         // req.body is a raw Buffer from express.raw()
         const rawBody = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : 
                          typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
 
-        // Verify signature
+        // Before verifying signature, we need to know the Owner to get their Webhook Secret.
+        // We will parse the body as JSON, ignoring signature temporarily, just to extract owner_id.
+        let parsedBody;
+        try {
+            parsedBody = JSON.parse(rawBody);
+        } catch (err) {
+            console.error('[WEBHOOK] Failed to parse raw body:', err);
+            return res.status(400).json({ error: 'Invalid payload' });
+        }
+
+        const notes = parsedBody?.payload?.payment_link?.entity?.notes || {};
+        const ownerId = notes.owner_id;
+
+        if (!ownerId) {
+            console.log('[WEBHOOK] Missing owner metadata in notes. Cannot verify multi-tenant webhook.');
+            return res.status(200).json({ status: 'ok', note: 'Missing owner metadata' });
+        }
+
+        // Fetch user's webhook secret or fallback to their key secret
+        const user = await User.findById(ownerId);
+        if (!user) {
+            console.log('[WEBHOOK] User not found for owner_id:', ownerId);
+            return res.status(200).json({ status: 'ok', note: 'User not found' });
+        }
+
+        const webhookSecret = user.razorpayWebhookSecret || user.razorpayKeySecret;
+        if (!webhookSecret) {
+            console.log('[WEBHOOK] User has no razorpay secrets to verify webhook.');
+            return res.status(200).json({ status: 'ok', note: 'Webhook secrets not configured' });
+        }
+
+        // Now Verify signature using the specific user's secret
         const signature = req.headers['x-razorpay-signature'];
         if (!signature) {
             console.log('[WEBHOOK] Missing x-razorpay-signature header');
@@ -127,7 +167,7 @@ const handleWebhook = async (req, res) => {
         }
 
         console.log('[WEBHOOK] Signature verified ✅');
-        const event = JSON.parse(rawBody);
+        const event = parsedBody;
         console.log('[WEBHOOK] Event type:', event.event);
 
         // Handle payment_link.paid event
@@ -138,8 +178,6 @@ const handleWebhook = async (req, res) => {
                 return res.status(200).json({ status: 'ok', note: 'No payment link entity' });
             }
 
-            const notes = paymentLinkEntity.notes || {};
-            const ownerId = notes.owner_id;
             const customerId = notes.customer_id;
             let invoiceIds = [];
 
@@ -256,10 +294,20 @@ const verifyPayment = asyncHandler(async (req, res) => {
     let totalUpdated = 0;
     let totalPaid = 0;
 
+    const user = await User.findById(owner);
+    if (!user || !user.razorpayKeyId || !user.razorpayKeySecret) {
+        return res.status(400).json(new ApiResponse(400, null, "Razorpay keys not configured"));
+    }
+
+    const rp = new Razorpay({
+        key_id: user.razorpayKeyId,
+        key_secret: user.razorpayKeySecret
+    });
+
     for (const [linkId, linkedInvoices] of Object.entries(linkGroups)) {
         try {
             // Fetch payment link status from Razorpay API
-            const paymentLink = await razorpay.paymentLink.fetch(linkId);
+            const paymentLink = await rp.paymentLink.fetch(linkId);
             console.log(`[VERIFY] Payment link ${linkId}: status = ${paymentLink.status}`);
 
             if (paymentLink.status === 'paid') {

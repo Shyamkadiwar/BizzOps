@@ -1,25 +1,19 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { sendContactEmail } from '../services/email.service.js';
+import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import { User } from '../models/user.model.js';
 import jwt, { decode } from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import { parseUserAgent, getClientIP } from '../utils/deviceDetection.js';
-import { revokeOtherDeviceSessions, revokeSpecificSession, getSessionStatistics as getSessionStats, revokeAllUserSessions } from '../utils/sessionCleanup.js';
 
-const generateAccessRefreshToken = async (userId, sessionId) => {
+const generateAccessRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId);
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
 
-        // Find the session and update its refresh token
-        const sessionIndex = user.activeSessions.findIndex(session => session.sessionId === sessionId);
-        if (sessionIndex !== -1) {
-            user.activeSessions[sessionIndex].refreshToken = refreshToken;
-            user.activeSessions[sessionIndex].lastActiveAt = new Date();
-        }
-
+        user.refreshToken = refreshToken;
         await user.save({ validateBeforeSave: false });
 
         return { accessToken, refreshToken };
@@ -79,32 +73,15 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Invalid credentials");
     }
 
-    // Create new session
-    const sessionId = uuidv4();
-    const ipAddress = getClientIP(req);
-    const userAgent = req.headers['user-agent'] || 'Unknown';
-    const deviceInfo = parseUserAgent(userAgent);
-
-    // Generate tokens directly without session lookup
+    // Generate tokens directly
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
-    // Add session to user's active sessions
-    const newSession = {
-        sessionId,
-        refreshToken,
-        ipAddress,
-        userAgent,
-        deviceInfo,
-        createdAt: new Date(),
-        lastActiveAt: new Date(),
-        isActive: true
-    };
-
-    user.activeSessions.push(newSession);
+    user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
-    const loggedInUser = await User.findById(user._id).select("-password -activeSessions.refreshToken");
+    // Sanitize user for response
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
     // Updated cookie options for better security and cross-origin support
     const options = {
@@ -127,7 +104,6 @@ const loginUser = asyncHandler(async (req, res) => {
         .status(200)
         .cookie('accessToken', accessToken, options)
         .cookie('refreshToken', refreshToken, refreshTokenOptions)
-        .cookie('sessionId', sessionId, options)
         .json(new ApiResponse(200, {
             user: loggedInUser,
             message: "Login successful"
@@ -136,19 +112,15 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
-    const sessionId = req.cookies?.sessionId || req.header('X-Session-ID');
-
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $pull: {
-                activeSessions: { sessionId: sessionId }
+            $unset: {
+                refreshToken: 1
             }
         },
-        {
-            new: true
-        }
-    )
+        { new: true }
+    );
 
     const options = {
         httpOnly: true,
@@ -159,7 +131,6 @@ const logoutUser = asyncHandler(async (req, res) => {
         .status(200)
         .clearCookie('accessToken', options)
         .clearCookie('refreshToken', options)
-        .clearCookie('sessionId', options)
         .json(new ApiResponse(200, {}, "User Logged Out"))
 });
 
@@ -178,16 +149,11 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             throw new ApiError(401, "Invalid refresh token");
         }
 
-        // Find the session with this refresh token
-        const activeSession = user.activeSessions.find(
-            session => session.refreshToken === incomingRefreshToken && session.isActive
-        );
-
-        if (!activeSession) {
+        if (user.refreshToken !== incomingRefreshToken) {
             throw new ApiError(401, "Refresh token is expired or used");
         }
 
-        const { accessToken, refreshToken: newRefreshToken } = await generateAccessRefreshToken(user._id, activeSession.sessionId);
+        const { accessToken, refreshToken: newRefreshToken } = await generateAccessRefreshToken(user._id);
 
         const options = {
             httpOnly: true,
@@ -221,7 +187,6 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
         res.clearCookie('accessToken', clearOptions);
         res.clearCookie('refreshToken', clearOptions);
-        res.clearCookie('sessionId', clearOptions);
 
         throw new ApiError(401, error.message || "Invalid refresh token");
     }
@@ -253,21 +218,40 @@ const getCurrentUserDetails = asyncHandler(async (req, res) => {
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
-    const { name, email, businessName, phoneNo, address } = req.body
+    const { name, email, businessName, phoneNo, address, gstNumber, website } = req.body
     if (!name || !email || !businessName) {
-        throw new ApiError(400, "All field are required")
+        throw new ApiError(400, "All fields are required")
+    }
+
+    let businessLogoUrl = undefined;
+    
+    // Check if businessLogo file is uploaded
+    const localFilePath = req.file?.path;
+    if (localFilePath) {
+        const uploadedResponse = await uploadOnCloudinary(localFilePath);
+        if (uploadedResponse) {
+            businessLogoUrl = uploadedResponse.url;
+        }
+    }
+
+    const updateFields = {
+        name,
+        email,
+        businessName,
+        phoneNo,
+        address,
+        gstNumber,
+        website
+    };
+
+    if (businessLogoUrl) {
+        updateFields.businessLogo = businessLogoUrl;
     }
 
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set: {
-                name,
-                email,
-                businessName,
-                phoneNo,
-                address
-            }
+            $set: updateFields
         },
         { new: true }
     ).select("-password")
@@ -275,112 +259,64 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(new ApiResponse(200, user, "User updated successful"))
-})
-
-const getActiveSessions = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id).select("activeSessions");
-
-    if (!user) {
-        throw new ApiError(404, "User not found");
-    }
-
-    // Hide refresh tokens and mark current session
-    const currentSessionId = req.cookies?.sessionId || req.header('X-Session-ID') || req.header('sessionId');
-
-    const activeSessions = user.activeSessions
-        .map(session => ({
-            sessionId: session.sessionId,
-            ipAddress: session.ipAddress,
-            deviceInfo: session.deviceInfo,
-            createdAt: session.createdAt,
-            lastActiveAt: session.lastActiveAt,
-            isCurrent: session.sessionId === currentSessionId
-        }));
-
-    return res
-        .status(200)
-        .json(new ApiResponse(200, activeSessions, "Active sessions fetched successfully"));
 });
 
-const revokeSession = asyncHandler(async (req, res) => {
-    const { sessionId } = req.params;
-    const currentSessionId = req.cookies?.sessionId || req.header('X-Session-ID');
+// Get Razorpay and other payment settings
+const getPaymentSettings = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user?._id).select("razorpayKeyId razorpayKeySecret razorpayWebhookSecret");
+    if (!user) throw new ApiError(404, "User not found");
 
-    // Validate sessionId parameter
-    if (!sessionId) {
-        throw new ApiError(400, "Session ID is required");
-    }
-
-    if (sessionId === currentSessionId) {
-        throw new ApiError(400, "Cannot revoke current session. Please use logout instead.");
-    }
-
-    // Use the utility function to revoke specific session
-    const result = await revokeSpecificSession(req.user._id, sessionId);
-
-    if (!result.success) {
-        throw new ApiError(500, result.error || "Failed to revoke session");
-    }
-
-    return res
-        .status(200)
-        .json(new ApiResponse(200, {}, "Session revoked successfully"));
-});
-
-const revokeAllSessions = asyncHandler(async (req, res) => {
-    const currentSessionId = req.cookies?.sessionId || req.header('X-Session-ID');
-
-    if (!currentSessionId) {
-        throw new ApiError(400, "Current session ID is required");
-    }
-
-    // Use the utility function to revoke other device sessions
-    const result = await revokeOtherDeviceSessions(req.user._id, currentSessionId);
-
-    if (!result.success) {
-        throw new ApiError(500, result.error || "Failed to revoke sessions");
-    }
-
-    return res
-        .status(200)
-        .json(new ApiResponse(200, {
-            remainingSessions: result.remainingSessions
-        }, "All other sessions revoked successfully"));
-});
-
-// Get session statistics for admin/monitoring purposes
-const getSessionStatistics = asyncHandler(async (req, res) => {
-    const stats = await getSessionStats();
-
-    if (stats.error) {
-        throw new ApiError(500, stats.error);
-    }
-
-    return res
-        .status(200)
-        .json(new ApiResponse(200, stats, "Session statistics retrieved successfully"));
-});
-
-// Logout from all devices (including current session)
-const logoutFromAllDevices = asyncHandler(async (req, res) => {
-    const options = {
-        httpOnly: true,
-        secure: true
+    // Mask the secrets to avoid sending them in plain text
+    const maskSecret = (secret) => {
+        if (!secret) return "";
+        if (secret.length <= 8) return "••••••••";
+        return "••••••••" + secret.slice(-4);
     };
 
-    // Use the utility function to revoke all sessions
-    const result = await revokeAllUserSessions(req.user._id);
+    return res.status(200).json(new ApiResponse(200, {
+        razorpayKeyId: user.razorpayKeyId || "",
+        razorpayKeySecret: maskSecret(user.razorpayKeySecret),
+        razorpayWebhookSecret: maskSecret(user.razorpayWebhookSecret)
+    }, "Payment settings fetched successfully"));
+});
 
-    if (!result.success) {
-        throw new ApiError(500, result.error || "Failed to logout from all devices");
+// Update Razorpay payment settings
+const updatePaymentSettings = asyncHandler(async (req, res) => {
+    const { razorpayKeyId, razorpayKeySecret, razorpayWebhookSecret } = req.body;
+    
+    const user = await User.findById(req.user?._id);
+    if (!user) throw new ApiError(404, "User not found");
+
+    // Only update if provided. If they send masked version (••••••••), we ignore it to prevent saving masked versions.
+    if (razorpayKeyId !== undefined) {
+        user.razorpayKeyId = razorpayKeyId;
+    }
+    if (razorpayKeySecret !== undefined && !razorpayKeySecret.startsWith("••••••••")) {
+        user.razorpayKeySecret = razorpayKeySecret;
+    }
+    if (razorpayWebhookSecret !== undefined && !razorpayWebhookSecret.startsWith("••••••••")) {
+        user.razorpayWebhookSecret = razorpayWebhookSecret;
     }
 
-    return res
-        .status(200)
-        .clearCookie("accessToken", options)
-        .clearCookie("refreshToken", options)
-        .clearCookie("sessionId", options)
-        .json(new ApiResponse(200, {}, "Logged out from all devices successfully"));
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(200).json(new ApiResponse(200, {}, "Payment settings updated successfully"));
+});
+
+// Support Contact Message
+const sendContactMessage = asyncHandler(async (req, res) => {
+    const { name, email, subject, message } = req.body;
+    
+    if (!name || !email || !subject || !message) {
+        throw new ApiError(400, "All fields are required");
+    }
+
+    try {
+        await sendContactEmail(name, email, subject, message);
+        return res.status(200).json(new ApiResponse(200, {}, "Message sent successfully"));
+    } catch (error) {
+        throw new ApiError(500, "Failed to send message: " + error.message);
+    }
 });
 
 export {
@@ -391,9 +327,7 @@ export {
     changePassword,
     getCurrentUserDetails,
     updateAccountDetails,
-    getActiveSessions,
-    revokeSession,
-    revokeAllSessions,
-    getSessionStatistics,
-    logoutFromAllDevices,
+    getPaymentSettings,
+    updatePaymentSettings,
+    sendContactMessage
 };

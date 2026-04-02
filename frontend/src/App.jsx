@@ -23,6 +23,10 @@ import TaskPage from "./pages/TaskPage.jsx";
 import AppointmentPage from "./pages/AppointmentPage.jsx";
 import CalendarPage from "./pages/CalendarPage.jsx";
 import StaffTaskPage from "./pages/StaffTaskPage.jsx";
+import SettingsPage from "./pages/SettingsPage.jsx";
+import Terms from "./components/Terms.jsx";
+import Privacy from "./components/Privacy.jsx";
+import Contact from "./components/Contact.jsx";
 
 function App() {
   return (
@@ -33,6 +37,9 @@ function App() {
         <Route path="/register" element={<Signup />} />
         <Route path="/Customizes" element={<Customizes />} />
         <Route path="/demo" element={<Demo />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/contact" element={<Contact />} />
 
         {/* Protected Routes */}
         <Route path="/dashboard" element={<ProtectedRoute element={<DashboardPage />} />} />
@@ -53,6 +60,7 @@ function App() {
         <Route path="/Appointment" element={<ProtectedRoute element={<AppointmentPage />} />} />
         <Route path="/Calendar" element={<ProtectedRoute element={<CalendarPage />} />} />
         <Route path="/StaffTask" element={<ProtectedRoute element={<StaffTaskPage />} />} />
+        <Route path="/settings" element={<ProtectedRoute element={<SettingsPage />} />} />
       </Routes>
     </Router>
   );

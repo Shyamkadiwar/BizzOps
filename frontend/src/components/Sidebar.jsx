@@ -40,6 +40,7 @@ import {
     Category as ProductIcon,
     Close as CloseIcon,
     Menu as MenuIcon,
+    Settings as SettingsIcon,
 } from '@mui/icons-material';
 
 const drawerWidth = 280;

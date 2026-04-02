@@ -78,125 +78,138 @@ function Invoice() {
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
-            const margin = 25;
+            const margin = 20;
             const rightEdge = pageWidth - margin;
 
-            // Resolve customer name properly
-            const customerName = invoice.customer?.name || invoice.customerName || invoice.name || 'N/A';
-
-            // Colors
-            const black = [0, 0, 0];
-            const darkGray = [51, 51, 51];
-            const medGray = [120, 120, 120];
-            const lightGray = [180, 180, 180];
-            const lineGray = [200, 200, 200];
-
-            // ── HEADER: Thin line + "I N V O I C E" ──
-            let y = 35;
-            doc.setDrawColor(...black);
-            doc.setLineWidth(0.4);
-            doc.line(margin, y, pageWidth / 2 - 5, y);
-
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(26);
-            doc.setTextColor(...black);
-            doc.text('I N V O I C E', rightEdge, y + 2, { align: 'right' });
-
-            // ── ISSUED TO (left) + INVOICE META (right) ──
-            y += 35;
-
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(9);
-            doc.setTextColor(...darkGray);
-            doc.text('ISSUED TO:', margin, y);
-
-            // Invoice meta (right side)
-            const metaLabelX = rightEdge - 40;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(9);
-            doc.setTextColor(...medGray);
-            doc.text('INVOICE NO:', metaLabelX, y, { align: 'right' });
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(...darkGray);
-            doc.text(invoice.invoiceNumber || 'N/A', rightEdge, y, { align: 'right' });
-
-            // Customer name
-            y += 7;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
-            doc.setTextColor(...darkGray);
-            doc.text(customerName, margin, y);
-
-            // Date (right)
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(9);
-            doc.setTextColor(...medGray);
-            doc.text('DATE:', metaLabelX, y, { align: 'right' });
-            doc.setTextColor(...darkGray);
-            doc.text(new Date(invoice.date || Date.now()).toLocaleDateString('en-IN', {
-                day: '2-digit', month: '2-digit', year: 'numeric'
-            }), rightEdge, y, { align: 'right' });
-
-            // Customer details
-            y += 5;
-            doc.setFontSize(9);
-            doc.setTextColor(...medGray);
-            if (invoice.customerEmail) { doc.text(invoice.customerEmail, margin, y); y += 4.5; }
-            if (invoice.customerPhone) { doc.text(invoice.customerPhone, margin, y); y += 4.5; }
-            if (invoice.customerAddress) {
-                const addrLines = doc.splitTextToSize(invoice.customerAddress, 80);
-                doc.text(addrLines, margin, y);
-                y += addrLines.length * 4.5;
+            // Load business logo if exists
+            let logoBase64 = null;
+            if (userDetails.businessLogo) {
+                try {
+                    const imgRes = await fetch(userDetails.businessLogo);
+                    const blob = await imgRes.blob();
+                    logoBase64 = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (e) {
+                    console.warn('Failed to load logo string for PDF', e);
+                }
             }
 
-            // Status (right side)
-            const statusY = y - 9;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(9);
-            doc.setTextColor(...medGray);
-            doc.text('STATUS:', metaLabelX, statusY, { align: 'right' });
+            const black = [0, 0, 0];
+            let y = margin;
+
+            // --- HEADER: Top Left (Logo & Business Info), Top Right (INVOICE, No, Date, Status) ---
+            
+            // LOGO
+            if (logoBase64) {
+                // Approximate 40x40 or proportional
+                doc.addImage(logoBase64, 'JPEG', margin, y, 25, 25);
+                y += 30;
+            } else {
+                y += 5;
+            }
+
+            // Business Name (Top-left)
             doc.setFont("helvetica", "bold");
-            doc.setTextColor(invoice.paid ? 34 : 200, invoice.paid ? 139 : 30, invoice.paid ? 34 : 30);
-            doc.text(invoice.paid ? 'PAID' : 'UNPAID', rightEdge, statusY, { align: 'right' });
-
-            // ── PAY TO section ──
-            y += 6;
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(9);
-            doc.setTextColor(...darkGray);
-            doc.text('PAY TO:', margin, y);
-
-            y += 6;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(9);
-            doc.setTextColor(...medGray);
-            if (userDetails.businessName) { doc.text(userDetails.businessName, margin, y); y += 4.5; }
-            if (userDetails.email) { doc.text(userDetails.email, margin, y); y += 4.5; }
-            if (userDetails.phoneNo) { doc.text(`Phone: ${userDetails.phoneNo}`, margin, y); y += 4.5; }
-            if (userDetails.address) { doc.text(userDetails.address, margin, y); y += 4.5; }
-
-            // ── ITEMS TABLE - Clean minimal style ──
+            doc.setFontSize(22);
+            doc.text(userDetails.businessName || 'Business Name', margin, y);
+            
+            // Right Side: INVOICE title
+            doc.setFontSize(28);
+            doc.text('INVOICE', rightEdge, y, { align: 'right' });
+            
             y += 8;
+            
+            // Business Details (Left)
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            
+            let businessDetailsLeftY = y;
+            if (userDetails.address) { doc.text(userDetails.address, margin, businessDetailsLeftY); businessDetailsLeftY += 5; }
+            if (userDetails.phoneNo) { doc.text(`Phone: ${userDetails.phoneNo}`, margin, businessDetailsLeftY); businessDetailsLeftY += 5; }
+            if (userDetails.email) { doc.text(`Email: ${userDetails.email}`, margin, businessDetailsLeftY); businessDetailsLeftY += 5; }
+            if (userDetails.website) { doc.text(`${userDetails.website}`, margin, businessDetailsLeftY); businessDetailsLeftY += 5; }
+            if (userDetails.gstNumber) { doc.text(`GST No: ${userDetails.gstNumber}`, margin, businessDetailsLeftY); businessDetailsLeftY += 5; }
 
+            // Invoice Meta (Right)
+            let metaY = y;
+            const metaLabelX = rightEdge - 30;
+            
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9);
+            
+            doc.text('INVOICE #', metaLabelX, metaY, { align: 'right' });
+            doc.setFont("helvetica", "normal");
+            doc.text(`[${invoice.invoiceNumber || '100'}]`, rightEdge, metaY, { align: 'right' });
+            
+            metaY += 6;
+            doc.setFont("helvetica", "bold");
+            doc.text('DATE:', metaLabelX, metaY, { align: 'right' });
+            doc.setFont("helvetica", "normal");
+            const formattedDate = new Date(invoice.date || Date.now())
+                .toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                .toUpperCase();
+            doc.text(formattedDate, rightEdge, metaY, { align: 'right' });
+
+            metaY += 6;
+            doc.setFont("helvetica", "bold");
+            doc.text('STATUS:', metaLabelX, metaY, { align: 'right' });
+            doc.setTextColor(invoice.paid ? 34 : 200, invoice.paid ? 139 : 30, invoice.paid ? 34 : 30);
+            doc.text(invoice.paid ? 'PAID' : 'UNPAID', rightEdge, metaY, { align: 'right' });
+            doc.setTextColor(0, 0, 0); // reset
+
+            y = Math.max(businessDetailsLeftY, metaY) + 15;
+
+            // --- PAY TO / SHIP TO ---
+            const customerName = invoice.customerName || invoice.name || 'Walk-in Customer';
+            
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.text('TO:', margin, y);
+            
+            y += 6;
+            doc.setFont("helvetica", "normal");
+            doc.text(customerName, margin, y);
+            y += 5;
+            if (invoice.customerAddress) {
+                const addrLines = doc.splitTextToSize(invoice.customerAddress, 60);
+                doc.text(addrLines, margin, y);
+                y += addrLines.length * 5;
+            }
+            if (invoice.customerPhone) { doc.text(invoice.customerPhone, margin, y); y += 5; }
+            if (invoice.customerEmail) { doc.text(invoice.customerEmail, margin, y); y += 5; }
+
+            y += 10;
+
+            // --- TABLE ---
             const tableColumns = [
                 { header: 'DESCRIPTION', dataKey: 'item' },
+                { header: 'QUANTITY', dataKey: 'qty' },
                 { header: 'UNIT PRICE', dataKey: 'price' },
-                { header: 'QTY', dataKey: 'qty' },
                 { header: 'TOTAL', dataKey: 'total' }
             ];
 
             const tableRows = invoice.items.map((item) => {
-                const taxRate = item.taxes?.reduce((sum, t) => sum + (t.rate || 0), 0) || item.tax || 0;
-                const baseAmount = (item.qty || 0) * (item.price || 0);
-                const taxAmount = baseAmount * (taxRate / 100);
-                const itemTotal = item.total || (baseAmount + taxAmount);
                 return {
                     item: item.itemName || 'N/A',
-                    price: (item.price || 0).toLocaleString('en-IN'),
                     qty: item.qty || 0,
-                    total: `₹${itemTotal.toLocaleString('en-IN')}`
+                    price: (item.price || 0).toFixed(2),
+                    total: (item.total || ((item.qty || 0) * (item.price || 0))).toFixed(2)
                 };
             });
+
+            // Make sure there are empty rows
+            const emptyRowsCount = Math.max(0, 10 - tableRows.length);
+            for(let i=0; i<emptyRowsCount; i++){
+                tableRows.push({
+                    item: ' ',
+                    qty: ' ',
+                    price: ' ',
+                    total: ' '
+                });
+            }
 
             doc.autoTable({
                 columns: tableColumns,
@@ -204,142 +217,87 @@ function Invoice() {
                 startY: y,
                 theme: 'plain',
                 headStyles: {
-                    fillColor: false,
-                    textColor: [...darkGray],
+                    fillColor: [255, 255, 255],
+                    textColor: [0, 0, 0],
                     fontSize: 9,
                     fontStyle: 'bold',
                     cellPadding: { top: 6, bottom: 6, left: 4, right: 4 },
-                    lineWidth: { bottom: 0.5 },
-                    lineColor: [...black]
+                    lineWidth: 0.5,
+                    lineColor: [0, 0, 0],
+                    halign: 'center'
                 },
                 columnStyles: {
-                    item: { cellWidth: 'auto', halign: 'left' },
-                    price: { cellWidth: 40, halign: 'center' },
-                    qty: { cellWidth: 25, halign: 'center' },
-                    total: { cellWidth: 40, halign: 'right' }
+                    item: { cellWidth: 80, halign: 'left', lineWidth: {left: 0.5, right: 0.5} },
+                    qty: { cellWidth: 30, halign: 'center', lineWidth: {left: 0.5, right: 0.5} },
+                    price: { cellWidth: 30, halign: 'right', lineWidth: {left: 0.5, right: 0.5} },
+                    total: { cellWidth: 30, halign: 'right', lineWidth: {left: 0.5, right: 0.5} }
                 },
                 bodyStyles: {
                     fontSize: 9,
                     cellPadding: { top: 5, bottom: 5, left: 4, right: 4 },
-                    textColor: [...darkGray],
-                    lineWidth: { bottom: 0.15 },
-                    lineColor: [...lineGray]
+                    textColor: [0, 0, 0],
                 },
-                styles: {
-                    overflow: 'linebreak',
-                    font: 'helvetica'
-                },
+                styles: { font: 'helvetica' },
                 margin: { left: margin, right: margin }
             });
 
-            // ── TOTALS ──
-            let finalY = doc.lastAutoTable.finalY + 4;
-
-            // Bottom line under table
-            doc.setDrawColor(...black);
+            // Draw line to close table
+            let finalY = doc.lastAutoTable.finalY;
+            doc.setDrawColor(0, 0, 0);
             doc.setLineWidth(0.5);
             doc.line(margin, finalY, rightEdge, finalY);
 
-            finalY += 12;
-            const labelX = rightEdge - 55;
-            const valueX = rightEdge;
+            // --- TOTALS BLOCK ---
+            finalY += 4;
+            const totalsBoxX = rightEdge - 50; 
+            const valBoxX = rightEdge;
 
             // SUBTOTAL
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(10);
-            doc.setTextColor(...darkGray);
-            doc.text('SUBTOTAL', labelX, finalY, { align: 'right' });
-            doc.setFont("helvetica", "normal");
-            doc.text(`₹${(invoice.subTotal || 0).toLocaleString('en-IN')}`, valueX, finalY, { align: 'right' });
-
-            // Tax
-            const taxTotal = (invoice.grandTotal || 0) - (invoice.subTotal || 0);
-            finalY += 8;
-            doc.setFont("helvetica", "normal");
             doc.setFontSize(9);
-            doc.setTextColor(...medGray);
-            doc.text('Tax', labelX, finalY, { align: 'right' });
-            doc.setTextColor(...darkGray);
-            doc.text(`₹${taxTotal.toLocaleString('en-IN')}`, valueX, finalY, { align: 'right' });
-
-            // TOTAL
-            finalY += 10;
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(12);
-            doc.setTextColor(...black);
-            doc.text('TOTAL', labelX, finalY, { align: 'right' });
-            doc.text(`₹${(invoice.grandTotal || 0).toLocaleString('en-IN')}`, valueX, finalY, { align: 'right' });
-
-            // ── PAYMENT STAMP ──
-            const stampY = doc.lastAutoTable.finalY + 10;
-            if (invoice.paid) {
-                doc.setDrawColor(34, 139, 34);
-                doc.setLineWidth(1.2);
-                doc.roundedRect(margin, stampY, 40, 14, 2, 2, 'S');
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(14);
-                doc.setTextColor(34, 139, 34);
-                doc.text('PAID', margin + 10, stampY + 10);
-            } else {
-                doc.setDrawColor(200, 30, 30);
-                doc.setLineWidth(1.2);
-                doc.roundedRect(margin, stampY, 48, 14, 2, 2, 'S');
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(14);
-                doc.setTextColor(200, 30, 30);
-                doc.text('UNPAID', margin + 8, stampY + 10);
-            }
-
-            // ── TERMS & CONDITIONS ──
-            finalY = Math.max(finalY, stampY + 14) + 18;
-
-            doc.setDrawColor(...lineGray);
-            doc.setLineWidth(0.2);
-            doc.line(margin, finalY, rightEdge, finalY);
-
+            doc.text('SUBTOTAL', totalsBoxX, finalY + 6, { align: 'right' });
+            doc.setFont("helvetica", "normal");
+            doc.text((invoice.subTotal || 0).toFixed(2), valBoxX, finalY + 6, { align: 'right' });
+            
+            // Bottom rule for subtotal
+            doc.setLineWidth(0.1);
+            doc.line(rightEdge - 60, finalY + 8, rightEdge, finalY + 8);
             finalY += 8;
+
+            // SALES TAX
+            const taxAmount = (invoice.grandTotal || 0) - (invoice.subTotal || 0);
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(8);
-            doc.setTextColor(...darkGray);
-            doc.text('TERMS & CONDITIONS', margin, finalY);
-
-            finalY += 6;
+            doc.text('SALES TAX', totalsBoxX, finalY + 6, { align: 'right' });
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(7.5);
-            doc.setTextColor(...medGray);
-            doc.text('1. Payment is due within 30 days of the invoice date unless otherwise agreed.', margin, finalY);
-            finalY += 4;
-            doc.text('2. Please include the invoice number as a reference when making payment.', margin, finalY);
-            finalY += 4;
-            doc.text('3. This is a computer-generated invoice and does not require a physical signature.', margin, finalY);
+            doc.text(taxAmount.toFixed(2), valBoxX, finalY + 6, { align: 'right' });
+            
+            doc.setLineWidth(0.1);
+            doc.line(rightEdge - 60, finalY + 8, rightEdge, finalY + 8);
+            finalY += 8;
 
-            // ── THANK YOU + SIGNATURE ──
-            finalY += 16;
+            // TOTAL DUE
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text('TOTAL DUE', totalsBoxX, finalY + 6, { align: 'right' });
+            doc.text(`Rs. ${(invoice.grandTotal || 0).toFixed(2)}`, valBoxX, finalY + 6, { align: 'right' });
+            
+            doc.setLineWidth(0.5);
+            doc.line(rightEdge - 60, finalY + 8, rightEdge, finalY + 8);
+
+            // --- ADDITIONAL INFO ---
+            const infoY = finalY + 25;
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "bold");
+            doc.text('Additional Information/Comments:', margin, infoY);
+
+            doc.setLineWidth(0.5);
+            // Draw Box
+            doc.rect(margin, infoY + 3, pageWidth - (margin*2), 25);
+            
+            doc.setFont("helvetica", "normal");
+            doc.text('Thank you for your business! Payment is due within 30 days unless otherwise agreed.', margin + 4, infoY + 12);
             doc.setFont("helvetica", "italic");
-            doc.setFontSize(11);
-            doc.setTextColor(...darkGray);
-            doc.text('Thank you for your business!', pageWidth / 2, finalY, { align: 'center' });
-
-            // Signature line
-            finalY += 14;
-            doc.setDrawColor(...lightGray);
-            doc.setLineWidth(0.3);
-            doc.line(rightEdge - 60, finalY, rightEdge, finalY);
-            finalY += 5;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(7);
-            doc.setTextColor(...medGray);
-            doc.text('Authorized Signature', rightEdge - 30, finalY, { align: 'center' });
-
-            // Contact footer
-            const footerY = pageHeight - 12;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(7);
-            doc.setTextColor(...lightGray);
-            const contactParts = [userDetails.businessName, userDetails.email, userDetails.phoneNo].filter(Boolean);
-            if (contactParts.length > 0) {
-                doc.text(contactParts.join('  •  '), pageWidth / 2, footerY, { align: 'center' });
-            }
+            doc.text('This is an auto-generated invoice securely provided by BizzOps Platform.', margin + 4, infoY + 20);
 
             doc.save(`Invoice_${invoice.invoiceNumber || customerName || 'download'}.pdf`);
         } catch (error) {

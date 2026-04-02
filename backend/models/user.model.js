@@ -31,6 +31,30 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
+    gstNumber: {
+        type: String,
+        default: ""
+    },
+    website: {
+        type: String,
+        default: ""
+    },
+    businessLogo: {
+        type: String,
+        default: ""
+    },
+    razorpayKeyId: {
+        type: String,
+        default: ""
+    },
+    razorpayKeySecret: {
+        type: String,
+        default: ""
+    },
+    razorpayWebhookSecret: {
+        type: String,
+        default: ""
+    },
     activeSessions: [{
         sessionId: {
             type: String,

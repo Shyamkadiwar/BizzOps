@@ -72,7 +72,10 @@ export async function sendPaymentRequestEmail(customerEmail, customerName, invoi
         <!-- Footer -->
         <div style="background: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e0e0e0;">
             <p style="font-size: 12px; color: #999; margin: 0;">
-                ${businessName || 'BizzOps'} — This is an automated email. Please do not reply.
+                ${businessName || 'BizzOps'} — This is an automated system-generated email. Please do not reply directly to this message.
+            </p>
+            <p style="font-size: 11px; color: #aaa; margin: 5px 0 0;">
+                Payment is strictly due as per the terms agreed upon during purchase.
             </p>
         </div>
     </div>`;
@@ -80,7 +83,7 @@ export async function sendPaymentRequestEmail(customerEmail, customerName, invoi
     const { data, error } = await resend.emails.send({
         from: `${businessName || 'BizzOps'} <${FROM_EMAIL}>`,
         to: [customerEmail],
-        subject: `Payment Request — ₹${totalAmount.toLocaleString('en-IN')} due from ${businessName || 'BizzOps'}`,
+        subject: `Payment Request: Invoice from ${businessName || 'BizzOps'}`,
         html,
     });
 
@@ -102,13 +105,13 @@ export async function sendPaymentConfirmationEmail(customerEmail, customerName, 
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
         <div style="background: #1a1a2e; padding: 30px; text-align: center;">
             <h1 style="color: #ffffff; margin: 0; font-size: 22px;">${businessName || 'BizzOps'}</h1>
-            <p style="color: #66bb6a; margin: 8px 0 0; font-size: 14px;">✅ Payment Received</p>
+            <p style="color: #66bb6a; margin: 8px 0 0; font-size: 14px;">Payment Received</p>
         </div>
 
         <div style="padding: 30px;">
             <p style="font-size: 15px; color: #333;">Dear <strong>${customerName}</strong>,</p>
             <p style="font-size: 14px; color: #555; line-height: 1.6;">
-                We have successfully received your payment. Here's a summary:
+                We have successfully received your payment. Here is a summary of your transaction:
             </p>
 
             <!-- Payment Summary -->
@@ -131,20 +134,20 @@ export async function sendPaymentConfirmationEmail(customerEmail, customerName, 
 
             ${balanceAfter <= 0 ? `
             <div style="text-align: center; padding: 15px; background: #e8f5e9; border-radius: 8px; margin: 15px 0;">
-                <p style="font-size: 16px; font-weight: 600; color: #2e7d32; margin: 0;">🎉 All dues cleared! Balance is ₹0</p>
+                <p style="font-size: 16px; font-weight: 600; color: #2e7d32; margin: 0;">All outstanding dues cleared. Current balance is ₹0</p>
             </div>` : ''}
         </div>
 
         <div style="background: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e0e0e0;">
-            <p style="font-size: 13px; color: #666; margin: 0;">Thank you for your payment!</p>
-            <p style="font-size: 12px; color: #999; margin: 5px 0 0;">${businessName || 'BizzOps'}</p>
+            <p style="font-size: 13px; color: #666; margin: 0;">Thank you for your payment.</p>
+            <p style="font-size: 12px; color: #999; margin: 5px 0 0;">${businessName || 'BizzOps'} — This is an automated system-generated receipt.</p>
         </div>
     </div>`;
 
     const { data, error } = await resend.emails.send({
         from: `${businessName || 'BizzOps'} <${FROM_EMAIL}>`,
         to: [customerEmail],
-        subject: `✅ Payment Received — ₹${totalPaid.toLocaleString('en-IN')}`,
+        subject: `Payment Receipt: ₹${totalPaid.toLocaleString('en-IN')} Received`,
         html,
     });
 
@@ -155,70 +158,122 @@ export async function sendPaymentConfirmationEmail(customerEmail, customerName, 
 /**
  * Send sales thank-you email after a purchase
  */
-export async function sendSalesThankYouEmail(customerEmail, customerName, invoice, balanceAfter, businessName) {
+export async function sendSalesThankYouEmail(customerEmail, customerName, invoice, balanceAfter, businessName, pdfBuffer = null, websiteUrl = 'example.com') {
     const itemRows = invoice.items.map(item => `
         <tr>
-            <td style="padding: 8px 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px;">${item.itemName}</td>
-            <td style="padding: 8px 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; text-align: center;">${item.qty}</td>
-            <td style="padding: 8px 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; text-align: right;">₹${item.price.toLocaleString('en-IN')}</td>
-            <td style="padding: 8px 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; text-align: right; font-weight: 600;">₹${item.total.toLocaleString('en-IN')}</td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eee; font-size: 14px; color: #333; width: 60%;">
+                <strong>${item.itemName}</strong> × ${item.qty}
+            </td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eee; font-size: 14px; text-align: right; color: #333;">
+                ₹${item.total.toLocaleString('en-IN')}
+            </td>
         </tr>
     `).join('');
 
     const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; padding: 40px 20px;">
+        <!-- Header -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
+            <tr>
+                <td style="text-align: left;">
+                    <h1 style="color: #000; margin: 0; font-size: 28px; font-weight: 700;">${businessName || 'Minimalist'}</h1>
+                </td>
+                <td style="text-align: right; vertical-align: middle;">
+                    <span style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">ORDER #${invoice.invoiceNumber || 'N/A'}</span>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Body -->
+        <h2 style="font-size: 22px; color: #333; margin: 0 0 15px 0; font-weight: 400;">Thank you for your purchase!</h2>
+        
+        <p style="font-size: 15px; color: #666; line-height: 1.6; margin: 0 0 25px 0;">
+            We have processed your order successfully. We will notify you when any relevant updates happen.
+            ${pdfBuffer ? '<br/><br/><strong>A digital PDF copy of your invoice is attached to this email.</strong>' : ''}
+        </p>
+
+        <!-- Action Button -->
+        <table style="margin-bottom: 50px;">
+            <tr>
+                <td>
+                    <a href="https://${websiteUrl}" style="display: inline-block; background-color: #000; color: #fff; padding: 14px 28px; text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 4px;">View your order</a>
+                </td>
+                <td style="padding-left: 15px;">
+                    <span style="color: #666; font-size: 14px;">or <a href="https://${websiteUrl}" style="color: #333; text-decoration: none;">Visit our store</a></span>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Summary section -->
+        <h3 style="font-size: 18px; color: #333; font-weight: 400; margin: 0 0 15px 0; border-top: 1px solid #eee; padding-top: 30px;">Order summary</h3>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tbody>${itemRows}</tbody>
+        </table>
+
+        <!-- Totals -->
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 5px 0; font-size: 14px; color: #666;">Subtotal</td>
+                <td style="padding: 5px 0; font-size: 14px; color: #333; text-align: right;">₹${invoice.subTotal.toLocaleString('en-IN')}</td>
+            </tr>
+            <tr>
+                <td style="padding: 5px 0; font-size: 14px; color: #666;">Tax</td>
+                <td style="padding: 5px 0; font-size: 14px; color: #333; text-align: right;">₹${(invoice.grandTotal - invoice.subTotal).toLocaleString('en-IN')}</td>
+            </tr>
+            <tr>
+                <td style="padding: 15px 0 0 0; font-size: 16px; color: #333; font-weight: 600;">Total</td>
+                <td style="padding: 15px 0 0 0; font-size: 18px; color: #000; font-weight: 700; text-align: right;">₹${invoice.grandTotal.toLocaleString('en-IN')}</td>
+            </tr>
+        </table>
+    </div>`;
+
+    const payload = {
+        from: `${businessName || 'BizzOps'} <${FROM_EMAIL}>`,
+        to: [customerEmail],
+        subject: `Invoice Available: Purchase from ${businessName || 'BizzOps'}`,
+        html,
+    };
+
+    if (pdfBuffer) {
+        payload.attachments = [
+            {
+                filename: `Invoice_${invoice.invoiceNumber || 'Document'}.pdf`,
+                content: Buffer.isBuffer(pdfBuffer) ? pdfBuffer.toString('base64') : pdfBuffer,
+            }
+        ];
+    }
+
+    const { data, error } = await resend.emails.send(payload);
+
+    if (error) throw new Error(error.message);
+    return data;
+}
+
+/**
+ * Send contact form email to admin
+ */
+export async function sendContactEmail(name, userEmail, subject, message) {
+    const html = `
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
         <div style="background: #1a1a2e; padding: 30px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 22px;">${businessName || 'BizzOps'}</h1>
-            <p style="color: #8888aa; margin: 8px 0 0; font-size: 13px;">Invoice #${invoice.invoiceNumber || 'N/A'}</p>
+            <h1 style="color: #ffffff; margin: 0; font-size: 22px;">New Contact Request</h1>
+            <p style="color: #8888aa; margin: 8px 0 0; font-size: 13px;">via BizzOps Landing Page</p>
         </div>
-
         <div style="padding: 30px;">
-            <p style="font-size: 15px; color: #333;">Dear <strong>${customerName}</strong>,</p>
-            <p style="font-size: 14px; color: #555; line-height: 1.6;">
-                Thank you for your purchase! Here are your invoice details:
-            </p>
-
-            <!-- Items Table -->
-            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-                <thead>
-                    <tr style="background: #f8f9fa;">
-                        <th style="padding: 8px 12px; text-align: left; font-size: 12px; color: #666; border-bottom: 2px solid #e0e0e0;">Item</th>
-                        <th style="padding: 8px 12px; text-align: center; font-size: 12px; color: #666; border-bottom: 2px solid #e0e0e0;">Qty</th>
-                        <th style="padding: 8px 12px; text-align: right; font-size: 12px; color: #666; border-bottom: 2px solid #e0e0e0;">Price</th>
-                        <th style="padding: 8px 12px; text-align: right; font-size: 12px; color: #666; border-bottom: 2px solid #e0e0e0;">Total</th>
-                    </tr>
-                </thead>
-                <tbody>${itemRows}</tbody>
-            </table>
-
-            <!-- Totals -->
-            <div style="text-align: right; margin: 15px 0;">
-                <p style="font-size: 13px; color: #666; margin: 5px 0;">Subtotal: ₹${invoice.subTotal.toLocaleString('en-IN')}</p>
-                <p style="font-size: 13px; color: #666; margin: 5px 0;">Tax: ₹${(invoice.grandTotal - invoice.subTotal).toLocaleString('en-IN')}</p>
-                <p style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin: 10px 0;">
-                    Grand Total: ₹${invoice.grandTotal.toLocaleString('en-IN')}
-                </p>
-            </div>
-
-            <!-- Status -->
-            <div style="background: ${invoice.paid ? '#e8f5e9' : '#fff3e0'}; border-radius: 8px; padding: 15px; text-align: center; margin: 20px 0;">
-                <p style="font-size: 14px; font-weight: 600; color: ${invoice.paid ? '#2e7d32' : '#e65100'}; margin: 0;">
-                    Status: ${invoice.paid ? '✅ PAID' : '⏳ UNPAID'}
-                </p>
-                ${!invoice.paid ? `<p style="font-size: 13px; color: #666; margin: 5px 0 0;">Outstanding Balance: ₹${(balanceAfter || 0).toLocaleString('en-IN')}</p>` : ''}
-            </div>
-        </div>
-
-        <div style="background: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e0e0e0;">
-            <p style="font-size: 13px; color: #666; margin: 0;">Thank you for your business!</p>
-            <p style="font-size: 12px; color: #999; margin: 5px 0 0;">${businessName || 'BizzOps'}</p>
+            <p style="font-size: 15px; color: #333;"><strong>From:</strong> ${name} &lt;${userEmail}&gt;</p>
+            <p style="font-size: 15px; color: #333;"><strong>Subject:</strong> ${subject}</p>
+            <hr style="border: 0; border-top: 1px solid #e0e0e0; margin: 20px 0;" />
+            <h3 style="font-size: 14px; color: #666; text-transform: uppercase;">Message:</h3>
+            <p style="font-size: 15px; color: #444; line-height: 1.6; white-space: pre-wrap; background: #f8f9fa; padding: 15px; border-radius: 8px;">${message}</p>
         </div>
     </div>`;
 
     const { data, error } = await resend.emails.send({
-        from: `${businessName || 'BizzOps'} <${FROM_EMAIL}>`,
-        to: [customerEmail],
-        subject: `🛍️ Thank you for your purchase — Invoice #${invoice.invoiceNumber || 'N/A'}`,
+        from: `BizzOps Contact <${FROM_EMAIL}>`,
+        to: ['bizzopsshyamkadiwar@gmail.com'],
+        reply_to: userEmail,
+        subject: `Contact Request: ${subject}`,
         html,
     });
 
