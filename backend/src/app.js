@@ -19,15 +19,18 @@ app.get("/api/v1/payment/webhook", (req, res) => {
 });
 
 const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.replace(/["']/g, '').trim().replace(/\/$/, ''))
   : [];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) return callback(null, true);
+    
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    if (allowedOrigins.includes(normalizedOrigin)) {
       callback(null, true);
     } else {
-      console.error("CORS Blocked Origin:", origin);
+      console.error("CORS Blocked Origin:", origin, "| Allowed Origins:", allowedOrigins);
       callback(new Error("Not allowed by CORS"));
     }
   },
