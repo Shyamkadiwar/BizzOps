@@ -12,8 +12,9 @@ function Navbar({ onMenuClick, onDesktopMenuClick, desktopOpen }) {
             position="fixed"
             sx={{
                 zIndex: (theme) => theme.zIndex.drawer + 1,
-                backgroundColor: '#ffffffff',
-                boxShadow: '0 2px 8px rgba(138, 137, 137, 0.3)',
+                backgroundColor: 'rgba(255, 255, 255, 1)',
+                boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+                borderBottom: '1px solid #e5e7eb',
             }}
         >
             <Toolbar sx={{ justifyContent: 'space-between', width: '100%' }}>

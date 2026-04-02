@@ -139,7 +139,24 @@ function Sidebar({ mobileOpen, onDrawerToggle, desktopOpen, onDesktopToggle }) {
     ];
 
     const drawer = (isCollapsed) => (
-        <Box sx={{ overflow: 'auto', height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Box 
+            sx={{ 
+                overflow: 'auto', 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column',
+                '&::-webkit-scrollbar': {
+                    width: '5px',
+                },
+                '&::-webkit-scrollbar-track': {
+                    background: 'transparent',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                    backgroundColor: '#848484ff',
+                    borderRadius: '20px',
+                }
+            }}
+        >
             {/* Add Toolbar spacer to push content below navbar - only on desktop */}
             {!isMobile && <Toolbar />}
 
@@ -150,7 +167,7 @@ function Sidebar({ mobileOpen, onDrawerToggle, desktopOpen, onDesktopToggle }) {
                         onClick={onDesktopToggle}
                         sx={{
                             color: '#666',
-                            '&:hover': { backgroundColor: 'rgba(59, 130, 246, 0.08)' }
+                            '&:hover': { backgroundColor: '#f3f4f6' }
                         }}
                     >
                         <MenuIcon />
@@ -177,7 +194,7 @@ function Sidebar({ mobileOpen, onDrawerToggle, desktopOpen, onDesktopToggle }) {
                                         sx={{
                                             borderRadius: 2,
                                             color: '#1f2937',
-                                            '&:hover': { backgroundColor: 'rgba(59, 130, 246, 0.08)' },
+                                            '&:hover': { backgroundColor: '#f3f4f6' },
                                         }}
                                     >
                                         <ListItemIcon sx={{ color: '#1f2937', minWidth: 40 }}>
@@ -202,10 +219,10 @@ function Sidebar({ mobileOpen, onDrawerToggle, desktopOpen, onDesktopToggle }) {
                                                         borderRadius: 2,
                                                         color: '#1f2937',
                                                         '&.Mui-selected': {
-                                                            backgroundColor: 'rgba(59, 130, 246, 0.12)',
-                                                            '&:hover': { backgroundColor: 'rgba(59, 130, 246, 0.16)' },
+                                                            backgroundColor: '#f3f4f6',
+                                                            '&:hover': { backgroundColor: '#e5e7eb' },
                                                         },
-                                                        '&:hover': { backgroundColor: 'rgba(59, 130, 246, 0.08)' },
+                                                        '&:hover': { backgroundColor: '#f3f4f6' },
                                                     }}
                                                 >
                                                     <ListItemIcon sx={{ color: '#1f2937', minWidth: 40 }}>
@@ -232,7 +249,7 @@ function Sidebar({ mobileOpen, onDrawerToggle, desktopOpen, onDesktopToggle }) {
                                                 borderRadius: 2,
                                                 color: '#1f2937',
                                                 justifyContent: 'center',
-                                                '&:hover': { backgroundColor: 'rgba(59, 130, 246, 0.08)' },
+                                                '&:hover': { backgroundColor: '#f3f4f6' },
                                             }}
                                         >
                                             <ListItemIcon sx={{ color: '#1f2937', minWidth: 0 }}>
@@ -273,10 +290,10 @@ function Sidebar({ mobileOpen, onDrawerToggle, desktopOpen, onDesktopToggle }) {
                                             color: '#1f2937',
                                             justifyContent: isCollapsed ? 'center' : 'flex-start',
                                             '&.Mui-selected': {
-                                                backgroundColor: 'rgba(59, 130, 246, 0.12)',
-                                                '&:hover': { backgroundColor: 'rgba(59, 130, 246, 0.16)' },
+                                                backgroundColor: '#f3f4f6',
+                                                '&:hover': { backgroundColor: '#e5e7eb' },
                                             },
-                                            '&:hover': { backgroundColor: 'rgba(59, 130, 246, 0.08)' },
+                                            '&:hover': { backgroundColor: '#f3f4f6' },
                                         }}
                                     >
                                         <ListItemIcon sx={{ color: '#1f2937', minWidth: isCollapsed ? 0 : 40 }}>

@@ -56,13 +56,19 @@ function Account() {
         }
     };
 
+    const getInitial = () => {
+        if (userDetails.name) return userDetails.name.charAt(0).toUpperCase();
+        if (userDetails.businessName) return userDetails.businessName.charAt(0).toUpperCase();
+        return 'U';
+    };
+
     return (
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setDropdownOpen(!isDropdownOpen)}
-                className="flex items-center justify-center h-10 w-10 sm:h-11 sm:w-11 bg-gray-900 text-white rounded-full hover:bg-indigo-600 transition-all shadow-md focus:outline-none"
+                className="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 bg-black text-white rounded-full hover:bg-gray-800 transition-all shadow-sm focus:outline-none text-sm font-semibold border border-gray-900"
             >
-                <User size={20} />
+                {getInitial()}
             </button>
 
             {isDropdownOpen && (
