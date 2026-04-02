@@ -89,7 +89,8 @@ const createPaymentLink = asyncHandler(async (req, res) => {
             customer.name,
             invoices,
             paymentLink.short_url,
-            businessName
+            businessName,
+            user
         );
     } catch (emailErr) {
         console.error('Email sending failed:', emailErr.message);
@@ -242,7 +243,8 @@ const handleWebhook = async (req, res) => {
                         invoices,
                         totalPaid,
                         customer.balance,
-                        user?.businessName || 'BizzOps'
+                        user?.businessName || 'BizzOps',
+                        user
                     );
                     console.log('[WEBHOOK] Confirmation email sent ✅');
                 } catch (emailErr) {
@@ -357,7 +359,8 @@ const verifyPayment = asyncHandler(async (req, res) => {
                         paidInvoices,
                         totalPaid,
                         customer.balance,
-                        user?.businessName || 'BizzOps'
+                        user?.businessName || 'BizzOps',
+                        user
                     );
                 } catch (emailErr) {
                     console.error('[VERIFY] Confirmation email failed:', emailErr.message);

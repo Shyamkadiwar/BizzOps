@@ -216,89 +216,169 @@ const CustomerDetailsModal = ({ open, onClose, customerId }) => {
 
     return (
         <>
-            <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-                <DialogTitle>
+            <Dialog 
+                open={open} 
+                onClose={onClose} 
+                maxWidth="lg" 
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: '24px',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(20px)',
+                        boxShadow: '0 24px 64px -12px rgba(0, 0, 0, 0.15)',
+                        overflow: 'hidden'
+                    }
+                }}
+            >
+                <DialogTitle sx={{ 
+                    borderBottom: '1px solid rgba(0,0,0,0.05)',
+                    background: 'linear-gradient(90deg, rgba(248,250,252,0.9) 0%, rgba(255,255,255,0.95) 100%)',
+                    pt: 3, pb: 2, px: 4
+                }}>
                     <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Typography variant="h5">{customer.name}</Typography>
-                        <IconButton onClick={onClose}>
+                        <Box>
+                            <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                {customer.name}
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5, fontWeight: 500 }}>
+                                {customer.email} • {customer.phone}
+                            </Typography>
+                        </Box>
+                        <IconButton 
+                            onClick={onClose}
+                            sx={{ 
+                                background: '#f1f5f9', 
+                                color: '#64748b',
+                                '&:hover': { background: '#e2e8f0', color: '#0f172a', transform: 'rotate(90deg)' },
+                                transition: 'all 0.2s',
+                                width: 40, height: 40
+                            }}
+                        >
                             <CloseIcon />
                         </IconButton>
                     </Box>
-                    <Typography variant="body2" color="text.secondary">
-                        {customer.email} | {customer.phone}
-                    </Typography>
                 </DialogTitle>
 
-                <DialogContent>
+                <DialogContent sx={{ p: 4, background: '#f8fafc' }}>
                     {/* Stats Cards */}
-                    <Grid container spacing={2} sx={{ mb: 3 }}>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card>
-                                <CardContent>
-                                    <Typography color="text.secondary" gutterBottom>
-                                        Current Balance
-                                    </Typography>
-                                    <Typography variant="h5" color={stats?.balance > 0 ? 'error.main' : 'success.main'}>
-                                        ₹{(stats?.balance || 0).toLocaleString('en-IN')}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card>
-                                <CardContent>
-                                    <Typography color="text.secondary" gutterBottom>
-                                        Total Sales
-                                    </Typography>
-                                    <Typography variant="h5">
-                                        ₹{(stats?.totalSales || 0).toLocaleString('en-IN')}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card>
-                                <CardContent>
-                                    <Typography color="text.secondary" gutterBottom>
-                                        Total Profit
-                                    </Typography>
-                                    <Typography variant="h5" color="success.main">
-                                        ₹{(stats?.totalProfit || 0).toLocaleString('en-IN')}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <Card>
-                                <CardContent>
-                                    <Typography color="text.secondary" gutterBottom>
-                                        Transactions
-                                    </Typography>
-                                    <Typography variant="h5">
-                                        {stats?.transactionCount || 0}
-                                    </Typography>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    </Grid>
+                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 3, mb: 4 }}>
+                        <Card sx={{
+                            borderRadius: '20px', background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid rgba(226, 232, 240, 0.8)',
+                            transition: 'transform 0.3s, box-shadow 0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 24px rgba(0,0,0,0.06)' },
+                            display: 'flex', flexDirection: 'column', height: '100%'
+                        }}>
+                            <CardContent sx={{ p: 3, flexGrow: 1 }}>
+                                <Typography sx={{ color: '#64748b', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', mb: 1 }}>
+                                    Current Balance
+                                </Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 700, color: stats?.balance > 0 ? '#ef4444' : '#10b981' }}>
+                                    ₹{(stats?.balance || 0).toLocaleString('en-IN')}
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                        
+                        <Card sx={{
+                            borderRadius: '20px', background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid rgba(226, 232, 240, 0.8)',
+                            transition: 'transform 0.3s, box-shadow 0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 24px rgba(0,0,0,0.06)' },
+                            display: 'flex', flexDirection: 'column', height: '100%'
+                        }}>
+                            <CardContent sx={{ p: 3, flexGrow: 1 }}>
+                                <Typography sx={{ color: '#64748b', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', mb: 1 }}>
+                                    Total Sales
+                                </Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                                    ₹{(stats?.totalSales || 0).toLocaleString('en-IN')}
+                                </Typography>
+                            </CardContent>
+                        </Card>
+
+                        <Card sx={{
+                            borderRadius: '20px', background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid rgba(226, 232, 240, 0.8)',
+                            transition: 'transform 0.3s, box-shadow 0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 24px rgba(0,0,0,0.06)' },
+                            display: 'flex', flexDirection: 'column', height: '100%'
+                        }}>
+                            <CardContent sx={{ p: 3, flexGrow: 1 }}>
+                                <Typography sx={{ color: '#64748b', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', mb: 1 }}>
+                                    Total Profit
+                                </Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 700, color: '#10b981' }}>
+                                    ₹{(stats?.totalProfit || 0).toLocaleString('en-IN')}
+                                </Typography>
+                            </CardContent>
+                        </Card>
+
+                        <Card sx={{
+                            borderRadius: '20px', background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid rgba(226, 232, 240, 0.8)',
+                            transition: 'transform 0.3s, box-shadow 0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 24px rgba(0,0,0,0.06)' },
+                            display: 'flex', flexDirection: 'column', height: '100%'
+                        }}>
+                            <CardContent sx={{ p: 3, flexGrow: 1 }}>
+                                <Typography sx={{ color: '#64748b', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', mb: 1 }}>
+                                    Transactions
+                                </Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                                    {stats?.transactionCount || 0}
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Box>
 
                     {/* Action Buttons */}
-                    <Box sx={{ mb: 3 }}>
+                    <Box sx={{ mb: 4, display: 'flex', justifyContent: 'flex-start' }}>
                         <Button
                             variant="contained"
                             startIcon={<PaymentIcon />}
                             onClick={() => setPaymentDialogOpen(true)}
                             disabled={stats?.balance <= 0}
+                            sx={{
+                                borderRadius: '12px',
+                                background: stats?.balance <= 0 ? 'rgba(0,0,0,0.1)' : 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                                color: '#fff',
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '15px',
+                                padding: '10px 24px',
+                                boxShadow: stats?.balance <= 0 ? 'none' : '0 10px 20px -10px rgba(15,23,42,0.5)',
+                                '&:hover': {
+                                    background: 'linear-gradient(135deg, #000000 0%, #0f172a 100%)',
+                                    boxShadow: '0 10px 25px -10px rgba(0,0,0,0.6)',
+                                }
+                            }}
                         >
                             Add Payment
                         </Button>
                     </Box>
 
                     {/* Tabs */}
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                        <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
-                            <Tab label="Transactions" />
-                            <Tab label="Sales" />
+                    <Box sx={{ borderBottom: 1, borderColor: 'rgba(0,0,0,0.08)', mb: 3 }}>
+                        <Tabs 
+                            value={activeTab} 
+                            onChange={(e, newValue) => setActiveTab(newValue)}
+                            sx={{
+                                '& .MuiTab-root': {
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                    fontSize: '15px',
+                                    color: '#64748b',
+                                },
+                                '& .Mui-selected': {
+                                    color: '#0f172a !important',
+                                },
+                                '& .MuiTabs-indicator': {
+                                    backgroundColor: '#0f172a',
+                                    height: '3px',
+                                    borderTopLeftRadius: '3px',
+                                    borderTopRightRadius: '3px',
+                                }
+                            }}
+                        >
+                            <Tab label="Transactions" disableRipple />
+                            <Tab label="Sales" disableRipple />
                         </Tabs>
                     </Box>
 
@@ -334,19 +414,45 @@ const CustomerDetailsModal = ({ open, onClose, customerId }) => {
                                     size="small"
                                     InputLabelProps={{ shrink: true }}
                                 />
-                                <Button onClick={fetchTransactions} variant="outlined">
-                                    Apply Filters
+                                <Button onClick={fetchTransactions} variant="contained" sx={{ 
+                                    background: '#0f172a', color: '#fff', borderRadius: '8px',
+                                    textTransform: 'none', fontWeight: 600, boxShadow: 'none', px: 3,
+                                    '&:hover': { background: '#1e293b' }
+                                }}>
+                                    Apply
                                 </Button>
                             </Box>
-                            <DataGrid
-                                rows={transactions}
-                                columns={transactionColumns}
-                                loading={transactionsLoading}
-                                autoHeight
-                                pageSize={10}
-                                rowsPerPageOptions={[10, 25, 50]}
-                                disableSelectionOnClick
-                            />
+                            <Box sx={{ 
+                                background: '#fff', 
+                                borderRadius: '16px', 
+                                border: '1px solid rgba(0,0,0,0.05)',
+                                overflow: 'hidden',
+                                boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
+                            }}>
+                                <DataGrid
+                                    rows={transactions}
+                                    columns={transactionColumns}
+                                    loading={transactionsLoading}
+                                    autoHeight
+                                    pageSize={10}
+                                    rowsPerPageOptions={[10, 25, 50]}
+                                    disableSelectionOnClick
+                                    sx={{
+                                        border: 'none',
+                                        '& .MuiDataGrid-cell': { borderBottom: '1px solid #f1f5f9', color: '#334155', fontSize: '14px' },
+                                        '& .MuiDataGrid-columnHeaders': { 
+                                            background: '#f8fafc',
+                                            borderBottom: '1px solid #e2e8f0', 
+                                            color: '#64748b', 
+                                            fontWeight: 'bold',
+                                            textTransform: 'uppercase',
+                                            fontSize: '12px',
+                                            letterSpacing: '0.5px'
+                                        },
+                                        '& .MuiDataGrid-row:hover': { background: '#f8fafc' }
+                                    }}
+                                />
+                            </Box>
                         </Box>
                     )}
 
@@ -382,19 +488,45 @@ const CustomerDetailsModal = ({ open, onClose, customerId }) => {
                                     size="small"
                                     InputLabelProps={{ shrink: true }}
                                 />
-                                <Button onClick={fetchSales} variant="outlined">
-                                    Apply Filters
+                                <Button onClick={fetchSales} variant="contained" sx={{ 
+                                    background: '#0f172a', color: '#fff', borderRadius: '8px',
+                                    textTransform: 'none', fontWeight: 600, boxShadow: 'none', px: 3,
+                                    '&:hover': { background: '#1e293b' }
+                                }}>
+                                    Apply
                                 </Button>
                             </Box>
-                            <DataGrid
-                                rows={sales}
-                                columns={salesColumns}
-                                loading={salesLoading}
-                                autoHeight
-                                pageSize={10}
-                                rowsPerPageOptions={[10, 25, 50]}
-                                disableSelectionOnClick
-                            />
+                            <Box sx={{ 
+                                background: '#fff', 
+                                borderRadius: '16px', 
+                                border: '1px solid rgba(0,0,0,0.05)',
+                                overflow: 'hidden',
+                                boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
+                            }}>
+                                <DataGrid
+                                    rows={sales}
+                                    columns={salesColumns}
+                                    loading={salesLoading}
+                                    autoHeight
+                                    pageSize={10}
+                                    rowsPerPageOptions={[10, 25, 50]}
+                                    disableSelectionOnClick
+                                    sx={{
+                                        border: 'none',
+                                        '& .MuiDataGrid-cell': { borderBottom: '1px solid #f1f5f9', color: '#334155', fontSize: '14px' },
+                                        '& .MuiDataGrid-columnHeaders': { 
+                                            background: '#f8fafc',
+                                            borderBottom: '1px solid #e2e8f0', 
+                                            color: '#64748b', 
+                                            fontWeight: 'bold',
+                                            textTransform: 'uppercase',
+                                            fontSize: '12px',
+                                            letterSpacing: '0.5px'
+                                        },
+                                        '& .MuiDataGrid-row:hover': { background: '#f8fafc' }
+                                    }}
+                                />
+                            </Box>
                         </Box>
                     )}
                 </DialogContent>

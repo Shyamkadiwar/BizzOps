@@ -334,19 +334,23 @@ const VendorDetailsModal = ({ open, onClose, vendorId }) => {
     ];
 
     // ─── Stat Card Component ───
-    const StatCard = ({ icon, label, value, color = 'primary.main', bgColor }) => (
+    const StatCard = ({ icon, label, value, color = '#0f172a' }) => (
         <Card sx={{
-            background: bgColor || `linear-gradient(135deg, ${alpha(color === 'warning.main' ? '#ed6c02' : color === 'success.main' ? '#2e7d32' : '#1976d2', 0.08)} 0%, ${alpha(color === 'warning.main' ? '#ed6c02' : color === 'success.main' ? '#2e7d32' : '#1976d2', 0.02)} 100%)`,
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 2
+            borderRadius: '20px', background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid rgba(226, 232, 240, 0.8)',
+            transition: 'transform 0.3s, box-shadow 0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 24px rgba(0,0,0,0.06)' },
+            display: 'flex', flexDirection: 'column', height: '100%'
         }}>
-            <CardContent sx={{ py: 2, px: 2.5, '&:last-child': { pb: 2 } }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+            <CardContent sx={{ p: 3, flexGrow: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                     {icon}
-                    <Typography variant="body2" color="text.secondary" fontWeight={500}>{label}</Typography>
+                    <Typography sx={{ color: '#64748b', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        {label}
+                    </Typography>
                 </Box>
-                <Typography variant="h5" fontWeight={700} color={color}>{value}</Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700, color }}>
+                    {value}
+                </Typography>
             </CardContent>
         </Card>
     );
@@ -355,10 +359,26 @@ const VendorDetailsModal = ({ open, onClose, vendorId }) => {
 
     return (
         <>
-            <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth
-                PaperProps={{ sx: { borderRadius: 3, minHeight: '70vh' } }}
+            <Dialog 
+                open={open} 
+                onClose={onClose} 
+                maxWidth="lg" 
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: '24px',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(20px)',
+                        boxShadow: '0 24px 64px -12px rgba(0, 0, 0, 0.15)',
+                        overflow: 'hidden'
+                    }
+                }}
             >
-                <DialogTitle sx={{ pb: 1 }}>
+                <DialogTitle sx={{ 
+                    borderBottom: '1px solid rgba(0,0,0,0.05)',
+                    background: 'linear-gradient(90deg, rgba(248,250,252,0.9) 0%, rgba(255,255,255,0.95) 100%)',
+                    pt: 3, pb: 2, px: 4
+                }}>
                     <Box display="flex" justifyContent="space-between" alignItems="flex-start">
                         <Box>
                             {isEditingVendor ? (
@@ -385,106 +405,162 @@ const VendorDetailsModal = ({ open, onClose, vendorId }) => {
                                             <IconButton size="small" onClick={handleEditVendor}><EditIcon fontSize="small" /></IconButton>
                                         </Tooltip>
                                     </Box>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {[vendor.email, vendor.phone, vendor.city, vendor.gstNumber ? `GST: ${vendor.gstNumber}` : null].filter(Boolean).join(' • ')}
-                                    </Typography>
-                                </>
-                            )}
+                                        <Typography variant="body2" sx={{ color: '#64748b', mt: 0.5, fontWeight: 500 }}>
+                                            {[vendor.email, vendor.phone, vendor.city, vendor.gstNumber ? `GST: ${vendor.gstNumber}` : null].filter(Boolean).join(' • ')}
+                                        </Typography>
+                                    </>
+                                )}
+                            </Box>
+                            <IconButton 
+                                onClick={onClose}
+                                sx={{ 
+                                    background: '#f1f5f9', 
+                                    color: '#64748b',
+                                    '&:hover': { background: '#e2e8f0', color: '#0f172a', transform: 'rotate(90deg)' },
+                                    transition: 'all 0.2s',
+                                    width: 40, height: 40
+                                }}
+                            >
+                                <CloseIcon />
+                            </IconButton>
                         </Box>
-                        <IconButton onClick={onClose}><CloseIcon /></IconButton>
-                    </Box>
-                </DialogTitle>
-
-                <DialogContent sx={{ pt: 2 }}>
-                    {/* Stat Cards */}
-                    <Grid container spacing={2} sx={{ mb: 3 }}>
-                        <Grid item xs={6} sm={3}>
+                    </DialogTitle>
+    
+                    <DialogContent sx={{ p: 4, background: '#f8fafc' }}>
+                        {/* Stat Cards */}
+                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 3, mb: 4 }}>
                             <StatCard
-                                icon={<AccountBalanceWalletIcon sx={{ color: stats?.balance > 0 ? 'warning.main' : 'success.main', fontSize: 20 }} />}
+                                icon={<AccountBalanceWalletIcon sx={{ color: stats?.balance > 0 ? '#ef4444' : '#10b981', fontSize: 18 }} />}
                                 label="Balance (Owed)"
                                 value={`₹${(stats?.balance || 0).toLocaleString('en-IN')}`}
-                                color={stats?.balance > 0 ? 'warning.main' : 'success.main'}
+                                color={stats?.balance > 0 ? '#ef4444' : '#10b981'}
                             />
-                        </Grid>
-                        <Grid item xs={6} sm={3}>
                             <StatCard
-                                icon={<ShoppingCartIcon sx={{ color: 'primary.main', fontSize: 20 }} />}
+                                icon={<ShoppingCartIcon sx={{ color: '#3b82f6', fontSize: 18 }} />}
                                 label="Total Purchases"
                                 value={`₹${(stats?.totalPurchases || 0).toLocaleString('en-IN')}`}
                             />
-                        </Grid>
-                        <Grid item xs={6} sm={3}>
                             <StatCard
-                                icon={<ReceiptLongIcon sx={{ color: 'success.main', fontSize: 20 }} />}
+                                icon={<ReceiptLongIcon sx={{ color: '#10b981', fontSize: 18 }} />}
                                 label="Total Paid"
                                 value={`₹${(stats?.totalPaid || 0).toLocaleString('en-IN')}`}
-                                color="success.main"
+                                color="#10b981"
                             />
-                        </Grid>
-                        <Grid item xs={6} sm={3}>
                             <StatCard
-                                icon={<CategoryIcon sx={{ color: 'primary.main', fontSize: 20 }} />}
+                                icon={<CategoryIcon sx={{ color: '#8b5cf6', fontSize: 18 }} />}
                                 label="Products"
                                 value={products.length}
                             />
-                        </Grid>
-                    </Grid>
+                        </Box>
 
                     {/* Action Buttons */}
-                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                        <Button variant="contained" startIcon={<PaymentIcon />} onClick={() => setPaymentDialogOpen(true)} disabled={stats?.balance <= 0} size="small">
+                    <Box sx={{ mb: 4, display: 'flex', justifyContent: 'flex-start' }}>
+                        <Button 
+                            variant="contained" 
+                            startIcon={<PaymentIcon />} 
+                            onClick={() => setPaymentDialogOpen(true)} 
+                            disabled={stats?.balance <= 0}
+                            sx={{
+                                borderRadius: '12px',
+                                background: stats?.balance <= 0 ? 'rgba(0,0,0,0.1)' : 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                                color: '#fff',
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                fontSize: '15px',
+                                padding: '10px 24px',
+                                boxShadow: stats?.balance <= 0 ? 'none' : '0 10px 20px -10px rgba(15,23,42,0.5)',
+                                '&:hover': {
+                                    background: 'linear-gradient(135deg, #000000 0%, #0f172a 100%)',
+                                    boxShadow: '0 10px 25px -10px rgba(0,0,0,0.6)',
+                                }
+                            }}
+                        >
                             Record Payment
                         </Button>
                     </Box>
 
                     {/* Tabs */}
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                        <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)}
-                            sx={{ '& .MuiTab-root': { textTransform: 'none', fontWeight: 600 } }}
+                    <Box sx={{ borderBottom: 1, borderColor: 'rgba(0,0,0,0.08)', mb: 3 }}>
+                        <Tabs 
+                            value={activeTab} 
+                            onChange={(e, v) => setActiveTab(v)}
+                            sx={{
+                                '& .MuiTab-root': {
+                                    textTransform: 'none', fontWeight: 600, fontSize: '15px', color: '#64748b', minHeight: '48px'
+                                },
+                                '& .Mui-selected': { color: '#0f172a !important' },
+                                '& .MuiTabs-indicator': {
+                                    backgroundColor: '#0f172a', height: '3px', borderTopLeftRadius: '3px', borderTopRightRadius: '3px'
+                                }
+                            }}
                         >
-                            <Tab icon={<ReceiptLongIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Transactions" />
-                            <Tab icon={<InventoryIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Purchases" />
-                            <Tab icon={<CategoryIcon sx={{ fontSize: 18 }} />} iconPosition="start" label={`Products (${products.length})`} />
+                            <Tab icon={<ReceiptLongIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Transactions" disableRipple />
+                            <Tab icon={<InventoryIcon sx={{ fontSize: 18 }} />} iconPosition="start" label="Purchases" disableRipple />
+                            <Tab icon={<CategoryIcon sx={{ fontSize: 18 }} />} iconPosition="start" label={`Products (${products.length})`} disableRipple />
                         </Tabs>
                     </Box>
 
                     {/* Tab Content */}
                     {activeTab === 0 && (
-                        <Box sx={{ mt: 2 }}>
+                        <Box sx={{ 
+                            background: '#fff', borderRadius: '16px', border: '1px solid rgba(0,0,0,0.05)',
+                            overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
+                        }}>
                             <DataGrid rows={transactions} columns={transactionColumns} autoHeight
                                 initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
                                 pageSizeOptions={[10, 25, 50]} disableRowSelectionOnClick
-                                sx={{ border: 'none', '& .MuiDataGrid-cell': { borderBottom: '1px solid #f0f0f0' } }}
+                                sx={{
+                                    border: 'none',
+                                    '& .MuiDataGrid-cell': { borderBottom: '1px solid #f1f5f9', color: '#334155', fontSize: '14px' },
+                                    '& .MuiDataGrid-columnHeaders': { 
+                                        background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#64748b', 
+                                        fontWeight: 'bold', textTransform: 'uppercase', fontSize: '12px', letterSpacing: '0.5px'
+                                    },
+                                    '& .MuiDataGrid-row:hover': { background: '#f8fafc' }
+                                }}
                             />
                         </Box>
                     )}
 
                     {activeTab === 1 && (
-                        <Box sx={{ mt: 2 }}>
+                        <Box sx={{ 
+                            background: '#fff', borderRadius: '16px', border: '1px solid rgba(0,0,0,0.05)',
+                            overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
+                        }}>
                             <DataGrid rows={purchases} columns={purchaseColumns} autoHeight
                                 initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
                                 pageSizeOptions={[10, 25, 50]} disableRowSelectionOnClick
-                                sx={{ border: 'none', '& .MuiDataGrid-cell': { borderBottom: '1px solid #f0f0f0' } }}
+                                sx={{
+                                    border: 'none',
+                                    '& .MuiDataGrid-cell': { borderBottom: '1px solid #f1f5f9', color: '#334155', fontSize: '14px' },
+                                    '& .MuiDataGrid-columnHeaders': { 
+                                        background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#64748b', 
+                                        fontWeight: 'bold', textTransform: 'uppercase', fontSize: '12px', letterSpacing: '0.5px'
+                                    },
+                                    '& .MuiDataGrid-row:hover': { background: '#f8fafc' }
+                                }}
                             />
                         </Box>
                     )}
 
                     {activeTab === 2 && (
-                        <Box sx={{ mt: 2 }}>
+                        <Box>
                             {/* Add Product Button */}
-                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                                <Button variant="contained" startIcon={<AddIcon />} size="small" onClick={handleAddProductClick}>
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+                                <Button variant="contained" startIcon={<AddIcon />} size="small" onClick={handleAddProductClick} sx={{
+                                    borderRadius: '8px', background: '#0f172a', textTransform: 'none', px: 2, py: 1, '&:hover': { background: '#1e293b' }
+                                }}>
                                     Add Product
                                 </Button>
                             </Box>
 
                             {/* Inline Product Form */}
                             {showProductForm && (
-                                <Card sx={{ mb: 3, p: 2.5, border: '2px solid', borderColor: 'primary.light', borderRadius: 2 }}>
-                                    <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
+                                <Card sx={{ mb: 4, p: 3, border: '1px solid rgba(0,0,0,0.1)', borderRadius: '16px', background: '#fff', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                                    <Typography variant="h6" fontWeight={700} sx={{ mb: 3, color: '#0f172a' }}>
                                         {editingProduct ? 'Edit Product' : 'New Product'}
                                     </Typography>
-                                    <Grid container spacing={1.5}>
+                                    <Grid container spacing={2}>
                                         <Grid item xs={12} sm={6}>
                                             <TextField size="small" label="Product Name *" value={productFormData.name}
                                                 onChange={(e) => setProductFormData({ ...productFormData, name: e.target.value })} fullWidth />
@@ -508,25 +584,25 @@ const VendorDetailsModal = ({ open, onClose, vendorId }) => {
 
                                         {/* Inline Tax Section */}
                                         <Grid item xs={12}>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                                                <Typography variant="body2" fontWeight={600}>Taxes</Typography>
-                                                <Button size="small" startIcon={<AddIcon />} onClick={handleAddProductTax}>Add Tax</Button>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, background: '#f8fafc', p: 1.5, borderRadius: '8px' }}>
+                                                <Typography variant="body2" fontWeight={600} color="#475569">Taxes</Typography>
+                                                <Button size="small" startIcon={<AddIcon />} onClick={handleAddProductTax} sx={{ textTransform: 'none' }}>Add Tax</Button>
                                             </Box>
                                             {productFormData.taxes.map((tax, idx) => (
-                                                <Box key={idx} sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
+                                                <Box key={idx} sx={{ display: 'flex', gap: 2, mb: 1.5, alignItems: 'center' }}>
                                                     <TextField size="small" label="Tax Name" value={tax.name}
                                                         onChange={(e) => handleProductTaxChange(idx, 'name', e.target.value)} sx={{ flex: 1 }} />
                                                     <TextField size="small" label="Rate (%)" type="number" value={tax.rate}
                                                         onChange={(e) => handleProductTaxChange(idx, 'rate', e.target.value)} sx={{ width: 100 }}
                                                         inputProps={{ min: 0, max: 100, step: 0.01 }} />
-                                                    <IconButton size="small" color="error" onClick={() => handleRemoveProductTax(idx)}><DeleteIcon fontSize="small" /></IconButton>
+                                                    <IconButton size="small" sx={{ color: '#ef4444', background: '#fee2e2', '&:hover': { background: '#fecaca' } }} onClick={() => handleRemoveProductTax(idx)}><DeleteIcon fontSize="small" /></IconButton>
                                                 </Box>
                                             ))}
                                         </Grid>
                                     </Grid>
-                                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', mt: 2 }}>
-                                        <Button size="small" variant="outlined" onClick={resetProductForm}>Cancel</Button>
-                                        <Button size="small" variant="contained" onClick={handleSaveProduct}>
+                                    <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'flex-end', mt: 3, pt: 2, borderTop: '1px solid #e2e8f0' }}>
+                                        <Button size="small" sx={{ textTransform: 'none', color: '#64748b' }} onClick={resetProductForm}>Cancel</Button>
+                                        <Button size="small" variant="contained" sx={{ background: '#0f172a', textTransform: 'none', '&:hover': { background: '#1e293b' } }} onClick={handleSaveProduct}>
                                             {editingProduct ? 'Update Product' : 'Create Product'}
                                         </Button>
                                     </Box>
@@ -534,11 +610,24 @@ const VendorDetailsModal = ({ open, onClose, vendorId }) => {
                             )}
 
                             {/* Products DataGrid */}
-                            <DataGrid rows={products} columns={productColumns} autoHeight loading={productsLoading}
-                                initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-                                pageSizeOptions={[10, 25, 50]} disableRowSelectionOnClick
-                                sx={{ border: 'none', '& .MuiDataGrid-cell': { borderBottom: '1px solid #f0f0f0' } }}
-                            />
+                            <Box sx={{ 
+                                background: '#fff', borderRadius: '16px', border: '1px solid rgba(0,0,0,0.05)',
+                                overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.02)'
+                            }}>
+                                <DataGrid rows={products} columns={productColumns} autoHeight loading={productsLoading}
+                                    initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+                                    pageSizeOptions={[10, 25, 50]} disableRowSelectionOnClick
+                                    sx={{
+                                        border: 'none',
+                                        '& .MuiDataGrid-cell': { borderBottom: '1px solid #f1f5f9', color: '#334155', fontSize: '14px' },
+                                        '& .MuiDataGrid-columnHeaders': { 
+                                            background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#64748b', 
+                                            fontWeight: 'bold', textTransform: 'uppercase', fontSize: '12px', letterSpacing: '0.5px'
+                                        },
+                                        '& .MuiDataGrid-row:hover': { background: '#f8fafc' }
+                                    }}
+                                />
+                            </Box>
                         </Box>
                     )}
                 </DialogContent>

@@ -9,7 +9,8 @@ import {
     Paper,
     Switch,
     FormControlLabel,
-    Chip
+    Chip,
+    Button
 } from '@mui/material';
 import { Plus, Trash2 } from 'lucide-react';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -294,10 +295,11 @@ function AddInventory({ onItemAdded, onCancel }) {
                         InputLabelProps={{ shrink: true }}
                     />
                     <Paper sx={{ p: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        bgcolor: formData.paid ? 'success.lighter' : 'warning.lighter',
+                        background: formData.paid ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
                         border: '1px solid',
-                        borderColor: formData.paid ? 'success.light' : 'warning.light',
-                        borderRadius: 1
+                        borderColor: formData.paid ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)',
+                        borderRadius: '12px',
+                        boxShadow: 'none'
                     }}>
                         <FormControlLabel
                             control={
@@ -314,16 +316,18 @@ function AddInventory({ onItemAdded, onCancel }) {
                                     </Typography>
                                     <Chip
                                         label={formData.paid ? 'PAID' : 'UNPAID'}
-                                        color={formData.paid ? 'success' : 'warning'}
+                                        sx={{ 
+                                            background: formData.paid ? '#10b981' : '#ef4444', 
+                                            color: '#fff', fontSize: '11px', fontWeight: 700 
+                                        }}
                                         size="small"
-                                        variant="filled"
                                     />
                                 </Box>
                             }
                         />
                     </Paper>
-                    <Paper sx={{ p: 2, bgcolor: 'primary.light', display: 'flex', alignItems: 'center' }}>
-                        <Typography variant="h6" sx={{ color: 'primary.contrastText' }}>
+                    <Paper sx={{ p: 2, background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', display: 'flex', alignItems: 'center', borderRadius: '12px', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)' }}>
+                        <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700 }}>
                             Total Cost: ₹{totalCost.toLocaleString()}
                         </Typography>
                     </Paper>
@@ -332,11 +336,19 @@ function AddInventory({ onItemAdded, onCancel }) {
                 {/* Taxes Section */}
                 <Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="subtitle1" fontWeight="bold">Taxes (Optional)</Typography>
-                        <button type="button" onClick={handleAddTax}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-xs font-medium text-gray-600">
-                            <Plus size={14} /> Add Tax
-                        </button>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Taxes (Optional)</Typography>
+                        <Button 
+                            type="button" 
+                            onClick={handleAddTax}
+                            startIcon={<Plus size={16} />}
+                            sx={{
+                                color: '#0f172a', background: '#f1f5f9', borderRadius: '8px',
+                                textTransform: 'none', fontWeight: 600, px: 2,
+                                '&:hover': { background: '#e2e8f0' }
+                            }}
+                        >
+                            Add Tax
+                        </Button>
                     </Box>
                     {formData.taxes.map((tax, index) => (
                         <Box key={index} sx={{ display: 'grid', gridTemplateColumns: '1fr 200px auto', gap: 1, mb: 1 }}>
@@ -356,8 +368,12 @@ function AddInventory({ onItemAdded, onCancel }) {
                                 fullWidth
                                 inputProps={{ min: 0, max: 100, step: 0.01 }}
                             />
-                            <IconButton onClick={() => handleRemoveTax(index)} size="small" color="error">
-                                <DeleteIcon />
+                            <IconButton 
+                                onClick={() => handleRemoveTax(index)} 
+                                size="small" 
+                                sx={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', height: 40, width: 40, alignSelf: 'center', '&:hover': { background: 'rgba(239, 68, 68, 0.2)' } }}
+                            >
+                                <DeleteIcon fontSize="small" />
                             </IconButton>
                         </Box>
                     ))}
@@ -365,17 +381,23 @@ function AddInventory({ onItemAdded, onCancel }) {
             </Box>
 
             {/* Action Buttons */}
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4, pt: 3, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
                 {onCancel && (
-                    <button type="button" onClick={onCancel}
-                        className="px-6 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium text-gray-700">
+                    <Button type="button" onClick={onCancel}
+                        sx={{ color: '#64748b', textTransform: 'none', fontWeight: 600, px: 3 }}>
                         Cancel
-                    </button>
+                    </Button>
                 )}
-                <button type="submit"
-                    className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white">
+                <Button type="submit"
+                    sx={{
+                        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                        color: '#fff', textTransform: 'none', fontWeight: 600, borderRadius: '10px',
+                        boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)',
+                        px: 4, py: 1,
+                        '&:hover': { background: 'linear-gradient(135deg, #000000 0%, #0f172a 100%)' }
+                    }}>
                     Add to Inventory
-                </button>
+                </Button>
             </Box>
 
             {/* Alert Dialog */}

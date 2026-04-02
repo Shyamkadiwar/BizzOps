@@ -83,14 +83,41 @@ const AddVendorPayment = ({ open, onClose, vendorId, vendorName, currentBalance,
 
     return (
         <>
-            <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-                <DialogTitle>Record Payment - {vendorName}</DialogTitle>
+            <Dialog 
+                open={open} 
+                onClose={onClose} 
+                maxWidth="sm" 
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: '24px',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(20px)',
+                        boxShadow: '0 24px 64px -12px rgba(0, 0, 0, 0.15)',
+                        overflow: 'hidden'
+                    }
+                }}
+            >
+                <DialogTitle sx={{ 
+                    borderBottom: '1px solid rgba(0,0,0,0.05)',
+                    background: 'linear-gradient(90deg, rgba(248,250,252,0.9) 0%, rgba(255,255,255,0.95) 100%)',
+                    pt: 3, pb: 2, px: 4
+                }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                        Record Payment — {vendorName}
+                    </Typography>
+                </DialogTitle>
                 <form onSubmit={handleSubmit}>
-                    <DialogContent>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            <Typography variant="body2" color="text.secondary">
-                                Current Balance (Owed): <strong>₹{currentBalance.toLocaleString('en-IN')}</strong>
-                            </Typography>
+                    <DialogContent sx={{ p: 4 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            <Box sx={{ background: '#f8fafc', p: 2, borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>
+                                    Current Balance (Owed): 
+                                </Typography>
+                                <Typography variant="h5" sx={{ fontWeight: 700, color: '#ef4444', mt: 0.5 }}>
+                                    ₹{currentBalance.toLocaleString('en-IN')}
+                                </Typography>
+                            </Box>
 
                             <TextField
                                 label="Payment Amount"
@@ -122,10 +149,21 @@ const AddVendorPayment = ({ open, onClose, vendorId, vendorName, currentBalance,
                             />
                         </Box>
                     </DialogContent>
-                    <DialogActions>
-                        <Button onClick={onClose}>Cancel</Button>
-                        <Button type="submit" variant="contained" disabled={loading}>
-                            Record Payment
+                    <DialogActions sx={{ px: 4, pb: 3, pt: 2, gap: 1, background: '#f8fafc', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                        <Button onClick={onClose} sx={{ mr: 'auto', color: '#64748b', textTransform: 'none', fontWeight: 600 }}>Cancel</Button>
+                        <Button 
+                            type="submit" 
+                            variant="contained" 
+                            disabled={loading}
+                            sx={{
+                                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                                color: '#fff', textTransform: 'none', fontWeight: 600, borderRadius: '8px',
+                                boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)',
+                                px: 3,
+                                '&:hover': { background: 'linear-gradient(135deg, #000000 0%, #0f172a 100%)' }
+                            }}
+                        >
+                            {loading ? 'Processing...' : 'Record Payment'}
                         </Button>
                     </DialogActions>
                 </form>

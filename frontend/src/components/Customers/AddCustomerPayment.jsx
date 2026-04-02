@@ -163,16 +163,45 @@ const AddCustomerPayment = ({ open, onClose, customerId, customerName, currentBa
 
     return (
         <>
-            <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-                <DialogTitle>
+            <Dialog 
+                open={open} 
+                onClose={onClose} 
+                maxWidth="sm" 
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        borderRadius: '24px',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(20px)',
+                        boxShadow: '0 24px 64px -12px rgba(0, 0, 0, 0.15)',
+                        overflow: 'hidden'
+                    }
+                }}
+            >
+                <DialogTitle sx={{ 
+                    borderBottom: '1px solid rgba(0,0,0,0.05)',
+                    background: 'linear-gradient(90deg, rgba(248,250,252,0.9) 0%, rgba(255,255,255,0.95) 100%)',
+                    pt: 3, pb: 2, px: 4
+                }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span>Record Payment — {customerName}</span>
+                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                            Record Payment — {customerName}
+                        </Typography>
                         <Button
                             size="small"
-                            startIcon={verifying ? <CircularProgress size={14} /> : <SyncIcon />}
+                            startIcon={verifying ? <CircularProgress size={14} sx={{ color: '#0f172a' }} /> : <SyncIcon />}
                             onClick={() => handleVerifyPayments(false)}
                             disabled={verifying}
-                            sx={{ textTransform: 'none', fontSize: '0.75rem' }}
+                            sx={{ 
+                                textTransform: 'none', 
+                                fontSize: '13px', 
+                                fontWeight: 600, 
+                                background: '#f1f5f9', 
+                                color: '#0f172a',
+                                borderRadius: '8px',
+                                px: 2, py: 0.5,
+                                '&:hover': { background: '#e2e8f0' }
+                            }}
                         >
                             {verifying ? 'Checking...' : 'Verify Payments'}
                         </Button>
@@ -237,46 +266,47 @@ const AddCustomerPayment = ({ open, onClose, customerId, customerName, currentBa
                                                 key={invoice._id}
                                                 onClick={() => handleToggleInvoice(invoice._id)}
                                                 sx={{
-                                                    display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5,
-                                                    border: '1px solid', borderColor: isSelected ? 'primary.main' : 'divider',
-                                                    borderRadius: 1.5, cursor: 'pointer',
-                                                    bgcolor: isSelected ? 'primary.50' : 'transparent',
-                                                    transition: 'all 0.15s ease',
-                                                    '&:hover': { borderColor: 'primary.main', bgcolor: isSelected ? 'primary.50' : 'action.hover' }
+                                                    display: 'flex', alignItems: 'center', gap: 1.5, p: 2,
+                                                    border: '1px solid', borderColor: isSelected ? '#3b82f6' : 'rgba(0,0,0,0.08)',
+                                                    borderRadius: '16px', cursor: 'pointer',
+                                                    background: isSelected ? 'rgba(59, 130, 246, 0.04)' : '#ffffff',
+                                                    transition: 'all 0.2s ease',
+                                                    boxShadow: isSelected ? '0 4px 12px rgba(59, 130, 246, 0.1)' : '0 2px 8px rgba(0,0,0,0.02)',
+                                                    '&:hover': { borderColor: '#3b82f6', transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }
                                                 }}
                                             >
-                                                <Checkbox checked={isSelected} size="small" sx={{ p: 0 }} />
+                                                <Checkbox checked={isSelected} size="small" sx={{ p: 0, color: '#cbd5e1', '&.Mui-checked': { color: '#3b82f6' } }} />
                                                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                                            <Typography variant="body2" fontWeight={600}>
-                                                                Invoice #{invoice.invoiceNumber || 'N/A'}
+                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#0f172a' }}>
+                                                                #{invoice.invoiceNumber || 'N/A'}
                                                             </Typography>
                                                             {hasPaymentLink && (
-                                                                <Chip label="Link Sent" size="small" color="info" variant="outlined" sx={{ fontSize: '0.6rem', height: 18 }} />
+                                                                <Chip label="Link Sent" size="small" variant="outlined" sx={{ fontSize: '0.6rem', height: 18, color: '#3b82f6', borderColor: '#3b82f6' }} />
                                                             )}
                                                         </Box>
-                                                        <Typography variant="body2" fontWeight={700} color="error.main">
+                                                        <Typography variant="body2" sx={{ fontWeight: 800, color: '#ef4444' }}>
                                                             ₹{invoice.grandTotal.toLocaleString('en-IN')}
                                                         </Typography>
                                                     </Box>
-                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.3 }}>
-                                                        <Typography variant="caption" color="text.secondary">
+                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                        <Typography variant="caption" sx={{ color: '#64748b' }}>
                                                             {invoice.name || 'No description'}
                                                         </Typography>
-                                                        <Typography variant="caption" color="text.secondary">
+                                                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 500 }}>
                                                             {invoice.date ? new Date(invoice.date).toLocaleDateString('en-IN', {
                                                                 day: '2-digit', month: 'short', year: 'numeric'
                                                             }) : ''}
                                                         </Typography>
                                                     </Box>
                                                     {invoice.items && invoice.items.length > 0 && (
-                                                        <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
+                                                        <Box sx={{ display: 'flex', gap: 0.5, mt: 1, flexWrap: 'wrap' }}>
                                                             {invoice.items.slice(0, 3).map((item, idx) => (
-                                                                <Chip key={idx} label={`${item.itemName} (${item.qty})`} size="small" variant="outlined" sx={{ fontSize: '0.65rem', height: 20 }} />
+                                                                <Chip key={idx} label={`${item.itemName} (${item.qty})`} size="small" sx={{ fontSize: '0.65rem', height: 20, background: '#f1f5f9', color: '#475569' }} />
                                                             ))}
                                                             {invoice.items.length > 3 && (
-                                                                <Chip label={`+${invoice.items.length - 3} more`} size="small" sx={{ fontSize: '0.65rem', height: 20 }} />
+                                                                <Chip label={`+${invoice.items.length - 3} more`} size="small" sx={{ fontSize: '0.65rem', height: 20, background: '#f1f5f9', color: '#475569' }} />
                                                             )}
                                                         </Box>
                                                     )}
@@ -303,22 +333,31 @@ const AddCustomerPayment = ({ open, onClose, customerId, customerName, currentBa
                             )}
                         </Box>
                     </DialogContent>
-                    <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
-                        <Button onClick={onClose} sx={{ mr: 'auto' }}>Cancel</Button>
+                    <DialogActions sx={{ px: 4, pb: 3, pt: 2, gap: 1, background: '#f8fafc', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                        <Button onClick={onClose} sx={{ mr: 'auto', color: '#64748b', textTransform: 'none', fontWeight: 600 }}>Cancel</Button>
                         <Button
                             variant="outlined"
-                            color="secondary"
                             startIcon={<SendIcon />}
                             disabled={sendingLink || selectedInvoices.length === 0}
                             onClick={handleSendPaymentLink}
-                            sx={{ textTransform: 'none' }}
+                            sx={{ 
+                                textTransform: 'none', fontWeight: 600, borderRadius: '8px',
+                                color: '#3b82f6', borderColor: '#3b82f6',
+                                '&:hover': { background: 'rgba(59, 130, 246, 0.04)', borderColor: '#2563eb' }
+                            }}
                         >
-                            {sendingLink ? 'Sending...' : 'Send Payment Link'}
+                            {sendingLink ? 'Sending...' : 'Send Link'}
                         </Button>
                         <Button
                             type="submit"
                             variant="contained"
                             disabled={submitting || selectedInvoices.length === 0}
+                            sx={{
+                                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                                color: '#fff', textTransform: 'none', fontWeight: 600, borderRadius: '8px',
+                                boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)',
+                                '&:hover': { background: 'linear-gradient(135deg, #000000 0%, #0f172a 100%)' }
+                            }}
                         >
                             {submitting ? 'Processing...' : `Pay ₹${selectedTotal.toLocaleString('en-IN')}`}
                         </Button>

@@ -216,7 +216,8 @@ const addSale = asyncHandler(async (req, res) => {
                 updatedCust?.balance || 0,
                 user?.businessName || 'BizzOps',
                 pdfBuffer,
-                user?.website || process.env.FRONTEND_URL || 'example.com'
+                user?.website || process.env.FRONTEND_URL || 'example.com',
+                user
             );
             console.log('[EMAIL] Thank-you email sent successfully');
         } catch (emailErr) {

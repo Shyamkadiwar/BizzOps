@@ -3,87 +3,86 @@ import { resend, FROM_EMAIL } from '../config/resend.js';
 /**
  * Send payment request email with Razorpay payment link
  */
-export async function sendPaymentRequestEmail(customerEmail, customerName, invoices, paymentLink, businessName) {
+export async function sendPaymentRequestEmail(customerEmail, customerName, invoices, paymentLink, businessName, userDetails = {}) {
     const totalAmount = invoices.reduce((sum, inv) => sum + inv.grandTotal, 0);
 
     const invoiceRows = invoices.map(inv => `
         <tr>
-            <td style="padding: 10px 15px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #333;">
-                #${inv.invoiceNumber || 'N/A'}
+            <td style="padding: 12px 0; border-bottom: 1px solid #eee; font-size: 14px; color: #333; width: 60%;">
+                <strong>#${inv.invoiceNumber || 'N/A'}</strong><br/>
+                <span style="font-size: 12px; color: #888;">${inv.items?.map(i => i.itemName).join(', ') || '-'}</span>
             </td>
-            <td style="padding: 10px 15px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #333;">
-                ${inv.date ? new Date(inv.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
-            </td>
-            <td style="padding: 10px 15px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #333;">
-                ${inv.items?.map(i => i.itemName).join(', ') || '-'}
-            </td>
-            <td style="padding: 10px 15px; border-bottom: 1px solid #f0f0f0; font-size: 14px; font-weight: 600; color: #c0392b; text-align: right;">
+            <td style="padding: 12px 0; border-bottom: 1px solid #eee; font-size: 14px; text-align: right; color: #333; vertical-align: top;">
                 ₹${inv.grandTotal.toLocaleString('en-IN')}
             </td>
         </tr>
     `).join('');
 
     const html = `
-    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; padding: 40px 20px;">
         <!-- Header -->
-        <div style="background: #1a1a2e; padding: 30px 30px 25px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 600;">${businessName || 'BizzOps'}</h1>
-            <p style="color: #8888aa; margin: 5px 0 0; font-size: 13px;">Payment Request</p>
-        </div>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
+            <tr>
+                <td style="text-align: left;">
+                    <h1 style="color: #000; margin: 0; font-size: 28px; font-weight: 700;">${businessName || 'Minimalist'}</h1>
+                </td>
+                <td style="text-align: right; vertical-align: middle;">
+                    <span style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">PAYMENT REQUEST</span>
+                </td>
+            </tr>
+        </table>
 
-        <div style="padding: 30px;">
-            <p style="font-size: 15px; color: #333; margin: 0 0 20px;">Dear <strong>${customerName}</strong>,</p>
-            <p style="font-size: 14px; color: #555; line-height: 1.6; margin: 0 0 25px;">
-                You have pending invoice(s) that require payment. Please review the details below and complete your payment using the secure link provided.
-            </p>
+        <!-- Body -->
+        <h2 style="font-size: 22px; color: #333; margin: 0 0 15px 0; font-weight: 400;">Payment required for pending invoices</h2>
+        
+        <p style="font-size: 15px; color: #666; line-height: 1.6; margin: 0 0 25px 0;">
+            Dear ${customerName}, you have pending invoice(s) that require payment. Please review the details below and complete your payment using the secure link provided.
+        </p>
 
-            <!-- Invoice Table -->
-            <table style="width: 100%; border-collapse: collapse; margin: 0 0 20px;">
-                <thead>
-                    <tr style="background: #f8f9fa;">
-                        <th style="padding: 10px 15px; text-align: left; font-size: 12px; color: #666; text-transform: uppercase; border-bottom: 2px solid #e0e0e0;">Invoice #</th>
-                        <th style="padding: 10px 15px; text-align: left; font-size: 12px; color: #666; text-transform: uppercase; border-bottom: 2px solid #e0e0e0;">Date</th>
-                        <th style="padding: 10px 15px; text-align: left; font-size: 12px; color: #666; text-transform: uppercase; border-bottom: 2px solid #e0e0e0;">Items</th>
-                        <th style="padding: 10px 15px; text-align: right; font-size: 12px; color: #666; text-transform: uppercase; border-bottom: 2px solid #e0e0e0;">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>${invoiceRows}</tbody>
-            </table>
+        <!-- Action Button -->
+        <table style="margin-bottom: 50px;">
+            <tr>
+                <td>
+                    <a href="${paymentLink}" style="display: inline-block; background-color: #000; color: #fff; padding: 14px 28px; text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 4px;">Pay Now ₹${totalAmount.toLocaleString('en-IN')}</a>
+                </td>
+                ${userDetails?.website ? `
+                <td style="padding-left: 15px;">
+                    <span style="color: #666; font-size: 14px;">or <a href="https://${userDetails.website}" style="color: #333; text-decoration: none;">Visit our store</a></span>
+                </td>
+                ` : ''}
+            </tr>
+        </table>
 
-            <!-- Total -->
-            <div style="background: #f8f9fa; padding: 15px 20px; border-radius: 8px; text-align: right; margin: 0 0 25px;">
-                <span style="font-size: 14px; color: #666;">Total Due: </span>
-                <span style="font-size: 20px; font-weight: 700; color: #c0392b;">₹${totalAmount.toLocaleString('en-IN')}</span>
-            </div>
+        <!-- Summary section -->
+        <h3 style="font-size: 18px; color: #333; font-weight: 400; margin: 0 0 15px 0; border-top: 1px solid #eee; padding-top: 30px;">Invoice summary</h3>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tbody>${invoiceRows}</tbody>
+        </table>
 
-            <!-- Pay Button -->
-            <div style="text-align: center; margin: 30px 0;">
-                <a href="${paymentLink}" target="_blank"
-                   style="display: inline-block; background: #528FF0; color: #ffffff; padding: 14px 40px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: 600;">
-                    💳 Pay Now — ₹${totalAmount.toLocaleString('en-IN')}
-                </a>
-            </div>
-
-            <p style="font-size: 12px; color: #999; text-align: center; margin: 20px 0 0;">
-                This is a secure payment link powered by Razorpay. Click the button above to complete your payment.
-            </p>
-        </div>
+        <!-- Totals -->
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 15px 0 0 0; font-size: 16px; color: #333; font-weight: 600;">Total Due</td>
+                <td style="padding: 15px 0 0 0; font-size: 18px; color: #000; font-weight: 700; text-align: right;">₹${totalAmount.toLocaleString('en-IN')}</td>
+            </tr>
+        </table>
 
         <!-- Footer -->
-        <div style="background: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e0e0e0;">
-            <p style="font-size: 12px; color: #999; margin: 0;">
-                ${businessName || 'BizzOps'} — This is an automated system-generated email. Please do not reply directly to this message.
-            </p>
-            <p style="font-size: 11px; color: #aaa; margin: 5px 0 0;">
-                Payment is strictly due as per the terms agreed upon during purchase.
-            </p>
+        <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee;">
+            ${userDetails?.businessName ? `<div style="font-size: 12px; color: #888; font-weight: 600; margin-bottom: 3px;">${userDetails.businessName}</div>` : ''}
+            ${userDetails?.address ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">${userDetails.address}</div>` : ''}
+            ${userDetails?.phoneNo ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">${userDetails.phoneNo}</div>` : ''}
+            ${userDetails?.email ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">${userDetails.email}</div>` : ''}
+            ${userDetails?.website ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">${userDetails.website}</div>` : ''}
+            ${userDetails?.gstNumber ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">GST: ${userDetails.gstNumber}</div>` : ''}
         </div>
     </div>`;
 
     const { data, error } = await resend.emails.send({
         from: `${businessName || 'BizzOps'} <${FROM_EMAIL}>`,
         to: [customerEmail],
-        subject: `Payment Request: Invoice from ${businessName || 'BizzOps'}`,
+        subject: `Payment Request from ${businessName || 'BizzOps'}`,
         html,
     });
 
@@ -94,60 +93,69 @@ export async function sendPaymentRequestEmail(customerEmail, customerName, invoi
 /**
  * Send payment confirmation email
  */
-export async function sendPaymentConfirmationEmail(customerEmail, customerName, invoices, totalPaid, balanceAfter, businessName) {
+export async function sendPaymentConfirmationEmail(customerEmail, customerName, invoices, totalPaid, balanceAfter, businessName, userDetails = {}) {
     const invoiceLines = invoices.map(inv =>
-        `<li style="padding: 5px 0; font-size: 14px; color: #333;">
-            Invoice <strong>#${inv.invoiceNumber || 'N/A'}</strong> — ₹${inv.grandTotal.toLocaleString('en-IN')} ✅
-        </li>`
+        `<tr>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eee; font-size: 14px; color: #333; width: 60%;">
+                <strong>#${inv.invoiceNumber || 'N/A'}</strong>
+            </td>
+            <td style="padding: 12px 0; border-bottom: 1px solid #eee; font-size: 14px; text-align: right; color: #333;">
+                ₹${inv.grandTotal.toLocaleString('en-IN')}
+            </td>
+        </tr>`
     ).join('');
 
     const html = `
-    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
-        <div style="background: #1a1a2e; padding: 30px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 22px;">${businessName || 'BizzOps'}</h1>
-            <p style="color: #66bb6a; margin: 8px 0 0; font-size: 14px;">Payment Received</p>
-        </div>
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; padding: 40px 20px;">
+        <!-- Header -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
+            <tr>
+                <td style="text-align: left;">
+                    <h1 style="color: #000; margin: 0; font-size: 28px; font-weight: 700;">${businessName || 'Minimalist'}</h1>
+                </td>
+                <td style="text-align: right; vertical-align: middle;">
+                    <span style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">RECEIPT</span>
+                </td>
+            </tr>
+        </table>
 
-        <div style="padding: 30px;">
-            <p style="font-size: 15px; color: #333;">Dear <strong>${customerName}</strong>,</p>
-            <p style="font-size: 14px; color: #555; line-height: 1.6;">
-                We have successfully received your payment. Here is a summary of your transaction:
-            </p>
+        <!-- Body -->
+        <h2 style="font-size: 22px; color: #333; margin: 0 0 15px 0; font-weight: 400;">Payment received!</h2>
+        
+        <p style="font-size: 15px; color: #666; line-height: 1.6; margin: 0 0 25px 0;">
+            Dear ${customerName}, we have successfully received your payment of <strong>₹${totalPaid.toLocaleString('en-IN')}</strong>. Here is a summary of your transaction.
+        </p>
 
-            <!-- Payment Summary -->
-            <div style="background: #e8f5e9; border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center;">
-                <p style="font-size: 13px; color: #2e7d32; margin: 0;">Amount Paid</p>
-                <p style="font-size: 28px; font-weight: 700; color: #2e7d32; margin: 5px 0;">₹${totalPaid.toLocaleString('en-IN')}</p>
-            </div>
+        <!-- Summary section -->
+        <h3 style="font-size: 18px; color: #333; font-weight: 400; margin: 0 0 15px 0; border-top: 1px solid #eee; padding-top: 30px;">Invoices Cleared</h3>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tbody>${invoiceLines}</tbody>
+        </table>
 
-            <h3 style="font-size: 14px; color: #333; margin: 20px 0 10px;">Invoices Cleared:</h3>
-            <ul style="list-style: none; padding: 0; margin: 0;">${invoiceLines}</ul>
+        <!-- Balance Status -->
+        <table style="width: 100%; border-collapse: collapse; margin-top: 30px;">
+            <tr>
+                <td style="padding: 15px 0; font-size: 14px; color: #666; border-top: 1px solid #eee;">Remaining Account Balance</td>
+                <td style="padding: 15px 0; font-size: 16px; color: ${balanceAfter > 0 ? '#333' : '#2e7d32'}; font-weight: 700; text-align: right; border-top: 1px solid #eee;">₹${balanceAfter.toLocaleString('en-IN')}</td>
+            </tr>
+        </table>
 
-            <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 20px 0; display: flex; justify-content: space-between;">
-                <div style="text-align: center; flex: 1;">
-                    <p style="font-size: 12px; color: #999; margin: 0;">Remaining Balance</p>
-                    <p style="font-size: 18px; font-weight: 700; color: ${balanceAfter > 0 ? '#c0392b' : '#2e7d32'}; margin: 5px 0;">
-                        ₹${balanceAfter.toLocaleString('en-IN')}
-                    </p>
-                </div>
-            </div>
-
-            ${balanceAfter <= 0 ? `
-            <div style="text-align: center; padding: 15px; background: #e8f5e9; border-radius: 8px; margin: 15px 0;">
-                <p style="font-size: 16px; font-weight: 600; color: #2e7d32; margin: 0;">All outstanding dues cleared. Current balance is ₹0</p>
-            </div>` : ''}
-        </div>
-
-        <div style="background: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e0e0e0;">
-            <p style="font-size: 13px; color: #666; margin: 0;">Thank you for your payment.</p>
-            <p style="font-size: 12px; color: #999; margin: 5px 0 0;">${businessName || 'BizzOps'} — This is an automated system-generated receipt.</p>
+        <!-- Footer -->
+        <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee;">
+            ${userDetails?.businessName ? `<div style="font-size: 12px; color: #888; font-weight: 600; margin-bottom: 3px;">${userDetails.businessName}</div>` : ''}
+            ${userDetails?.address ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">${userDetails.address}</div>` : ''}
+            ${userDetails?.phoneNo ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">${userDetails.phoneNo}</div>` : ''}
+            ${userDetails?.email ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">${userDetails.email}</div>` : ''}
+            ${userDetails?.website ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">${userDetails.website}</div>` : ''}
+            ${userDetails?.gstNumber ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">GST: ${userDetails.gstNumber}</div>` : ''}
         </div>
     </div>`;
 
     const { data, error } = await resend.emails.send({
         from: `${businessName || 'BizzOps'} <${FROM_EMAIL}>`,
         to: [customerEmail],
-        subject: `Payment Receipt: ₹${totalPaid.toLocaleString('en-IN')} Received`,
+        subject: `Payment Receipt — ₹${totalPaid.toLocaleString('en-IN')}`,
         html,
     });
 
@@ -158,7 +166,7 @@ export async function sendPaymentConfirmationEmail(customerEmail, customerName, 
 /**
  * Send sales thank-you email after a purchase
  */
-export async function sendSalesThankYouEmail(customerEmail, customerName, invoice, balanceAfter, businessName, pdfBuffer = null, websiteUrl = 'example.com') {
+export async function sendSalesThankYouEmail(customerEmail, customerName, invoice, balanceAfter, businessName, pdfBuffer = null, websiteUrl = 'example.com', userDetails = {}) {
     const itemRows = invoice.items.map(item => `
         <tr>
             <td style="padding: 12px 0; border-bottom: 1px solid #eee; font-size: 14px; color: #333; width: 60%;">
@@ -226,6 +234,16 @@ export async function sendSalesThankYouEmail(customerEmail, customerName, invoic
                 <td style="padding: 15px 0 0 0; font-size: 18px; color: #000; font-weight: 700; text-align: right;">₹${invoice.grandTotal.toLocaleString('en-IN')}</td>
             </tr>
         </table>
+
+        <!-- Footer -->
+        <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee;">
+            ${userDetails?.businessName ? `<div style="font-size: 12px; color: #888; font-weight: 600; margin-bottom: 3px;">${userDetails.businessName}</div>` : ''}
+            ${userDetails?.address ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">${userDetails.address}</div>` : ''}
+            ${userDetails?.phoneNo ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">${userDetails.phoneNo}</div>` : ''}
+            ${userDetails?.email ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">${userDetails.email}</div>` : ''}
+            ${userDetails?.website ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">${userDetails.website}</div>` : ''}
+            ${userDetails?.gstNumber ? `<div style="font-size: 12px; color: #888; margin-bottom: 3px;">GST: ${userDetails.gstNumber}</div>` : ''}
+        </div>
     </div>`;
 
     const payload = {
@@ -236,10 +254,11 @@ export async function sendSalesThankYouEmail(customerEmail, customerName, invoic
     };
 
     if (pdfBuffer) {
+        // Puppeteer >v20 returns Uint8Array, so wrap it in Buffer.from() safely before conversion.
         payload.attachments = [
             {
                 filename: `Invoice_${invoice.invoiceNumber || 'Document'}.pdf`,
-                content: Buffer.isBuffer(pdfBuffer) ? pdfBuffer.toString('base64') : pdfBuffer,
+                content: Buffer.from(pdfBuffer).toString('base64'),
             }
         ];
     }

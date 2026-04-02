@@ -23,10 +23,11 @@ const MuiModal = ({
                     height: '85vh',
                     maxWidth: '82vw',
                     maxHeight: '85vh',
-                    borderRadius: '1.25rem',
-                    background: '#ffffff',
-                    border: '1px solid #e2e8f0',
-                    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.12), 0 12px 24px rgba(0, 0, 0, 0.06)',
+                    borderRadius: '24px',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.4)',
+                    boxShadow: '0 24px 64px -12px rgba(0, 0, 0, 0.15)',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
@@ -47,7 +48,7 @@ const MuiModal = ({
                 backdrop: {
                     sx: {
                         backgroundColor: 'rgba(15, 23, 42, 0.4)',
-                        backdropFilter: 'blur(4px)',
+                        backdropFilter: 'blur(10px)',
                     }
                 }
             }}
@@ -60,8 +61,8 @@ const MuiModal = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
-                    borderBottom: '1px solid #e2e8f0',
+                    background: 'linear-gradient(90deg, rgba(248,250,252,0.9) 0%, rgba(255,255,255,0.95) 100%)',
+                    borderBottom: '1px solid rgba(0,0,0,0.05)',
                 }}
             >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
