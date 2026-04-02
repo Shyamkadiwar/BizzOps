@@ -23,17 +23,7 @@ const allowedOrigins = process.env.CORS_ORIGIN
   : [];
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    
-    const normalizedOrigin = origin.replace(/\/$/, '');
-    if (allowedOrigins.includes(normalizedOrigin)) {
-      callback(null, true);
-    } else {
-      console.error("CORS Blocked Origin:", origin, "| Allowed Origins:", allowedOrigins);
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: allowedOrigins,
   credentials: true,
 };
 app.use(cors(corsOptions));

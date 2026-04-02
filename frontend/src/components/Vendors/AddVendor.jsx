@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, TextField } from '@mui/material';
+import { Box, TextField, Button } from '@mui/material';
 import axios from 'axios';
 import AlertDialog from '../shared/AlertDialog.jsx';
 
@@ -123,15 +123,23 @@ const AddVendor = ({ onSuccess, onCancel }) => {
             </Box>
 
             {/* Action Buttons */}
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
-                <button type="button" onClick={onCancel}
-                    className="px-6 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium text-gray-700">
-                    Cancel
-                </button>
-                <button type="submit"
-                    className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white">
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4, pt: 3, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                {onCancel && (
+                    <Button type="button" onClick={onCancel}
+                        sx={{ color: '#64748b', textTransform: 'none', fontWeight: 600, px: 3 }}>
+                        Cancel
+                    </Button>
+                )}
+                <Button type="submit"
+                    sx={{
+                        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                        color: '#fff', textTransform: 'none', fontWeight: 600, borderRadius: '10px',
+                        boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)',
+                        px: 4, py: 1,
+                        '&:hover': { background: 'linear-gradient(135deg, #000000 0%, #0f172a 100%)' }
+                    }}>
                     Add Vendor
-                </button>
+                </Button>
             </Box>
 
             <AlertDialog

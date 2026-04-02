@@ -14,7 +14,8 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow
+    TableRow,
+    Button
 } from '@mui/material';
 import { Plus } from 'lucide-react';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -251,14 +252,22 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
                         }}
                         helperText={selectedInventoryItem ? `Available: ${selectedInventoryItem.stockRemain}` : ''}
                     />
-                    <button
+                    <Button
                         type="button"
                         onClick={handleAddItem}
                         disabled={!currentItem.product || !currentItem.qty}
-                        className="px-5 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                        startIcon={<Plus size={16} />}
+                        sx={{
+                            background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
+                            color: '#fff', textTransform: 'none', fontWeight: 600, borderRadius: '10px',
+                            px: 3, py: 1.5, height: '56px',
+                            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.25)',
+                            '&:hover': { background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)' },
+                            '&.Mui-disabled': { background: '#cbd5e1', color: '#94a3b8' }
+                        }}
                     >
-                        <Plus size={16} /> Add
-                    </button>
+                        Add
+                    </Button>
                 </Box>
 
                 {/* Items List */}
@@ -288,10 +297,10 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
                                             <TableCell align="center">
                                                 <IconButton
                                                     size="small"
-                                                    color="error"
                                                     onClick={() => handleRemoveItem(index)}
+                                                    sx={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', height: 32, width: 32, '&:hover': { background: 'rgba(239, 68, 68, 0.2)' } }}
                                                 >
-                                                    <DeleteIcon />
+                                                    <DeleteIcon fontSize="small"  />
                                                 </IconButton>
                                             </TableCell>
                                         </TableRow>
@@ -301,22 +310,22 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
                         </TableContainer>
 
                         {/* Totals */}
-                        <Box sx={{ mt: 2, p: 2, bgcolor: 'success.light', borderRadius: '10px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 2 }}>
+                        <Box sx={{ mt: 2, p: 2, background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)', borderRadius: '10px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 2, border: '1px solid #e2e8f0' }}>
                             <Box>
-                                <Typography variant="body2" color="text.secondary">Total Sale:</Typography>
-                                <Typography variant="h6" color="primary">₹{totalSale.toLocaleString()}</Typography>
+                                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>Total Sale:</Typography>
+                                <Typography variant="h6" sx={{ color: '#0f172a', fontWeight: 700 }}>₹{totalSale.toLocaleString()}</Typography>
                             </Box>
                             <Box>
-                                <Typography variant="body2" color="text.secondary">Total Cost:</Typography>
-                                <Typography variant="h6">₹{totalCost.toLocaleString()}</Typography>
+                                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>Total Cost:</Typography>
+                                <Typography variant="h6" sx={{ color: '#64748b', fontWeight: 600 }}>₹{totalCost.toLocaleString()}</Typography>
                             </Box>
                             <Box>
-                                <Typography variant="body2" color="text.secondary">Profit:</Typography>
-                                <Typography variant="h6" color="success.dark">₹{totalProfit.toLocaleString()}</Typography>
+                                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>Profit:</Typography>
+                                <Typography variant="h6" sx={{ color: '#10b981', fontWeight: 700 }}>₹{totalProfit.toLocaleString()}</Typography>
                             </Box>
                             <Box>
-                                <Typography variant="body2" color="text.secondary">Profit %:</Typography>
-                                <Typography variant="h6" color="success.dark">{profitPercent.toFixed(2)}%</Typography>
+                                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>Profit %:</Typography>
+                                <Typography variant="h6" sx={{ color: '#10b981', fontWeight: 700 }}>{profitPercent.toFixed(2)}%</Typography>
                             </Box>
                         </Box>
                     </Paper>
@@ -400,18 +409,26 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
             </Box>
 
             {/* Action Buttons */}
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4, pt: 3, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
                 {onCancel && (
-                    <button type="button" onClick={onCancel}
-                        className="px-6 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium text-gray-700">
+                    <Button type="button" onClick={onCancel}
+                        sx={{ color: '#64748b', textTransform: 'none', fontWeight: 600, px: 3 }}>
                         Cancel
-                    </button>
+                    </Button>
                 )}
-                <button type="submit"
+                <Button type="submit"
                     disabled={items.length === 0}
-                    className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed">
+                    sx={{
+                        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                        color: '#fff', textTransform: 'none', fontWeight: 600, borderRadius: '10px',
+                        boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)',
+                        px: 4, py: 1,
+                        '&:hover': { background: 'linear-gradient(135deg, #000000 0%, #0f172a 100%)' },
+                        '&.Mui-disabled': { background: '#cbd5e1', color: '#94a3b8', boxShadow: 'none' }
+                    }}
+                >
                     Create Sale & Invoice ({items.length} items)
-                </button>
+                </Button>
             </Box>
 
             {/* Alert Dialog */}

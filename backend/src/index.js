@@ -16,3 +16,6 @@ import dotenv from 'dotenv'
     .catch((error)=>{
         console.log("MONGODB connection failed....",error);
     })
+
+    // Export the express app for Vercel Serverless Functions
+    export default app;
