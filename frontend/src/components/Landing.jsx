@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 import { useNavigate } from "react-router-dom";
+import DummyDashboard from './DummyDashboard';
 
 function Landing() {
     const navigate = useNavigate();
@@ -139,11 +140,11 @@ function Landing() {
             </div>
 
             {/* Dashboard Showcase (Bento Hero Style) */}
-            <div className="max-w-7xl mx-auto px-4 relative z-10 animate-fade-in-up delay-400 mb-32 mt-4">
-                <div className="rounded-[2.5rem] p-3 bg-white/50 backdrop-blur-xl border border-white shadow-[0_20px_50px_rgba(0,0,0,0.05)] animate-float">
-                    <div className="bg-gray-50 rounded-[2rem] overflow-hidden border border-gray-200 shadow-inner relative">
+            <div className="max-w-[92%] 2xl:max-w-[1400px] mx-auto px-4 relative z-10 animate-fade-in-up delay-400 mb-32 mt-4">
+                <div className="rounded-[2.5rem] p-3 bg-white/50 backdrop-blur-xl border border-white shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+                    <div className="bg-gray-50 rounded-[2rem] overflow-hidden border border-gray-200 shadow-inner relative group">
                         {/* Fake Browser header */}
-                        <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-white">
+                        <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-white relative z-20">
                             <div className="flex gap-2">
                                 <div className="w-3.5 h-3.5 rounded-full bg-red-400"></div>
                                 <div className="w-3.5 h-3.5 rounded-full bg-amber-400"></div>
@@ -154,7 +155,23 @@ function Landing() {
                             </div>
                             <div className="w-16"></div>
                         </div>
-                        <img src={dashborad1} alt="BizzOps Dashboard Mockup" className="w-full object-cover rounded-b-[2rem]" />
+                        
+                        {/* Interactive Dashboard Container */}
+                        <div className="w-full relative bg-gray-50 rounded-b-[2rem] overflow-hidden">
+                            {/* Overlay to hint interactivity when not hovered */}
+                            <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px] z-10 flex items-center justify-center opacity-100 transition-opacity duration-300 group-hover:opacity-0 group-hover:pointer-events-none">
+                                <div className="bg-gray-900/80 text-white px-6 py-3 rounded-full font-medium flex items-center gap-2 shadow-xl border border-gray-700/50">
+                                    <span className="relative flex h-3 w-3 mr-1">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                                    </span>
+                                    Hover & Scroll to Explore
+                                </div>
+                            </div>
+                            
+                            {/* The Dummy Dashboard */}
+                            <DummyDashboard />
+                        </div>
                     </div>
                 </div>
             </div>
