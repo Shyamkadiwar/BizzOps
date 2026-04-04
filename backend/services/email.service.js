@@ -333,3 +333,42 @@ export async function sendPasswordResetEmail(userEmail, userName, resetUrl) {
     if (error) throw new Error(error.message);
     return data;
 }
+
+/**
+ * Send Subscription Success Email
+ */
+export async function sendSubscriptionSuccessEmail(userEmail, userName, expiryDate) {
+    const formattedDate = new Date(expiryDate).toLocaleDateString('en-IN', {
+        year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; padding: 40px 20px; border-radius: 8px; border: 1px solid #eaebed;">
+        <h1 style="color: #111827; margin: 0 0 20px; font-size: 24px; font-weight: 700;">Welcome to BizzOps Pro! 🚀</h1>
+        <p style="color: #4B5563; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+            Hello ${userName || 'there'},<br><br>
+            Thank you for upgrading! Your subscription to BizzOps has been successfully activated. You now have full, uninterrupted access to all our business management tools.
+        </p>
+        <div style="background-color: #F3F4F6; padding: 16px; border-radius: 6px; margin-bottom: 24px;">
+            <p style="color: #111827; margin: 0 0 8px; font-size: 14px; font-weight: 600;">Subscription Details:</p>
+            <p style="color: #4B5563; margin: 0; font-size: 14px;"><strong>Payment:</strong> ₹999.00</p>
+            <p style="color: #4B5563; margin: 0; font-size: 14px;"><strong>Active Until:</strong> ${formattedDate}</p>
+        </div>
+        <div style="text-align: center; margin-bottom: 24px;">
+            <a href="${process.env.FRONTEND_URL || 'https://bizzops.vercel.app'}/dashboard" style="display: inline-block; background-color: #4F46E5; color: #ffffff; padding: 12px 24px; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px; text-align: center;">Go to Dashboard</a>
+        </div>
+        <p style="color: #6B7280; font-size: 14px; line-height: 1.6; margin: 0; padding-top: 24px; border-top: 1px solid #E5E7EB;">
+            If you have any questions, simply reply to this email. We're here to help you scale your business!
+        </p>
+    </div>`;
+
+    const { data, error } = await resend.emails.send({
+        from: `BizzOps Billing <${FROM_EMAIL}>`,
+        to: [userEmail],
+        subject: `Your BizzOps Pro Subscription is active!`,
+        html,
+    });
+
+    if (error) throw new Error(error.message);
+    return data;
+}

@@ -60,6 +60,17 @@ const userSchema = new Schema({
         type: String,
         default: ""
     },
+    subscriptionStatus: {
+        type: String,
+        enum: ['trialing', 'active', 'expired'],
+        default: 'trialing'
+    },
+    trialEndsAt: {
+        type: Date
+    },
+    subscriptionEndsAt: {
+        type: Date
+    },
     forgotPasswordToken: String,
     forgotPasswordExpiry: Date,
     activeSessions: [{

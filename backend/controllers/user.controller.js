@@ -45,7 +45,8 @@ const registerUser = asyncHandler(async (req, res) => {
         password,
         businessName,
         phoneNo,
-        address
+        address,
+        trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) // 14 days from now
     });
 
     const createdUser = await User.findById(user._id).select("-password -refreshToken");
