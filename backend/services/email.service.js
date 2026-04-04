@@ -299,3 +299,37 @@ export async function sendContactEmail(name, userEmail, subject, message) {
     if (error) throw new Error(error.message);
     return data;
 }
+
+/**
+ * Send password reset email
+ */
+export async function sendPasswordResetEmail(userEmail, userName, resetUrl) {
+    const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; padding: 40px 20px; border-radius: 8px; border: 1px solid #eaebed;">
+        <h1 style="color: #111827; margin: 0 0 20px; font-size: 24px; font-weight: 700;">Password Reset Request</h1>
+        <p style="color: #4B5563; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+            Hello ${userName || 'there'},<br><br>
+            We received a request to reset the password for your BizzOps account. Click the button below to choose a new password. <strong>This link is valid for 15 minutes.</strong>
+        </p>
+        <div style="text-align: center; margin-bottom: 24px;">
+            <a href="${resetUrl}" style="display: inline-block; background-color: #3B82F6; color: #ffffff; padding: 12px 24px; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px; text-align: center;">Reset Password</a>
+        </div>
+        <p style="color: #4B5563; font-size: 14px; line-height: 1.6; margin: 0 0 24px;">
+            If the button doesn't work, copy and paste this URL into your browser:<br>
+            <a href="${resetUrl}" style="color: #3B82F6; text-decoration: underline; word-break: break-all;">${resetUrl}</a>
+        </p>
+        <p style="color: #6B7280; font-size: 14px; line-height: 1.6; margin: 0; padding-top: 24px; border-top: 1px solid #E5E7EB;">
+            If you did not request a password reset, please ignore this email or contact support if you have concerns.
+        </p>
+    </div>`;
+
+    const { data, error } = await resend.emails.send({
+        from: `BizzOps Security <${FROM_EMAIL}>`,
+        to: [userEmail],
+        subject: `Reset your BizzOps password`,
+        html,
+    });
+
+    if (error) throw new Error(error.message);
+    return data;
+}

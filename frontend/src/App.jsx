@@ -1,5 +1,7 @@
 import Signup from "./pages/Signup.jsx";
 import Signin from "./pages/Signin.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import DashboardPage from "./pages/DashboardPage.jsx";
 import InventoryPage from "./pages/InventoryPage.jsx";
@@ -35,6 +37,8 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Signin />} />
         <Route path="/register" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/Customizes" element={<Customizes />} />
         <Route path="/demo" element={<Demo />} />
         <Route path="/terms" element={<Terms />} />

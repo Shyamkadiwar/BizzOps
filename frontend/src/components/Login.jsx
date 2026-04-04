@@ -119,7 +119,10 @@ function Login() {
                             </div>
 
                             <div className="relative mb-6">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+                                <div className="flex justify-between items-center mb-2">
+                                    <label className="block text-sm font-semibold text-gray-700">Password</label>
+                                    <button type="button" onClick={() => navigate('/forgot-password')} className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">Forgot Password?</button>
+                                </div>
                                 <div className="relative">
                                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                                     <input

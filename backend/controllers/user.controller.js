@@ -1,9 +1,10 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { sendContactEmail } from '../services/email.service.js';
+import { sendContactEmail, sendPasswordResetEmail } from '../services/email.service.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import { User } from '../models/user.model.js';
+import crypto from 'crypto';
 import jwt, { decode } from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -350,6 +351,68 @@ const sendContactMessage = asyncHandler(async (req, res) => {
     }
 });
 
+const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        throw new ApiError(400, "Email is required");
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+        // Return 200 even if not found to prevent email enumeration attacks
+        return res.status(200).json(new ApiResponse(200, {}, "If an account with that email exists, we have sent a password reset link."));
+    }
+
+    const resetToken = user.createResetPasswordToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Assuming the frontend runs on the same domain or use env var
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : req.protocol;
+    const frontendUrl = process.env.FRONTEND_URL || `${protocol}://${req.get("host")}`;
+    const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
+
+    try {
+        await sendPasswordResetEmail(user.email, user.name, resetUrl);
+        return res.status(200).json(new ApiResponse(200, {}, "If an account with that email exists, we have sent a password reset link."));
+    } catch (error) {
+        user.forgotPasswordToken = undefined;
+        user.forgotPasswordExpiry = undefined;
+        await user.save({ validateBeforeSave: false });
+        throw new ApiError(500, "There was an error sending the password reset email. Please try again later.");
+    }
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+        throw new ApiError(400, "Password is required");
+    }
+
+    // Hash token to compare with DB
+    const hashedToken = crypto
+        .createHash('sha256')
+        .update(token)
+        .digest('hex');
+
+    const user = await User.findOne({
+        forgotPasswordToken: hashedToken,
+        forgotPasswordExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        throw new ApiError(400, "Token is invalid or has expired");
+    }
+
+    user.password = password;
+    user.forgotPasswordToken = undefined;
+    user.forgotPasswordExpiry = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(200).json(new ApiResponse(200, {}, "Password updated successfully. You can now login."));
+});
+
 export {
     registerUser,
     loginUser,
@@ -362,5 +425,7 @@ export {
     updatePaymentSettings,
     getGeminiSettings,
     updateGeminiSettings,
-    sendContactMessage
+    sendContactMessage,
+    forgotPassword,
+    resetPassword
 };

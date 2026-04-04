@@ -1,6 +1,7 @@
 import mongoose, { Schema } from 'mongoose'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 import dotenv from 'dotenv'
 
 dotenv.config()
@@ -59,6 +60,8 @@ const userSchema = new Schema({
         type: String,
         default: ""
     },
+    forgotPasswordToken: String,
+    forgotPasswordExpiry: Date,
     activeSessions: [{
         sessionId: {
             type: String,
@@ -133,4 +136,20 @@ userSchema.methods.generateRefreshToken = function () {
     )
 }
 
-export const User = mongoose.model('User', userSchema) 
+userSchema.methods.createResetPasswordToken = function () {
+    // Generate an unhashed random token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    
+    // Hash it and store in the database
+    this.forgotPasswordToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+        
+    // Token expires in 15 minutes
+    this.forgotPasswordExpiry = Date.now() + 15 * 60 * 1000;
+    
+    return resetToken;
+}
+
+export const User = mongoose.model('User', userSchema)  
