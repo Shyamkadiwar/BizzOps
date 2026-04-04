@@ -145,7 +145,33 @@ function Dashboard() {
                         )}
                     </div>
                     <div className="lg:col-span-2">
-                        <InsightsPanel />
+                        <InsightsPanel
+                            loading={loading}
+                            businessSnapshot={{
+                                healthScore: businessHealth?.healthScore,
+                                healthStatus: businessHealth?.status,
+                                totalSales: salesAnalytics?.totalSales,
+                                monthlySales: salesAnalytics?.monthlySales,
+                                salesGrowth: salesAnalytics?.salesGrowth,
+                                totalProfit: financialPerformance?.totalProfit,
+                                totalExpenses: financialPerformance?.totalExpenses,
+                                netProfitMargin: financialPerformance?.netProfitMargin,
+                                lowStockItems: inventoryInsights?.lowStockItems,
+                                outOfStockItems: inventoryInsights?.outOfStockItems,
+                                totalCustomers: customerIntelligence?.totalCustomers,
+                                newCustomers: customerIntelligence?.newCustomers,
+                                retentionRate: customerIntelligence?.retentionRate,
+                                pendingOrders: orderFulfillment?.pendingOrders,
+                                totalOrders: orderFulfillment?.totalOrders,
+                                pendingTasks: appointmentsTasks?.pendingTasks,
+                                completedTasks: appointmentsTasks?.completedTasks,
+                                totalDeals: dealsPipeline?.totalDeals,
+                                dealValue: dealsPipeline?.dealValue,
+                                conversionRate: dealsPipeline?.conversionRate,
+                                unpaidInvoices: invoiceManagement?.totalInvoices - invoiceManagement?.paidInvoices,
+                                unpaidAmount: invoiceManagement?.unpaidAmount,
+                            }}
+                        />
                     </div>
                 </div>
 

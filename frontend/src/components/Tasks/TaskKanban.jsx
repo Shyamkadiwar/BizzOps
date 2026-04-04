@@ -28,13 +28,7 @@ const TaskKanban = ({ tasks, onDragEnd, onTaskClick, onAddTask }) => {
                 {columns.map((column) => (
                     <Paper
                         key={column}
-                        sx={{
-                            minWidth: 320,
-                            flex: 1,
-                            backgroundColor: '#f9fafb',
-                            p: 2,
-                            borderRadius: 2
-                        }}
+                        className="flex-1 min-w-[320px] bg-white/60 backdrop-blur-md border border-white/50 rounded-2xl p-4 shadow-sm"
                     >
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -62,12 +56,7 @@ const TaskKanban = ({ tasks, onDragEnd, onTaskClick, onAddTask }) => {
                                 <Box
                                     ref={provided.innerRef}
                                     {...provided.droppableProps}
-                                    sx={{
-                                        minHeight: 500,
-                                        backgroundColor: snapshot.isDraggingOver ? '#e5e7eb' : 'transparent',
-                                        borderRadius: 1,
-                                        transition: 'background-color 0.2s'
-                                    }}
+                                    className={`min-h-[500px] rounded-xl transition-colors duration-200 ${snapshot.isDraggingOver ? 'bg-indigo-50/50' : 'bg-transparent'}`}
                                 >
                                     {getColumnTasks(column).map((task, index) => (
                                         <Draggable

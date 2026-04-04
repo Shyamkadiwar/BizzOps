@@ -175,13 +175,23 @@ function Report() {
                     </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-2xl shadow-lg mb-6">
-                    <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={{ px: 2 }}>
-                        <Tab label="All Time" />
-                        <Tab label="This Month" />
-                        <Tab label="Today" />
-                    </Tabs>
+                {/* Segmented Controls */}
+                <div className="flex items-center justify-center mb-6">
+                    <div className="flex items-center gap-1 bg-gray-100/80 backdrop-blur-sm p-1.5 rounded-xl">
+                        {['All Time', 'This Month', 'Today'].map((label, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => setTabValue(idx)}
+                                className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
+                                    tabValue === idx 
+                                        ? 'bg-white text-indigo-600 shadow-md transform scale-105' 
+                                        : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+                                }`}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {loading ? (

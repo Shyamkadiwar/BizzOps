@@ -303,6 +303,37 @@ const updatePaymentSettings = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, {}, "Payment settings updated successfully"));
 });
 
+// Get Gemini API key setting (masked)
+const getGeminiSettings = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user?._id).select('geminiApiKey');
+    if (!user) throw new ApiError(404, 'User not found');
+
+    const maskKey = (key) => {
+        if (!key) return '';
+        if (key.length <= 8) return '••••••••';
+        return key.slice(0, 8) + '••••••••' + key.slice(-4);
+    };
+
+    return res.status(200).json(new ApiResponse(200, {
+        geminiApiKey: user.geminiApiKey ? maskKey(user.geminiApiKey) : ''
+    }, 'Gemini settings fetched successfully'));
+});
+
+// Update Gemini API key
+const updateGeminiSettings = asyncHandler(async (req, res) => {
+    const { geminiApiKey } = req.body;
+    const user = await User.findById(req.user?._id);
+    if (!user) throw new ApiError(404, 'User not found');
+
+    // Don't save if it's the masked version
+    if (geminiApiKey !== undefined && !geminiApiKey.includes('••••••••')) {
+        user.geminiApiKey = geminiApiKey.trim();
+    }
+
+    await user.save({ validateBeforeSave: false });
+    return res.status(200).json(new ApiResponse(200, {}, 'Gemini API key updated successfully'));
+});
+
 // Support Contact Message
 const sendContactMessage = asyncHandler(async (req, res) => {
     const { name, email, subject, message } = req.body;
@@ -329,5 +360,7 @@ export {
     updateAccountDetails,
     getPaymentSettings,
     updatePaymentSettings,
+    getGeminiSettings,
+    updateGeminiSettings,
     sendContactMessage
 };

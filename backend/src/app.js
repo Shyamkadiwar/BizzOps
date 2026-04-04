@@ -77,6 +77,7 @@ import appointmentRouter from "../routes/appointment.routes.js";
 import calendarRouter from "../routes/calendar.routes.js";
 import dashboardRouter from "../routes/dashboard.routes.js";
 import paymentRouter from "../routes/payment.routes.js";
+import aiRouter from "../routes/ai.routes.js";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/inventory", inventoryRouter);
@@ -96,6 +97,7 @@ app.use("/api/v1/appointments", appointmentRouter);
 app.use("/api/v1/calendar", calendarRouter);
 app.use("/api/v1/dashboard", dashboardRouter);
 app.use("/api/v1/payment", paymentRouter);
+app.use("/api/v1/ai", aiRouter);
 
 // Global error handler
 app.use((err, req, res, next) => {

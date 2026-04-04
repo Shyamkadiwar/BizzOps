@@ -5,12 +5,6 @@ import { Sales } from "../models/sales.model.js";
 import { Inventory } from "../models/inventory.model.js";
 import { Invoice } from "../models/invoice.model.js";
 import { Customer } from "../models/customer.models.js";
-import Groq from 'groq-sdk';
-
-// Initialize Groq client
-const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY,
-});
 
 // Add Multi-Item Sale (now the unified addSale function)
 const addSale = asyncHandler(async (req, res) => {
@@ -308,6 +302,69 @@ const getSales = asyncHandler(async (req, res) => {
         }, "Sales fetched successfully"));
 });
 
+// Get sales by custom date range + total sale value in one shot
+const getSalesByDateRange = asyncHandler(async (req, res) => {
+    const ownerId = req.user?._id;
+    const { fromDate, toDate } = req.query;
+
+    if (!fromDate || !toDate) {
+        throw new ApiError(400, "fromDate and toDate are required");
+    }
+
+    const from = new Date(fromDate);
+    from.setHours(0, 0, 0, 0);
+
+    const to = new Date(toDate);
+    to.setHours(23, 59, 59, 999);
+
+    const filter = { owner: ownerId, date: { $gte: from, $lte: to } };
+
+    const allSales = await Sales.find(filter)
+        .populate('customer')
+        .populate('items.product')
+        .sort({ date: -1, createdAt: -1 });
+
+    // Flatten to per-item rows (same as getSales)
+    const transformedSales = [];
+    let totalSaleValue = 0;
+    let totalProfitValue = 0;
+
+    allSales.forEach(sale => {
+        totalSaleValue += sale.totalSale || 0;
+        totalProfitValue += sale.totalProfit || 0;
+
+        sale.items.forEach(item => {
+            transformedSales.push({
+                _id: `${sale._id}_${item.product?._id || item._id}`,
+                owner: sale.owner,
+                product: item.product,
+                productName: item.productName,
+                customer: sale.customer,
+                customerName: sale.customerName,
+                price: item.price,
+                cost: item.cost,
+                taxes: item.taxes,
+                qty: item.qty,
+                profitPercent: item.cost > 0 ? ((item.price - item.cost) / item.cost) * 100 : 0,
+                profit: item.itemProfit,
+                sale: item.itemTotal + (item.taxes ? item.taxes.reduce((sum, tax) => sum + (item.itemTotal * tax.rate / 100), 0) : 0),
+                invoice: sale.invoice,
+                paid: sale.paid,
+                date: sale.date,
+                createdAt: sale.createdAt,
+                parentSaleId: sale._id
+            });
+        });
+    });
+
+    return res.status(200).json(new ApiResponse(200, {
+        sales: transformedSales,
+        totalSaleValue,
+        totalProfitValue,
+        totalCount: transformedSales.length
+    }, "Sales fetched for date range successfully"));
+});
+
 const getTotalSalesValueOneDay = asyncHandler(async (req, res) => {
     const ownerId = req.user?._id;
 
@@ -585,181 +642,6 @@ const getDailyTotalCostValuePast30Days = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, dailyCostValue, "Daily total cost value for the past 30 days retrieved successfully"));
 });
 
-// Helper function to process and structure sales data for context
-const prepareSalesContext = (salesData) => {
-    // Group data by product
-    const productSummary = salesData.reduce((acc, sale) => {
-        // Handle multi-item sales structure
-        if (sale.items && sale.items.length > 0) {
-            sale.items.forEach(item => {
-                const productId = item.product;
-                const productName = item.productName || 'Unknown Product';
-
-                if (!acc[productId]) {
-                    acc[productId] = {
-                        productName,
-                        totalSales: 0,
-                        totalProfit: 0,
-                        totalQty: 0,
-                        totalCost: 0,
-                        avgProfitPercent: 0,
-                        transactions: 0,
-                        priceRange: { min: Infinity, max: 0 }
-                    };
-                }
-
-                acc[productId].totalSales += item.itemTotal || 0;
-                acc[productId].totalProfit += item.itemProfit || 0;
-                acc[productId].totalQty += item.qty || 0;
-                acc[productId].totalCost += (item.cost * item.qty) || 0;
-                acc[productId].transactions += 1;
-                acc[productId].avgProfitPercent += item.cost > 0 ? ((item.price - item.cost) / item.cost) * 100 : 0;
-
-                if (item.price < acc[productId].priceRange.min) acc[productId].priceRange.min = item.price;
-                if (item.price > acc[productId].priceRange.max) acc[productId].priceRange.max = item.price;
-            });
-        }
-
-        return acc;
-    }, {});
-
-    // Calculate averages
-    Object.keys(productSummary).forEach(productId => {
-        const product = productSummary[productId];
-        product.avgProfitPercent = product.avgProfitPercent / product.transactions;
-    });
-
-    // Overall summary
-    const overallSummary = {
-        totalRevenue: salesData.reduce((sum, sale) => sum + (sale.totalSale || 0), 0),
-        totalProfit: salesData.reduce((sum, sale) => sum + (sale.totalProfit || 0), 0),
-        totalTransactions: salesData.length,
-        totalQuantitySold: salesData.reduce((sum, sale) => {
-            if (sale.items && sale.items.length > 0) {
-                return sum + sale.items.reduce((itemSum, item) => itemSum + (item.qty || 0), 0);
-            }
-            return sum;
-        }, 0),
-        avgProfitMargin: salesData.reduce((sum, sale) => sum + (sale.profitPercent || 0), 0) / salesData.length,
-        dateRange: {
-            earliest: new Date(Math.min(...salesData.map(sale => new Date(sale.date)))),
-            latest: new Date(Math.max(...salesData.map(sale => new Date(sale.date))))
-        }
-    };
-
-    return {
-        productSummary,
-        overallSummary,
-        rawData: salesData
-    };
-};
-
-// RAG Query handler
-export const querySalesData = async (req, res) => {
-    try {
-        const { query, timeFilter = 'alltime' } = req.body;
-
-        if (!query) {
-            return res.status(400).json({
-                success: false,
-                message: "Query is required"
-            });
-        }
-
-        // Fetch sales data
-        const salesData = await Sales.find({ owner: req.user._id })
-            .sort({ createdAt: -1 });
-
-        if (!salesData || salesData.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: "No sales data found"
-            });
-        }
-
-        // Prepare structured context
-        const salesContext = prepareSalesContext(salesData);
-
-        // Create context string for the AI
-        const contextString = `
-SALES DATA SUMMARY:
-===================
-
-OVERALL METRICS:
-- Total Revenue: $${salesContext.overallSummary.totalRevenue.toLocaleString()}
-- Total Profit: $${salesContext.overallSummary.totalProfit.toLocaleString()}
-- Total Transactions: ${salesContext.overallSummary.totalTransactions}
-- Total Quantity Sold: ${salesContext.overallSummary.totalQuantitySold}
-- Average Profit Margin: ${salesContext.overallSummary.avgProfitMargin.toFixed(2)}%
-- Date Range: ${salesContext.overallSummary.dateRange.earliest.toDateString()} to ${salesContext.overallSummary.dateRange.latest.toDateString()}
-
-PRODUCT BREAKDOWN:
-${Object.entries(salesContext.productSummary).map(([productId, product]) => `
-- ${product.productName} (ID: ${productId}):
-  * Total Sales: $${product.totalSales.toLocaleString()}
-  * Total Profit: $${product.totalProfit.toLocaleString()}
-  * Quantity Sold: ${product.totalQty}
-  * Transactions: ${product.transactions}
-  * Avg Profit %: ${product.avgProfitPercent.toFixed(2)}%
-  * Price Range: $${product.priceRange.min} - $${product.priceRange.max}
-`).join('')}
-
-RECENT TRANSACTIONS (Last 10):
-${salesData.slice(0, 10).map(sale => `
-- Date: ${new Date(sale.date).toDateString()}
-  Customer: ${sale.customerName || 'Walk-in'}
-  Items: ${sale.items.length}
-  Total Sale: $${sale.totalSale || 'N/A'}
-  Total Profit: $${sale.totalProfit || 'N/A'} (${sale.profitPercent.toFixed(2)}%)
-`).join('')}
-    `;
-
-        // Query Groq API
-        const completion = await groq.chat.completions.create({
-            messages: [
-                {
-                    role: "system",
-                    content: `You are a sales data analyst. Use the provided sales data to answer questions accurately. 
-          Provide specific numbers, insights, and actionable recommendations when possible. 
-          Format your response clearly with bullet points or sections when appropriate.
-          If asked about trends, calculate percentages and provide comparative analysis.
-          Always base your answers strictly on the provided data.`
-                },
-                {
-                    role: "user",
-                    content: `Based on this sales data:\n\n${contextString}\n\nQuestion: ${query}`
-                }
-            ],
-            model: "llama-3.3-70b-versatile",
-            temperature: 0.1,
-            max_tokens: 1000,
-        });
-
-        const aiResponse = completion.choices[0]?.message?.content;
-
-        return res.status(200).json({
-            success: true,
-            data: {
-                query,
-                response: aiResponse,
-                dataContext: {
-                    totalTransactions: salesContext.overallSummary.totalTransactions,
-                    totalRevenue: salesContext.overallSummary.totalRevenue,
-                    totalProfit: salesContext.overallSummary.totalProfit,
-                    dateRange: salesContext.overallSummary.dateRange
-                }
-            }
-        });
-
-    } catch (error) {
-        console.error('RAG Query Error:', error);
-        return res.status(500).json({
-            success: false,
-            message: "Error processing query",
-            error: error.message
-        });
-    }
-};
 
 // Delete sale with cascading delete to invoice
 const deleteSale = asyncHandler(async (req, res) => {
@@ -852,6 +734,7 @@ const deleteSale = asyncHandler(async (req, res) => {
 export {
     addSale,
     getSales,
+    getSalesByDateRange,
     getTotalSalesValueOneDay,
     getTotalSalesValueAllTime,
     getTotalSalesValueLast30Days,

@@ -401,7 +401,7 @@ export const getFinancialPerformance = asyncHandler(async (req, res) => {
         {
             $group: {
                 _id: null,
-                totalExpenses: { $sum: "$amount" }
+                totalExpenses: { $sum: "$expAmount" }
             }
         }
     ]);
@@ -423,8 +423,8 @@ export const getFinancialPerformance = asyncHandler(async (req, res) => {
         { $match: { owner, ...dateFilter } },
         {
             $group: {
-                _id: "$category",
-                amount: { $sum: "$amount" }
+                _id: "$name",
+                amount: { $sum: "$expAmount" }
             }
         }
     ]);
@@ -614,30 +614,35 @@ export const getOrderFulfillment = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Unauthorized request");
     }
 
-    const dateFilter = getDateRangeFilter(range);
-
-    // Import Order model
     const { Order } = await import('../models/orders.model.js');
 
-    // Total orders
-    const totalOrders = await Order.countDocuments({ owner, ...dateFilter });
+    // Build date filter using createdAt (Order has no 'date' field)
+    const now = new Date();
+    let dateFilter = {};
+    if (range !== 'alltime') {
+        let startDate;
+        switch (range) {
+            case 'today': startDate = new Date(now); startDate.setHours(0,0,0,0); break;
+            case 'week':  startDate = new Date(now.getTime() - 7  * 86400000); break;
+            case 'month': startDate = new Date(now.getTime() - 30 * 86400000); break;
+            case 'quarter': startDate = new Date(now.getTime() - 90 * 86400000); break;
+            case 'year': startDate = new Date(now.getTime() - 365 * 86400000); break;
+        }
+        if (startDate) dateFilter = { createdAt: { $gte: startDate } };
+    }
 
-    // Pending orders
-    const pendingOrders = await Order.countDocuments({
-        owner,
-        status: { $in: ['Pending', 'Processing'] },
-        ...dateFilter
-    });
+    // Order model uses `done: Boolean` — not a status string
+    const totalOrders    = await Order.countDocuments({ owner, ...dateFilter });
+    const pendingOrders  = await Order.countDocuments({ owner, done: false, ...dateFilter });
+    const fulfilledOrders = await Order.countDocuments({ owner, done: true,  ...dateFilter });
 
-    // Fulfilled orders
-    const fulfilledOrders = await Order.countDocuments({
-        owner,
-        status: 'Completed',
-        ...dateFilter
-    });
-
-    // Average fulfillment time (placeholder)
-    const avgFulfillmentTime = 3; // days
+    // Average fulfillment time (days between createdAt and dateToDilivery)
+    const avgData = await Order.aggregate([
+        { $match: { owner, done: true, ...dateFilter } },
+        { $project: { days: { $divide: [{ $subtract: ['$dateToDilivery', '$createdAt'] }, 86400000] } } },
+        { $group: { _id: null, avg: { $avg: '$days' } } }
+    ]);
+    const avgFulfillmentTime = Math.round(avgData[0]?.avg || 3);
 
     return res.status(200).json(
         new ApiResponse(200, {
@@ -658,41 +663,38 @@ export const getDealsPipeline = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Unauthorized request");
     }
 
-    const dateFilter = getDateRangeFilter(range);
+    // Deal has no 'date' field — use createdAt
+    const now = new Date();
+    let dateFilter = {};
+    if (range !== 'alltime') {
+        let startDate;
+        switch (range) {
+            case 'today': startDate = new Date(now); startDate.setHours(0,0,0,0); break;
+            case 'week':  startDate = new Date(now.getTime() - 7  * 86400000); break;
+            case 'month': startDate = new Date(now.getTime() - 30 * 86400000); break;
+            case 'quarter': startDate = new Date(now.getTime() - 90 * 86400000); break;
+            case 'year': startDate = new Date(now.getTime() - 365 * 86400000); break;
+        }
+        if (startDate) dateFilter = { createdAt: { $gte: startDate } };
+    }
 
-    // Total deals
     const totalDeals = await Deal.countDocuments({ owner, ...dateFilter });
 
-    // Deal value
     const dealData = await Deal.aggregate([
         { $match: { owner, ...dateFilter } },
         {
             $group: {
                 _id: null,
-                totalValue: { $sum: "$value" },
-                wonValue: {
-                    $sum: {
-                        $cond: [{ $eq: ["$status", "Won"] }, "$value", 0]
-                    }
-                },
-                wonCount: {
-                    $sum: { $cond: [{ $eq: ["$status", "Won"] }, 1, 0] }
-                }
+                totalValue: { $sum: '$value' },
+                wonValue: { $sum: { $cond: [{ $eq: ['$status', 'Won'] }, '$value', 0] } },
+                wonCount: { $sum: { $cond: [{ $eq: ['$status', 'Won'] }, 1, 0] } }
             }
         }
     ]);
 
     const deals = dealData[0] || { totalValue: 0, wonValue: 0, wonCount: 0 };
-
-    // Conversion rate
-    const conversionRate = totalDeals > 0
-        ? (deals.wonCount / totalDeals) * 100
-        : 0;
-
-    // Average deal size
-    const avgDealSize = totalDeals > 0
-        ? deals.totalValue / totalDeals
-        : 0;
+    const conversionRate = totalDeals > 0 ? (deals.wonCount / totalDeals) * 100 : 0;
+    const avgDealSize = totalDeals > 0 ? deals.totalValue / totalDeals : 0;
 
     return res.status(200).json(
         new ApiResponse(200, {
@@ -713,35 +715,33 @@ export const getAppointmentsTasks = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Unauthorized request");
     }
 
-    const dateFilter = getDateRangeFilter(range);
-
-    // Import Appointment model
     const { Appointment } = await import('../models/appointment.model.js');
 
-    // Total appointments
-    const totalAppointments = await Appointment.countDocuments({ owner, ...dateFilter });
+    // Appointment uses startTime, Task uses dueDate/createdAt
+    const now = new Date();
+    let apptFilter = {};
+    let taskFilter = {};
+    if (range !== 'alltime') {
+        let startDate;
+        switch (range) {
+            case 'today': startDate = new Date(now); startDate.setHours(0,0,0,0); break;
+            case 'week':  startDate = new Date(now.getTime() - 7  * 86400000); break;
+            case 'month': startDate = new Date(now.getTime() - 30 * 86400000); break;
+            case 'quarter': startDate = new Date(now.getTime() - 90 * 86400000); break;
+            case 'year': startDate = new Date(now.getTime() - 365 * 86400000); break;
+        }
+        if (startDate) {
+            apptFilter = { startTime: { $gte: startDate } };
+            taskFilter = { createdAt: { $gte: startDate } };
+        }
+    }
 
-    // Total tasks
-    const totalTasks = await Task.countDocuments({ owner, ...dateFilter });
+    const totalAppointments = await Appointment.countDocuments({ owner, ...apptFilter });
+    const totalTasks = await Task.countDocuments({ owner, ...taskFilter });
+    const completedTasks = await Task.countDocuments({ owner, status: 'Done', ...taskFilter });
+    const pendingTasks = await Task.countDocuments({ owner, status: { $ne: 'Done' }, ...taskFilter });
 
-    // Completed tasks
-    const completedTasks = await Task.countDocuments({
-        owner,
-        status: 'Done',
-        ...dateFilter
-    });
-
-    // Pending tasks
-    const pendingTasks = await Task.countDocuments({
-        owner,
-        status: { $ne: 'Done' },
-        ...dateFilter
-    });
-
-    // Task completion rate
-    const taskCompletionRate = totalTasks > 0
-        ? (completedTasks / totalTasks) * 100
-        : 0;
+    const taskCompletionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
     return res.status(200).json(
         new ApiResponse(200, {

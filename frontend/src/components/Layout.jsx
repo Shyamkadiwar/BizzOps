@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Toolbar } from '@mui/material';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
+import QueryBotWidget from './AI/QueryBotWidget';
 
 function Layout({ children }) {
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -40,6 +41,7 @@ function Layout({ children }) {
                 <Toolbar />
                 {children}
             </Box>
+            <QueryBotWidget />
         </Box>
     );
 }

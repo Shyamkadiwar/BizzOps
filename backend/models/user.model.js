@@ -55,6 +55,10 @@ const userSchema = new Schema({
         type: String,
         default: ""
     },
+    geminiApiKey: {
+        type: String,
+        default: ""
+    },
     activeSessions: [{
         sessionId: {
             type: String,

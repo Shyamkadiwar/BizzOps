@@ -1,25 +1,30 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import {
     Box, Typography, IconButton, TextField, Grid, Chip, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
 import {
     Delete as DeleteIcon,
     AddCircle as CreditIcon, RemoveCircle as DebitIcon
 } from '@mui/icons-material';
-import { Plus } from 'lucide-react';
+import { Plus, Search, X, Users, IndianRupee, AlertCircle } from 'lucide-react';
 import MuiModal from "../shared/MuiModal";
 import Layout from '../Layout.jsx';
 import ConfirmDialog from '../shared/ConfirmDialog.jsx';
 import AlertDialog from '../shared/AlertDialog.jsx';
+import ProfessionalDataGrid from '../shared/ProfessionalDataGrid.jsx';
 
 function Staff() {
+    const [allStaff, setAllStaff] = useState([]);
     const [staff, setStaff] = useState([]);
     const [loading, setLoading] = useState(false);
     const [openAddModal, setOpenAddModal] = useState(false);
     const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", message: "", onConfirm: null });
     const [alertDialog, setAlertDialog] = useState({ open: false, title: "", message: "", severity: "info" });
+
+    // Filters
+    const [search, setSearch] = useState('');
+    const [balanceFilter, setBalanceFilter] = useState('all'); // 'all', 'pending', 'clear'
 
     // Credit/Debit dialog
     const [actionDialog, setActionDialog] = useState({ open: false, staffId: '', action: '', amount: '' });
@@ -35,7 +40,9 @@ function Staff() {
                 { withCredentials: true }
             );
             if (response.data.statusCode === 200 && response.data.success) {
-                setStaff((response.data.data.staff || []).map(s => ({ ...s, id: s._id })));
+                const data = (response.data.data.staff || []).map(s => ({ ...s, id: s._id }));
+                setAllStaff(data);
+                setStaff(data);
             }
         } catch (error) {
             console.error('Failed to fetch staff:', error);
@@ -99,8 +106,44 @@ function Staff() {
         });
     };
 
+    // Client-side filtering
+    useEffect(() => {
+        let filtered = [...allStaff];
+
+        if (search.trim()) {
+            const q = search.toLowerCase();
+            filtered = filtered.filter(s => 
+                (s.name && s.name.toLowerCase().includes(q)) ||
+                (s.email && s.email.toLowerCase().includes(q)) ||
+                (s.phone && s.phone.toLowerCase().includes(q))
+            );
+        }
+
+        if (balanceFilter === 'pending') {
+            filtered = filtered.filter(s => (s.debitCreditHistory || 0) > 0);
+        } else if (balanceFilter === 'clear') {
+            filtered = filtered.filter(s => (s.debitCreditHistory || 0) <= 0);
+        }
+
+        setStaff(filtered);
+    }, [search, balanceFilter, allStaff]);
+
+    const stats = useMemo(() => {
+        const totalPayroll = allStaff.reduce((s, emp) => s + (emp.salary || 0), 0);
+        const totalPending = allStaff.reduce((s, emp) => s + ((emp.debitCreditHistory > 0) ? emp.debitCreditHistory : 0), 0);
+        const staffWithPending = allStaff.filter(emp => (emp.debitCreditHistory || 0) > 0).length;
+
+        return {
+            totalStaff: allStaff.length,
+            filteredStaff: staff.length,
+            totalPayroll,
+            totalPending,
+            staffWithPending
+        };
+    }, [staff, allStaff]);
+
     const columns = [
-        { field: 'name', headerName: 'Name', width: 180, filterable: true },
+        { field: 'name', headerName: 'Name', width: 220, filterable: true, cellClassName: 'font-semibold text-gray-800' },
         { field: 'email', headerName: 'Email', width: 220 },
         { field: 'phone', headerName: 'Phone', width: 150 },
         {
@@ -114,11 +157,12 @@ function Staff() {
                     label={`₹${(params.value || 0).toLocaleString()}`}
                     color={params.value > 0 ? 'warning' : 'success'}
                     size="small" variant="filled"
+                    sx={{ fontWeight: 'bold' }}
                 />
             )
         },
         {
-            field: 'actions', headerName: 'Actions', width: 180, sortable: false, filterable: false,
+            field: 'actions', headerName: 'Actions', width: 220, sortable: false, filterable: false,
             renderCell: (params) => (
                 <Box sx={{ display: 'flex', gap: 0.5 }}>
                     <button
@@ -137,13 +181,17 @@ function Staff() {
         }
     ];
 
+    const clearFilters = () => { setSearch(''); setBalanceFilter('all'); };
+    const hasActiveFilter = search || balanceFilter !== 'all';
+
     return (
         <Layout>
             <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 p-6">
+                {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">Staff Management</h1>
-                        <p className="text-sm text-gray-600">Manage team and payroll</p>
+                        <p className="text-sm text-gray-600">Manage team payroll and balances</p>
                     </div>
                     <button onClick={() => setOpenAddModal(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
@@ -151,14 +199,84 @@ function Staff() {
                     </button>
                 </div>
 
-                <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-lg">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Staff Directory</h3>
+                {/* Summary Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+                    <div className="bg-white/70 backdrop-blur-md border border-white/40 rounded-2xl shadow-sm p-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Total Staff</span>
+                            <Users size={16} className="text-indigo-500" />
+                        </div>
+                        <p className="text-2xl font-bold text-gray-900">{stats.filteredStaff}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">out of {stats.totalStaff} total members</p>
+                    </div>
+                    <div className="bg-white/70 backdrop-blur-md border border-white/40 rounded-2xl shadow-sm p-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Monthly Payroll</span>
+                            <IndianRupee size={16} className="text-blue-500" />
+                        </div>
+                        <p className="text-2xl font-bold text-gray-900">₹{stats.totalPayroll.toLocaleString('en-IN')}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">fixed salary expenses</p>
+                    </div>
+                    <div className="bg-white/70 backdrop-blur-md border border-white/40 rounded-2xl shadow-sm p-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Pending Pay</span>
+                            <AlertCircle size={16} className="text-red-500" />
+                        </div>
+                        <p className="text-2xl font-bold text-gray-900">₹{stats.totalPending.toLocaleString('en-IN')}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">total unpaid balances</p>
+                    </div>
+                    <div className="bg-white/70 backdrop-blur-md border border-white/40 rounded-2xl shadow-sm p-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Members Unpaid</span>
+                            <Users size={16} className="text-orange-500" />
+                        </div>
+                        <p className="text-2xl font-bold text-gray-900">{stats.staffWithPending}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">staff awaiting payments</p>
+                    </div>
+                </div>
+
+                {/* Filter Bar */}
+                <div className="bg-white/70 backdrop-blur-md border border-white/40 rounded-2xl shadow-sm p-4 mb-4 flex flex-wrap gap-3 items-center">
+                    <div className="relative flex-1 min-w-52">
+                        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search by name, email, phone..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all text-gray-700"
+                        />
+                        {search && (
+                            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
+                                <X size={14} className="text-gray-400 hover:text-gray-600" />
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+                        {[{ key: 'all', label: 'All Staff' }, { key: 'pending', label: 'Payment Pending' }, { key: 'clear', label: '✓ Clear' }].map(opt => (
+                            <button key={opt.key} onClick={() => setBalanceFilter(opt.key)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${balanceFilter === opt.key ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}>
+                                {opt.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {hasActiveFilter && (
+                        <button onClick={clearFilters}
+                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-xl transition-colors">
+                            <X size={13} /> Clear
+                        </button>
+                    )}
+                </div>
+
+                {/* Staff DataGrid */}
+                <div className="bg-white/70 backdrop-blur-md border border-white/40 rounded-2xl shadow-md overflow-hidden p-2">
                     <Box sx={{ height: 500, width: '100%' }}>
-                        <DataGrid
+                        <ProfessionalDataGrid
                             rows={staff} columns={columns} loading={loading}
-                            initialState={{ pagination: { paginationModel: { pageSize: 10, page: 0 } } }}
+                            initialState={{ pagination: { paginationModel: { pageSize: 25, page: 0 } } }}
                             pageSizeOptions={[10, 25, 50, 100]} disableRowSelectionOnClick
-                            sx={{ border: 'none', '& .MuiDataGrid-cell': { borderBottom: '1px solid #f3f4f6' } }}
                         />
                     </Box>
                 </div>

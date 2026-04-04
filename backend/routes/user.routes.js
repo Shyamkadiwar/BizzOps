@@ -9,6 +9,8 @@ import {
     updateAccountDetails,
     getPaymentSettings,
     updatePaymentSettings,
+    getGeminiSettings,
+    updateGeminiSettings,
     sendContactMessage
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -28,5 +30,6 @@ router.route('/change-password').post(verifyJWT, changePassword)
 router.route('/get-details').get(verifyJWT, getCurrentUserDetails)
 router.route('/update-account').post(verifyJWT, upload.single("businessLogo"), updateAccountDetails)
 router.route('/payment-settings').get(verifyJWT, getPaymentSettings).post(verifyJWT, updatePaymentSettings)
+router.route('/gemini-settings').get(verifyJWT, getGeminiSettings).post(verifyJWT, updateGeminiSettings)
 
 export default router

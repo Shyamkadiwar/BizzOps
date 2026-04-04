@@ -13,22 +13,14 @@ const DealCard = ({ deal, onClick, isDragging }) => {
     };
 
     return (
-        <Card
+        <div
             onClick={onClick}
-            sx={{
-                mb: 2,
-                cursor: 'pointer',
-                backgroundColor: isDragging ? '#f3f4f6' : 'white',
-                boxShadow: isDragging ? 4 : 1,
-                transition: 'all 0.2s',
-                '&:hover': {
-                    boxShadow: 3,
-                    transform: 'translateY(-2px)'
-                }
-            }}
+            className={`mb-3 cursor-pointer rounded-xl p-4 border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+                isDragging ? 'bg-indigo-50/90 border-indigo-200 shadow-md transform rotate-2' : 'bg-white border-gray-200 shadow'
+            }`}
         >
-            <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, fontSize: '1rem' }}>
+            <div>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, fontSize: '1rem', color: '#1f2937' }}>
                     {deal.title}
                 </Typography>
 
@@ -83,8 +75,8 @@ const DealCard = ({ deal, onClick, isDragging }) => {
                         {deal.description}
                     </Typography>
                 )}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 };
 

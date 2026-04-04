@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Box, Typography, TextField, CircularProgress, Alert } from '@mui/material';
-import { Save, KeyRound, ShieldCheck, Webhook, Building2, User, Phone, MapPin, Mail, Globe, FileText, Image as ImageIcon, UploadCloud } from 'lucide-react';
+import { Save, KeyRound, ShieldCheck, Webhook, Building2, User, Phone, MapPin, Mail, Globe, FileText, Image as ImageIcon, UploadCloud, Bot } from 'lucide-react';
 import Layout from "../components/Layout";
 
 const token = localStorage.getItem('accessToken');
@@ -13,9 +13,11 @@ function SettingsPage() {
     const [loading, setLoading] = useState(true);
     const [savingProfile, setSavingProfile] = useState(false);
     const [savingPayments, setSavingPayments] = useState(false);
+    const [savingGemini, setSavingGemini] = useState(false);
     
     const [profileMessage, setProfileMessage] = useState({ type: '', text: '' });
     const [paymentMessage, setPaymentMessage] = useState({ type: '', text: '' });
+    const [geminiMessage, setGeminiMessage] = useState({ type: '', text: '' });
     
     // Profile Data
     const [userDetails, setUserDetails] = useState({
@@ -38,6 +40,9 @@ function SettingsPage() {
         razorpayKeySecret: '',
         razorpayWebhookSecret: ''
     });
+
+    // Gemini API Key
+    const [geminiKey, setGeminiKey] = useState('');
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -73,6 +78,15 @@ function SettingsPage() {
                     razorpayKeySecret: paymentResponse.data.data.razorpayKeySecret || '',
                     razorpayWebhookSecret: paymentResponse.data.data.razorpayWebhookSecret || ''
                 });
+            }
+
+            // Fetch Gemini Key
+            const geminiResponse = await axios.get(
+                `${import.meta.env.VITE_BACKEND_URL}/api/v1/users/gemini-settings`,
+                { headers: { 'Authorization': token }, withCredentials: true }
+            );
+            if (geminiResponse.status === 200 && geminiResponse.data?.data) {
+                setGeminiKey(geminiResponse.data.data.geminiApiKey || '');
             }
         } catch (error) {
             console.error('Failed to fetch settings:', error);
@@ -162,6 +176,26 @@ function SettingsPage() {
         setKeys(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
+    const handleSaveGemini = async (e) => {
+        e.preventDefault();
+        setSavingGemini(true);
+        setGeminiMessage({ type: '', text: '' });
+        try {
+            await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/v1/users/gemini-settings`,
+                { geminiApiKey: geminiKey },
+                { headers: { 'Authorization': token }, withCredentials: true }
+            );
+            setGeminiMessage({ type: 'success', text: 'Gemini API key saved! AI features will now use your key.' });
+            fetchData();
+        } catch (error) {
+            setGeminiMessage({ type: 'error', text: 'Failed to save Gemini key. Please try again.' });
+        } finally {
+            setSavingGemini(false);
+            setTimeout(() => setGeminiMessage({ type: '', text: '' }), 4000);
+        }
+    };
+
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -193,6 +227,12 @@ function SettingsPage() {
                             className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 ${activeTab === 'payments' ? 'bg-white text-indigo-700 shadow border border-gray-100' : 'text-gray-500 hover:text-gray-800 hover:bg-white/60'}`}
                         >
                             <ShieldCheck size={16} /> Payment Gateway
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('ai')}
+                            className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 ${activeTab === 'ai' ? 'bg-white text-indigo-700 shadow border border-gray-100' : 'text-gray-500 hover:text-gray-800 hover:bg-white/60'}`}
+                        >
+                            <Bot size={16} /> AI Integration
                         </button>
                     </div>
 
@@ -321,9 +361,9 @@ function SettingsPage() {
                                 {/* TAB 2: Payment Gateway */}
                                 {activeTab === 'payments' && (
                                     <div className="animate-fade-in">
-                                        <div className="px-6 md:px-10 py-8 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+                                        <div className="px-6 md:px-10 py-8 border-b border-gray-100">
                                             <h2 className="text-xl font-bold text-gray-900 mb-1 flex items-center gap-2">
-                                                <ShieldCheck size={24} className="text-blue-600" /> Razorpay Integration
+                                                 Razorpay Integration
                                             </h2>
                                             <p className="text-sm font-medium text-gray-600">Connect your own Razorpay account to collect payments securely directly to your bank.</p>
                                         </div>
@@ -363,6 +403,51 @@ function SettingsPage() {
                                                 <button type="submit" disabled={savingPayments} className="flex items-center gap-2 px-8 py-3 bg-gray-900 hover:bg-indigo-600 text-white rounded-xl shadow-[0_8px_20px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_20px_rgba(79,70,229,0.2)] transition-all font-bold disabled:opacity-70 disabled:hover:translate-y-0 hover:-translate-y-0.5">
                                                     {savingPayments ? <CircularProgress size={18} color="inherit" /> : <Save size={18} />}
                                                     {savingPayments ? 'Saving Integration...' : 'Save Keys'}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                )}
+
+                                {/* TAB 3: AI Integration */}
+                                {activeTab === 'ai' && (
+                                    <div className="animate-fade-in">
+                                        <div className="px-6 md:px-10 py-8 border-b border-gray-100">
+                                            <h2 className="text-xl font-bold text-gray-900 mb-1 flex items-center gap-2">
+                                                Gemini AI Integration
+                                            </h2>
+                                            <p className="text-sm font-medium text-gray-600">Use your own Gemini API key. If left empty, the platform key is used.</p>
+                                        </div>
+                                        <form onSubmit={handleSaveGemini} className="p-6 md:p-10">
+                                            {geminiMessage.text && (
+                                                <Alert severity={geminiMessage.type} sx={{ mb: 4, borderRadius: '12px' }}>
+                                                    {geminiMessage.text}
+                                                </Alert>
+                                            )}
+                                            <div className="max-w-2xl space-y-6 mb-8">
+                                                <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
+                                                    <p className="text-sm text-blue-700 font-medium">
+                                                        Get your free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="underline hover:text-blue-900">Google AI Studio</a>. Stored securely, used only for your account.
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                                                        <KeyRound size={16} className="text-indigo-500" /> Gemini API Key <span className="text-gray-400 font-normal">(Optional)</span>
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="AIzaSy..."
+                                                        value={geminiKey}
+                                                        onChange={e => setGeminiKey(e.target.value)}
+                                                        className="w-full py-3 px-4 bg-gray-50 border border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all rounded-xl text-gray-900 font-medium font-mono"
+                                                    />
+                                                    <p className="text-xs text-gray-400 mt-2 font-medium">If empty, the platform shared key powers all AI chatbot and insight features.</p>
+                                                </div>
+                                            </div>
+                                            <div className="pt-6 border-t border-gray-100 flex justify-end">
+                                                <button type="submit" disabled={savingGemini} className="flex items-center gap-2 px-8 py-3 bg-gray-900 hover:bg-indigo-600 text-white rounded-xl shadow-[0_8px_20px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_20px_rgba(79,70,229,0.2)] transition-all font-bold disabled:opacity-70">
+                                                    {savingGemini ? <CircularProgress size={18} color="inherit" /> : <Save size={18} />}
+                                                    {savingGemini ? 'Saving...' : 'Save API Key'}
                                                 </button>
                                             </div>
                                         </form>
