@@ -163,10 +163,10 @@ const AddCustomerPayment = ({ open, onClose, customerId, customerName, currentBa
 
     return (
         <>
-            <Dialog 
-                open={open} 
-                onClose={onClose} 
-                maxWidth="sm" 
+            <Dialog
+                open={open}
+                onClose={onClose}
+                maxWidth="sm"
                 fullWidth
                 PaperProps={{
                     sx: {
@@ -178,7 +178,7 @@ const AddCustomerPayment = ({ open, onClose, customerId, customerName, currentBa
                     }
                 }}
             >
-                <DialogTitle sx={{ 
+                <DialogTitle sx={{
                     borderBottom: '1px solid rgba(0,0,0,0.05)',
                     background: 'linear-gradient(90deg, rgba(248,250,252,0.9) 0%, rgba(255,255,255,0.95) 100%)',
                     pt: 3, pb: 2, px: 4
@@ -192,11 +192,11 @@ const AddCustomerPayment = ({ open, onClose, customerId, customerName, currentBa
                             startIcon={verifying ? <CircularProgress size={14} sx={{ color: '#0f172a' }} /> : <SyncIcon />}
                             onClick={() => handleVerifyPayments(false)}
                             disabled={verifying}
-                            sx={{ 
-                                textTransform: 'none', 
-                                fontSize: '13px', 
-                                fontWeight: 600, 
-                                background: '#f1f5f9', 
+                            sx={{
+                                textTransform: 'none',
+                                fontSize: '13px',
+                                fontWeight: 600,
+                                background: '#f1f5f9',
                                 color: '#0f172a',
                                 borderRadius: '8px',
                                 px: 2, py: 0.5,
@@ -340,7 +340,7 @@ const AddCustomerPayment = ({ open, onClose, customerId, customerName, currentBa
                             startIcon={<SendIcon />}
                             disabled={sendingLink || selectedInvoices.length === 0}
                             onClick={handleSendPaymentLink}
-                            sx={{ 
+                            sx={{
                                 textTransform: 'none', fontWeight: 600, borderRadius: '8px',
                                 color: '#3b82f6', borderColor: '#3b82f6',
                                 '&:hover': { background: 'rgba(59, 130, 246, 0.04)', borderColor: '#2563eb' }
@@ -353,10 +353,10 @@ const AddCustomerPayment = ({ open, onClose, customerId, customerName, currentBa
                             variant="contained"
                             disabled={submitting || selectedInvoices.length === 0}
                             sx={{
-                                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                                background: '#4f46e5',
                                 color: '#fff', textTransform: 'none', fontWeight: 600, borderRadius: '8px',
                                 boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)',
-                                '&:hover': { background: 'linear-gradient(135deg, #000000 0%, #0f172a 100%)' }
+                                '&:hover': { background: '#4338ca' }
                             }}
                         >
                             {submitting ? 'Processing...' : `Pay ₹${selectedTotal.toLocaleString('en-IN')}`}

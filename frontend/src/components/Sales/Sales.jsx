@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Box, Typography, Chip, IconButton } from '@mui/material';
-import { Plus, Download, Calendar, TrendingUp, IndianRupee, Package, Filter } from 'lucide-react';
+import { Plus, Download, Calendar, TrendingUp, IndianRupee, Package, Filter, ExternalLink } from 'lucide-react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddMultiItemSale from "./AddMultiItemSale.jsx";
 import MuiModal from "../shared/MuiModal";
@@ -149,8 +149,7 @@ function Sales() {
             width: 150,
             filterable: true,
             renderCell: (params) => params.row.customer ? (
-                <Typography
-                    sx={{ cursor: 'pointer', color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}
+                <Box
                     onClick={() => {
                         const customerId = typeof params.row.customer === 'object'
                             ? params.row.customer._id
@@ -158,9 +157,16 @@ function Sales() {
                         setSelectedCustomer(customerId);
                         setCustomerDetailsOpen(true);
                     }}
+                    sx={{
+                        display: 'inline-flex', alignItems: 'center', gap: 0.5, cursor: 'pointer',
+                        color: '#4f46e5', fontWeight: 600,
+                        transition: 'all 0.2s',
+                        '&:hover': { textDecoration: 'underline', color: '#4338ca' }
+                    }}
                 >
                     {params.value || 'Walk-in'}
-                </Typography>
+                    <ExternalLink size={14} style={{ opacity: 0.7 }} />
+                </Box>
             ) : (params.value || 'Walk-in')
         },
         {
@@ -256,7 +262,7 @@ function Sales() {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setOpenModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white"
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-white"
                         >
                             <Plus size={16} /> Add Sale
                         </button>

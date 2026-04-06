@@ -15,7 +15,7 @@ const createSubscriptionOrder = asyncHandler(async (req, res) => {
 
     // 999 INR per month = 99900 paise
     const options = {
-        amount: 99900,
+        amount: 49900,
         currency: "INR",
         // Razorpay max limit for receipt is 40 characters
         receipt: `sub_${Date.now().toString().slice(-10)}`
@@ -57,17 +57,17 @@ const verifySubscriptionPayment = asyncHandler(async (req, res) => {
 
     // Add exactly 30 days to the subscription
     const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-    
+
     // If they already have an active subscription that ends in the future, just add 30 days to *that*
     // Otherwise, add 30 days from right now.
     let baseDate = Date.now();
     if (user.subscriptionStatus === 'active' && user.subscriptionEndsAt && user.subscriptionEndsAt.getTime() > Date.now()) {
         baseDate = user.subscriptionEndsAt.getTime();
     }
-    
+
     user.subscriptionStatus = 'active';
     user.subscriptionEndsAt = new Date(baseDate + THIRTY_DAYS);
-    
+
     // We pass validateBeforeSave: false because older data inside the array models (like activeSessions) might trigger random failures unrelated to this
     await user.save({ validateBeforeSave: false });
 

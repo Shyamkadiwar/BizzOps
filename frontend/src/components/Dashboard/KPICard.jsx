@@ -56,7 +56,7 @@ const KPICard = ({
 
     if (loading) {
         return (
-            <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-lg animate-pulse">
+            <div className="bg-white/70 backdrop-blur-md  rounded-2xl p-6 shadow-lg animate-pulse">
                 <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
                 <div className="h-8 bg-gray-200 rounded w-3/4 mb-2"></div>
                 <div className="h-3 bg-gray-200 rounded w-1/3"></div>
@@ -65,7 +65,7 @@ const KPICard = ({
     }
 
     return (
-        <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+        <div className="bg-white/70 backdrop-blur-md  rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
             <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-2">
                     {icon && <span className="text-gray-600">{icon}</span>}

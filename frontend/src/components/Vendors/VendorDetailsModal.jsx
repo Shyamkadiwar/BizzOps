@@ -288,12 +288,7 @@ const VendorDetailsModal = ({ open, onClose, vendorId }) => {
         { field: 'stockRemain', headerName: 'Qty', width: 80, type: 'number' },
         { field: 'cost', headerName: 'Cost', width: 120, valueFormatter: (value) => `₹${(value || 0).toLocaleString('en-IN')}` },
         { field: 'purchaseAmount', headerName: 'Total', width: 130, valueFormatter: (value) => `₹${(value || 0).toLocaleString('en-IN')}` },
-        {
-            field: 'paid', headerName: 'Status', width: 110,
-            renderCell: (params) => (
-                <Chip label={params.value ? 'Paid' : 'Unpaid'} color={params.value ? 'success' : 'warning'} size="small" variant="filled" />
-            )
-        }
+        
     ];
 
     const productColumns = [
@@ -462,7 +457,7 @@ const VendorDetailsModal = ({ open, onClose, vendorId }) => {
                             disabled={stats?.balance <= 0}
                             sx={{
                                 borderRadius: '12px',
-                                background: stats?.balance <= 0 ? 'rgba(0,0,0,0.1)' : 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                                background: stats?.balance <= 0 ? 'rgba(0,0,0,0.1)' : '#4f46e5',
                                 color: '#fff',
                                 textTransform: 'none',
                                 fontWeight: 600,
@@ -470,7 +465,7 @@ const VendorDetailsModal = ({ open, onClose, vendorId }) => {
                                 padding: '10px 24px',
                                 boxShadow: stats?.balance <= 0 ? 'none' : '0 10px 20px -10px rgba(15,23,42,0.5)',
                                 '&:hover': {
-                                    background: 'linear-gradient(135deg, #000000 0%, #0f172a 100%)',
+                                    background: '#4338ca',
                                     boxShadow: '0 10px 25px -10px rgba(0,0,0,0.6)',
                                 }
                             }}

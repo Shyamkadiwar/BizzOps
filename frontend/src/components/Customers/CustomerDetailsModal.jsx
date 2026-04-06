@@ -197,18 +197,6 @@ const CustomerDetailsModal = ({ open, onClose, customerId }) => {
             headerName: 'Profit',
             width: 120,
             valueFormatter: (value) => value != null ? `₹${value.toLocaleString('en-IN')}` : '₹0'
-        },
-        {
-            field: 'paid',
-            headerName: 'Status',
-            width: 100,
-            renderCell: (params) => (
-                <Chip
-                    label={params.value ? 'Paid' : 'Unpaid'}
-                    color={params.value ? 'success' : 'warning'}
-                    size="small"
-                />
-            )
         }
     ];
 
@@ -337,7 +325,7 @@ const CustomerDetailsModal = ({ open, onClose, customerId }) => {
                             disabled={stats?.balance <= 0}
                             sx={{
                                 borderRadius: '12px',
-                                background: stats?.balance <= 0 ? 'rgba(0,0,0,0.1)' : 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                                background: stats?.balance <= 0 ? 'rgba(0,0,0,0.1)' : '#4f46e5',
                                 color: '#fff',
                                 textTransform: 'none',
                                 fontWeight: 600,
@@ -345,7 +333,7 @@ const CustomerDetailsModal = ({ open, onClose, customerId }) => {
                                 padding: '10px 24px',
                                 boxShadow: stats?.balance <= 0 ? 'none' : '0 10px 20px -10px rgba(15,23,42,0.5)',
                                 '&:hover': {
-                                    background: 'linear-gradient(135deg, #000000 0%, #0f172a 100%)',
+                                    background: '#4338ca',
                                     boxShadow: '0 10px 25px -10px rgba(0,0,0,0.6)',
                                 }
                             }}

@@ -132,11 +132,11 @@ const AddVendor = ({ onSuccess, onCancel }) => {
                 )}
                 <Button type="submit"
                     sx={{
-                        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                        background: '#4f46e5',
                         color: '#fff', textTransform: 'none', fontWeight: 600, borderRadius: '10px',
                         boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)',
                         px: 4, py: 1,
-                        '&:hover': { background: 'linear-gradient(135deg, #000000 0%, #0f172a 100%)' }
+                        '&:hover': { background: '#4338ca' }
                     }}>
                     Add Vendor
                 </Button>

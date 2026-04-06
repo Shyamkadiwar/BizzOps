@@ -42,6 +42,7 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
     const [customers, setCustomers] = useState([]);
     const [selectedInventoryItem, setSelectedInventoryItem] = useState(null);
     const [alertDialog, setAlertDialog] = useState({ open: false, title: "", message: "", severity: "info" });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Calculated totals
     const totalSale = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
@@ -162,6 +163,8 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
             return;
         }
 
+        setIsSubmitting(true);
+
         const data = {
             items: items.map(item => ({
                 product: item.product,
@@ -216,6 +219,8 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
                 message: error.response?.data?.message || "Error adding multi-item sale",
                 severity: "error"
             });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -417,17 +422,17 @@ function AddMultiItemSale({ addNewSale, onCancel }) {
                     </Button>
                 )}
                 <Button type="submit"
-                    disabled={items.length === 0}
+                    disabled={items.length === 0 || isSubmitting}
                     sx={{
-                        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                        background: '#4f46e5',
                         color: '#fff', textTransform: 'none', fontWeight: 600, borderRadius: '10px',
                         boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)',
                         px: 4, py: 1,
-                        '&:hover': { background: 'linear-gradient(135deg, #000000 0%, #0f172a 100%)' },
+                        '&:hover': { background: '#4338ca' },
                         '&.Mui-disabled': { background: '#cbd5e1', color: '#94a3b8', boxShadow: 'none' }
                     }}
                 >
-                    Create Sale & Invoice ({items.length} items)
+                    {isSubmitting ? 'Creating...' : `Create Sale & Invoice (${items.length} items)`}
                 </Button>
             </Box>
 

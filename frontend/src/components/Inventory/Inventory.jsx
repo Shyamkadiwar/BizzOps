@@ -3,7 +3,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import axios from "axios";
 import { Box, Typography, Chip, IconButton } from '@mui/material';
 import { AddCircle, RemoveCircle } from '@mui/icons-material';
-import { Plus, Upload, Download, Search, X, Package, AlertTriangle, CheckCircle, Boxes } from 'lucide-react';
+import { Plus, Upload, Download, Search, X, Package, AlertTriangle, CheckCircle, Boxes, ExternalLink } from 'lucide-react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddInventory from "./AddInventory.jsx";
 import MuiModal from "../shared/MuiModal";
@@ -11,6 +11,7 @@ import Layout from "../Layout.jsx";
 import ConfirmDialog from "../shared/ConfirmDialog.jsx";
 import PromptDialog from "../shared/PromptDialog.jsx";
 import AlertDialog from "../shared/AlertDialog.jsx";
+import VendorDetailsModal from '../Vendors/VendorDetailsModal.jsx';
 
 const token = localStorage.getItem('accessToken');
 
@@ -20,6 +21,8 @@ function Inventory() {
     const [loading, setLoading] = useState(false);
     const [totalInventoryValue, setTotalInventoryValue] = useState(0);
     const [openModal, setOpenModal] = useState(false);
+    const [selectedVendor, setSelectedVendor] = useState(null);
+    const [vendorDetailsOpen, setVendorDetailsOpen] = useState(false);
 
     // Filter states
     const [search, setSearch] = useState('');
@@ -183,7 +186,26 @@ function Inventory() {
         { field: 'warehouse', headerName: 'Warehouse', width: 120 },
         { field: 'cost', headerName: 'Cost', width: 100, type: 'number', valueFormatter: (v) => `₹${v?.toLocaleString('en-IN') || 0}` },
         { field: 'salePrice', headerName: 'Sale Price', width: 110, type: 'number', valueFormatter: (v) => `₹${v?.toLocaleString('en-IN') || 0}` },
-        { field: 'vendor', headerName: 'Vendor', width: 140, valueGetter: (v, row) => row.vendor?.name || 'N/A' },
+        { 
+            field: 'vendor', headerName: 'Vendor', width: 160, 
+            renderCell: (params) => {
+                if (!params.row.vendor?._id) return <Typography variant="body2">{params.row.vendor?.name || 'N/A'}</Typography>;
+                return (
+                    <Box
+                        onClick={() => { setSelectedVendor(params.row.vendor._id); setVendorDetailsOpen(true); }}
+                        sx={{
+                            display: 'inline-flex', alignItems: 'center', gap: 0.5, cursor: 'pointer',
+                            color: '#4f46e5', fontWeight: 600,
+                            transition: 'all 0.2s',
+                            '&:hover': { textDecoration: 'underline', color: '#4338ca' }
+                        }}
+                    >
+                        {params.row.vendor.name}
+                        <ExternalLink size={14} style={{ opacity: 0.7 }} />
+                    </Box>
+                );
+            }
+        },
         {
             field: 'stockRemain', headerName: 'Stock', width: 100, type: 'number',
             renderCell: (params) => (
@@ -238,7 +260,7 @@ function Inventory() {
                     </div>
                     <div className="flex items-center gap-2">
                         <button onClick={() => setOpenModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-white">
                             <Plus size={16} /> Add Item
                         </button>
                         <button onClick={handleImport}
@@ -408,6 +430,12 @@ function Inventory() {
                 title={alertDialog.title}
                 message={alertDialog.message}
                 severity={alertDialog.severity}
+            />
+
+            <VendorDetailsModal
+                open={vendorDetailsOpen}
+                onClose={() => { setVendorDetailsOpen(false); setSelectedVendor(null); }}
+                vendorId={selectedVendor}
             />
         </Layout>
     );

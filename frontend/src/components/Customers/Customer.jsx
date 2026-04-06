@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { Box, Typography, IconButton, Chip } from '@mui/material';
-import { Plus, Download, Upload, Search, X, Users, IndianRupee, AlertCircle, UserCheck } from 'lucide-react';
+import { Plus, Download, Upload, Search, X, Users, IndianRupee, AlertCircle, UserCheck, ExternalLink } from 'lucide-react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddCustomers from "./AddCustomers.jsx";
 import ProfessionalDataGrid from "../shared/ProfessionalDataGrid";
@@ -156,12 +156,18 @@ function Customer() {
         {
             field: 'name', headerName: 'Name', width: 160,
             renderCell: (params) => (
-                <Typography
-                    sx={{ cursor: 'pointer', color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}
+                <Box
                     onClick={() => { setSelectedCustomer(params.row._id); setCustomerDetailsOpen(true); }}
+                    sx={{
+                        display: 'inline-flex', alignItems: 'center', gap: 0.5, cursor: 'pointer',
+                        color: '#4f46e5', fontWeight: 600,
+                        transition: 'all 0.2s',
+                        '&:hover': { textDecoration: 'underline', color: '#4338ca' }
+                    }}
                 >
-                    {params.value}
-                </Typography>
+                    {params.value} 
+                    <ExternalLink size={14} style={{ opacity: 0.7 }} />
+                </Box>
             )
         },
         { field: 'email', headerName: 'Email', width: 200 },
@@ -216,7 +222,7 @@ function Customer() {
                     </div>
                     <div className="flex items-center gap-2">
                         <button onClick={() => setOpenModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-white">
                             <Plus size={16} /> Add Customer
                         </button>
                         <button onClick={handleExport}

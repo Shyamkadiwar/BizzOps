@@ -100,7 +100,7 @@ function Report() {
     const dExpRatio = safe((oneDayExpense / todaySale) * 100);
 
     const MetricCard = ({ icon, label, value, prefix = '', suffix = '', color }) => (
-        <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-200">
+        <div className="bg-white/70 backdrop-blur-md  rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-200">
             <div className="flex items-center gap-3">
                 <div
                     className="w-10 h-10 rounded-lg flex items-center justify-center"

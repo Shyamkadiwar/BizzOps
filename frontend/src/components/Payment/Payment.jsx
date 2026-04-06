@@ -68,7 +68,7 @@ function Payment() {
     ];
 
     const StatCard = ({ icon, label, value, color }) => (
-        <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-200">
+        <div className="bg-white/70 backdrop-blur-md  rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-200">
             <div className="flex items-center gap-3">
                 <div
                     className="w-10 h-10 rounded-lg flex items-center justify-center"
@@ -97,7 +97,7 @@ function Payment() {
                     <StatCard icon={<AlertCircle size={20} />} label="Total Unpaid" value={unPaid} color="#F59E0B" />
                 </div>
 
-                <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-lg">
+                <div className="bg-white/70 backdrop-blur-md  rounded-2xl p-6 shadow-lg">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Records</h3>
                     <Box sx={{ height: 500, width: '100%' }}>
                         <DataGrid

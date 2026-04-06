@@ -268,7 +268,7 @@ const EventDetailsModal = ({ open, onClose, event, onEdit, onDelete }) => {
             </DialogContent>
             <DialogActions>
                 <button onClick={onClose}
-                    className="px-4 py-2 bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
+                    className="px-4 py-2 bg-white/70 backdrop-blur-md  rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-gray-700">
                     Close
                 </button>
             </DialogActions>

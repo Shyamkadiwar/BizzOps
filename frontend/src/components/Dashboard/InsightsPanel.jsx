@@ -56,7 +56,7 @@ const InsightsPanel = ({ businessSnapshot, loading: parentLoading = false }) => 
 
     if (parentLoading) {
         return (
-            <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-lg animate-pulse">
+            <div className="bg-white/70 backdrop-blur-md  rounded-2xl p-6 shadow-lg animate-pulse">
                 <div className="h-5 bg-gray-200 rounded w-1/3 mb-4"></div>
                 <div className="space-y-3">
                     <div className="h-16 bg-gray-200 rounded"></div>
@@ -68,7 +68,7 @@ const InsightsPanel = ({ businessSnapshot, loading: parentLoading = false }) => 
     }
 
     return (
-        <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-lg">
+        <div className="bg-white/70 backdrop-blur-md  rounded-2xl p-6 shadow-lg">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                     <Sparkles size={18} className="text-indigo-500" />

@@ -43,7 +43,7 @@ const HealthScoreGauge = ({ score = 0, status = 'Good', color = '#3B82F6' }) => 
     };
 
     return (
-        <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-lg flex flex-col items-center">
+        <div className="bg-white/70 backdrop-blur-md  rounded-2xl p-6 shadow-lg flex flex-col items-center">
             <svg width="200" height="120" viewBox="0 0 200 120" className="mb-2">
                 {/* Background arc */}
                 {createArc(180, 360, '#E5E7EB')}

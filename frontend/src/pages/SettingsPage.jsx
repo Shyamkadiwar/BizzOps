@@ -12,20 +12,20 @@ function SettingsPage() {
     const location = useLocation();
     const { fetchUser } = useAuth();
     const [activeTab, setActiveTab] = useState(location.state?.tab || "profile");
-    
+
     // Global States
     const [loading, setLoading] = useState(true);
     const [redirectMsg, setRedirectMsg] = useState(location.state?.requirePayment ? "Your subscription has expired. Please upgrade to continue using BizzOps." : "");
     const [savingProfile, setSavingProfile] = useState(false);
     const [savingPayments, setSavingPayments] = useState(false);
     const [savingGemini, setSavingGemini] = useState(false);
-    
+
     const [profileMessage, setProfileMessage] = useState({ type: '', text: '' });
     const [paymentMessage, setPaymentMessage] = useState({ type: '', text: '' });
     const [geminiMessage, setGeminiMessage] = useState({ type: '', text: '' });
     const [billingMessage, setBillingMessage] = useState({ type: '', text: '' });
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-    
+
     // Profile Data
     const [userDetails, setUserDetails] = useState({
         businessName: '',
@@ -110,7 +110,7 @@ function SettingsPage() {
 
     useEffect(() => {
         fetchData();
-        
+
         // Dynamically load Razorpay SDK
         const script = document.createElement('script');
         script.src = 'https://checkout.razorpay.com/v1/checkout.js';
@@ -137,7 +137,7 @@ function SettingsPage() {
             formData.append('address', userDetails.address);
             formData.append('gstNumber', userDetails.gstNumber);
             formData.append('website', userDetails.website);
-            
+
             if (logoFile) {
                 formData.append('businessLogo', logoFile);
             }
@@ -145,7 +145,7 @@ function SettingsPage() {
             const response = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/v1/users/update-account`,
                 formData,
-                { 
+                {
                     withCredentials: true,
                     headers: { 'Content-Type': 'multipart/form-data' }
                 }
@@ -153,7 +153,7 @@ function SettingsPage() {
 
             if (response.data.statusCode === 200) {
                 setProfileMessage({ type: 'success', text: 'Business profile updated successfully!' });
-                
+
                 // Update local logo state in case a new remote one is returned
                 if (response.data.data.businessLogo) {
                     setLogoPreview(response.data.data.businessLogo);
@@ -234,9 +234,9 @@ function SettingsPage() {
 
         try {
             // 1. Create order
-            const orderRes = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/subscription/create-order`, {}, { 
-                headers: { 'Authorization': token }, 
-                withCredentials: true 
+            const orderRes = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/subscription/create-order`, {}, {
+                headers: { 'Authorization': token },
+                withCredentials: true
             });
 
             const order = orderRes.data.data;
@@ -264,9 +264,9 @@ function SettingsPage() {
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_signature: response.razorpay_signature
-                        }, { 
-                            headers: { 'Authorization': token }, 
-                            withCredentials: true 
+                        }, {
+                            headers: { 'Authorization': token },
+                            withCredentials: true
                         });
 
                         setBillingMessage({ type: 'success', text: verifyRes.data.message });
@@ -286,7 +286,7 @@ function SettingsPage() {
                 }
             };
             const rzp = new window.Razorpay(options);
-            rzp.on('payment.failed', function (response){
+            rzp.on('payment.failed', function (response) {
                 setBillingMessage({ type: 'error', text: 'Payment failed or cancelled.' });
             });
             rzp.open();
@@ -302,7 +302,7 @@ function SettingsPage() {
     let isExpired = false;
     let daysLeftText = '';
     let statusText = '';
-    
+
     if (userDetails.subscriptionStatus === 'active') {
         const subEnd = new Date(userDetails.subscriptionEndsAt);
         if (subEnd > now) {
@@ -328,12 +328,12 @@ function SettingsPage() {
     return (
         <Layout>
             <div className="min-h-screen bg-[#F5F5FA] font-poppins p-4 md:p-8">
-                
+
                 <div className="max-w-4xl mx-auto">
                     <div className="mb-8">
                         <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Account Settings</h1>
                         <p className="text-gray-500 mt-2 font-medium">Manage your business profile, security, and integrations.</p>
-                        
+
                         {redirectMsg && (
                             <div className="mt-4 p-4 rounded-xl bg-red-100 border border-red-200 text-red-800 font-medium">
                                 {redirectMsg}
@@ -343,25 +343,25 @@ function SettingsPage() {
 
                     {/* Tabs Navigation */}
                     <div className="flex flex-wrap gap-2 mb-8 bg-white/50 p-1.5 rounded-2xl shadow-sm border border-gray-100 max-w-fit">
-                        <button 
+                        <button
                             onClick={() => setActiveTab('billing')}
                             className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 ${activeTab === 'billing' ? 'bg-indigo-600 text-white shadow border border-indigo-600' : 'text-gray-500 hover:text-gray-800 hover:bg-white/60'}`}
                         >
                             <CreditCard size={16} /> Subscription
                         </button>
-                        <button 
+                        <button
                             onClick={() => setActiveTab('profile')}
                             className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 ${activeTab === 'profile' ? 'bg-white text-indigo-700 shadow border border-gray-100' : 'text-gray-500 hover:text-gray-800 hover:bg-white/60'}`}
                         >
                             <Building2 size={16} /> Business Profile
                         </button>
-                        <button 
+                        <button
                             onClick={() => setActiveTab('payments')}
                             className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 ${activeTab === 'payments' ? 'bg-white text-indigo-700 shadow border border-gray-100' : 'text-gray-500 hover:text-gray-800 hover:bg-white/60'}`}
                         >
                             <ShieldCheck size={16} /> Payment Gateway
                         </button>
-                        <button 
+                        <button
                             onClick={() => setActiveTab('ai')}
                             className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 ${activeTab === 'ai' ? 'bg-white text-indigo-700 shadow border border-gray-100' : 'text-gray-500 hover:text-gray-800 hover:bg-white/60'}`}
                         >
@@ -382,7 +382,7 @@ function SettingsPage() {
                                     <div className="animate-fade-in">
                                         <div className="px-6 md:px-10 py-8 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-purple-50">
                                             <h2 className="text-2xl font-bold text-gray-900 mb-1 flex items-center gap-2">
-                                                 BizzOps Pro
+                                                BizzOps Pro
                                             </h2>
                                             <p className="text-sm font-medium text-gray-600">Upgrade to unlock continuous access to all business features.</p>
                                         </div>
@@ -402,7 +402,7 @@ function SettingsPage() {
                                                     </div>
                                                     <h3 className="text-xl font-bold text-gray-900 mb-2">{statusText}</h3>
                                                     {!isExpired && <p className="text-indigo-600 font-bold mb-4">{daysLeftText}</p>}
-                                                    
+
                                                     {userDetails.subscriptionStatus === 'active' && userDetails.subscriptionEndsAt ? (
                                                         <p className="text-sm text-gray-500 font-medium">Valid until: {new Date(userDetails.subscriptionEndsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                                     ) : (
@@ -413,22 +413,22 @@ function SettingsPage() {
                                                 {/* Right Side: Upgrade Call-to-Action */}
                                                 <div className="bg-indigo-600 rounded-2xl p-6 md:p-8 text-white flex flex-col justify-between shadow-[0_20px_50px_rgba(79,70,229,0.3)]">
                                                     <div>
-                                                        <h3 className="text-2xl font-bold mb-2">₹999 / 30 Days</h3>
+                                                        <h3 className="text-2xl font-bold mb-2">₹499 / 30 Days</h3>
                                                         <p className="text-indigo-100 mb-6 text-sm font-medium">One-time payment seamlessly extends your access by an additional 30 days without auto-renewals catching you off-guard.</p>
-                                                        
+
                                                         <ul className="mb-8 space-y-2 text-indigo-100 text-sm">
                                                             <li className="flex items-center gap-2"><CheckCircle size={16} /> Unlimited Invoices & Orders</li>
                                                             <li className="flex items-center gap-2"><CheckCircle size={16} /> AI Chatbot Intelligence</li>
                                                             <li className="flex items-center gap-2"><CheckCircle size={16} /> Cloud Storage & Reports</li>
                                                         </ul>
                                                     </div>
-                                                    
-                                                    <button 
-                                                        onClick={handleCheckout} 
-                                                        disabled={isProcessingPayment} 
+
+                                                    <button
+                                                        onClick={handleCheckout}
+                                                        disabled={isProcessingPayment || (!isExpired && userDetails.subscriptionStatus === 'active')}
                                                         className="w-full py-4 bg-white text-indigo-600 font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all text-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:hover:translate-y-0"
                                                     >
-                                                        {isProcessingPayment ? <CircularProgress size={24} color="inherit" /> : 'Pay ₹999 Now'}
+                                                        {isProcessingPayment ? <CircularProgress size={24} color="inherit" /> : (!isExpired && userDetails.subscriptionStatus === 'active' ? 'Subscription Active' : 'Pay ₹499 Now')}
                                                     </button>
                                                 </div>
                                             </div>
@@ -466,10 +466,10 @@ function SettingsPage() {
                                                         <label className="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 hover:border-indigo-500 hover:text-indigo-600 rounded-xl shadow-sm transition-all text-sm font-semibold text-gray-700">
                                                             <UploadCloud size={18} />
                                                             Upload New Logo
-                                                            <input 
-                                                                type="file" 
+                                                            <input
+                                                                type="file"
                                                                 accept="image/*"
-                                                                className="hidden" 
+                                                                className="hidden"
                                                                 onChange={handleFileChange}
                                                             />
                                                         </label>
@@ -555,7 +555,7 @@ function SettingsPage() {
                                     <div className="animate-fade-in">
                                         <div className="px-6 md:px-10 py-8 border-b border-gray-100">
                                             <h2 className="text-xl font-bold text-gray-900 mb-1 flex items-center gap-2">
-                                                 Razorpay Integration
+                                                Razorpay Integration
                                             </h2>
                                             <p className="text-sm font-medium text-gray-600">Connect your own Razorpay account to collect payments securely directly to your bank.</p>
                                         </div>

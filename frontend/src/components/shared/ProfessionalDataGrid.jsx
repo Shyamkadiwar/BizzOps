@@ -32,6 +32,11 @@ const dataGridSx = {
         borderBottom: 'none',
         color: '#334155',
         padding: '8px 12px',
+        display: 'flex',
+        alignItems: 'center',
+    },
+    '& .MuiDataGrid-cell:focus': {
+        outline: 'none',
     },
     '& .MuiDataGrid-footerContainer': {
         borderTop: '1px solid rgba(0, 0, 0, 0.06)',
@@ -112,7 +117,7 @@ export default function ProfessionalDataGrid({
     };
 
     return (
-        <div className="bg-white/70 backdrop-blur-md border border-white/30 rounded-xl shadow-md overflow-hidden">
+        <div className="bg-white/70 backdrop-blur-md  rounded-xl shadow-md overflow-hidden">
             <Box sx={{ height: 650, width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <DataGrid
                     rows={rows}

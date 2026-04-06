@@ -155,7 +155,7 @@ function Landing() {
                             </div>
                             <div className="w-16"></div>
                         </div>
-                        
+
                         {/* Interactive Dashboard Container */}
                         <div className="w-full relative bg-gray-50 rounded-b-[2rem] overflow-hidden">
                             {/* Overlay to hint interactivity when not hovered */}
@@ -168,7 +168,7 @@ function Landing() {
                                     Hover & Scroll to Explore
                                 </div>
                             </div>
-                            
+
                             {/* The Dummy Dashboard */}
                             <DummyDashboard />
                         </div>
@@ -288,7 +288,7 @@ function Landing() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                     {/* Starter Tier */}
-                    <div className="bg-white rounded-[2rem] p-10 border border-gray-200 shadow-sm relative">
+                    <div className="bg-white rounded-[2rem] p-10 border border-gray-200 shadow-sm relative group hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
                         <h4 className="text-2xl font-bold text-gray-900 mb-2">14-Day Free Trial</h4>
                         <p className="text-gray-500 mb-6">Experience the full power of BizzOps with absolutely zero commitment.</p>
                         <div className="text-5xl font-extrabold text-gray-900 mb-8">₹0<span className="text-lg text-gray-400 font-medium">/for 14 days</span></div>
@@ -310,7 +310,7 @@ function Landing() {
                     </div>
 
                     {/* Pro Tier */}
-                    <div className="bg-gray-900 rounded-[2rem] p-10 shadow-2xl relative overflow-hidden text-white border border-gray-800 transform md:-translate-y-4">
+                    <div className="bg-gray-900 rounded-[2rem] p-10 shadow-2xl relative overflow-hidden text-white border border-gray-800 transform md:-translate-y-4 group hover:-translate-y-6 hover:shadow-indigo-500/20 hover:shadow-2xl transition-all duration-300">
                         {/* Glow effect */}
                         <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500 rounded-full mix-blend-screen filter blur-[80px] opacity-40"></div>
 
@@ -319,7 +319,7 @@ function Landing() {
                         </div>
                         <h4 className="text-2xl font-bold text-white mb-2">BizzOps Pro</h4>
                         <p className="text-gray-400 mb-6">The ultimate operating system for growing your business.</p>
-                        <div className="text-5xl font-extrabold text-white mb-8">₹999<span className="text-lg text-gray-400 font-medium">/month</span></div>
+                        <div className="text-5xl font-extrabold text-white mb-8">₹499<span className="text-lg text-gray-400 font-medium">/month</span></div>
                         <ul className="space-y-4 mb-10">
                             {[
                                 "Everything in Free Trial",

@@ -226,7 +226,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     }
 
     let businessLogoUrl = undefined;
-    
+
     // Check if businessLogo file is uploaded
     const localFilePath = req.file?.path;
     if (localFilePath) {
@@ -285,7 +285,7 @@ const getPaymentSettings = asyncHandler(async (req, res) => {
 // Update Razorpay payment settings
 const updatePaymentSettings = asyncHandler(async (req, res) => {
     const { razorpayKeyId, razorpayKeySecret, razorpayWebhookSecret } = req.body;
-    
+
     const user = await User.findById(req.user?._id);
     if (!user) throw new ApiError(404, "User not found");
 
@@ -339,7 +339,7 @@ const updateGeminiSettings = asyncHandler(async (req, res) => {
 // Support Contact Message
 const sendContactMessage = asyncHandler(async (req, res) => {
     const { name, email, subject, message } = req.body;
-    
+
     if (!name || !email || !subject || !message) {
         throw new ApiError(400, "All fields are required");
     }

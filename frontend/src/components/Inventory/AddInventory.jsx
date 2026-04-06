@@ -326,7 +326,7 @@ function AddInventory({ onItemAdded, onCancel }) {
                             }
                         />
                     </Paper>
-                    <Paper sx={{ p: 2, background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', display: 'flex', alignItems: 'center', borderRadius: '12px', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)' }}>
+                    <Paper sx={{ p: 2, background: '#4f46e5', display: 'flex', alignItems: 'center', borderRadius: '12px', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)' }}>
                         <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700 }}>
                             Total Cost: ₹{totalCost.toLocaleString()}
                         </Typography>
@@ -390,11 +390,11 @@ function AddInventory({ onItemAdded, onCancel }) {
                 )}
                 <Button type="submit"
                     sx={{
-                        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                        background: '#4f46e5',
                         color: '#fff', textTransform: 'none', fontWeight: 600, borderRadius: '10px',
                         boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)',
                         px: 4, py: 1,
-                        '&:hover': { background: 'linear-gradient(135deg, #000000 0%, #0f172a 100%)' }
+                        '&:hover': { background: '#4338ca' }
                     }}>
                     Add to Inventory
                 </Button>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { Box, Typography, IconButton, Chip } from '@mui/material';
-import { Plus, Search, X, Store, IndianRupee, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, Search, X, Store, IndianRupee, AlertCircle, CheckCircle2, ExternalLink } from 'lucide-react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ProfessionalDataGrid from "../shared/ProfessionalDataGrid.jsx";
 import MuiModal from "../shared/MuiModal.jsx";
@@ -111,12 +111,18 @@ const Vendor = () => {
         {
             field: 'name', headerName: 'Name', width: 180,
             renderCell: (params) => (
-                <Typography
-                    sx={{ cursor: 'pointer', color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}
+                <Box
                     onClick={() => { setSelectedVendor(params.row._id); setVendorDetailsOpen(true); }}
+                    sx={{
+                        display: 'inline-flex', alignItems: 'center', gap: 0.5, cursor: 'pointer',
+                        color: '#4f46e5', fontWeight: 600,
+                        transition: 'all 0.2s',
+                        '&:hover': { textDecoration: 'underline', color: '#4338ca' }
+                    }}
                 >
-                    {params.value}
-                </Typography>
+                    {params.value} 
+                    <ExternalLink size={14} style={{ opacity: 0.7 }} />
+                </Box>
             )
         },
         { field: 'email', headerName: 'Email', width: 200 },
@@ -163,7 +169,7 @@ const Vendor = () => {
                         <p className="text-sm text-gray-500 mt-0.5">Manage suppliers, track purchases and outstanding balances</p>
                     </div>
                     <button onClick={() => setOpenModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500/80 to-indigo-500/80 backdrop-blur-md border border-white/30 rounded-xl shadow-md hover:shadow-lg hover:from-blue-600/90 hover:to-indigo-600/90 transition-all duration-200 text-sm font-medium text-white">
+                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium text-white">
                         <Plus size={16} /> Add Vendor
                     </button>
                 </div>
@@ -238,7 +244,7 @@ const Vendor = () => {
 
                     {/* City dropdown */}
                     <select value={cityFilter} onChange={e => setCityFilter(e.target.value)}
-                        className="px-3 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all text-gray-700 font-medium">
+                        className="px-1.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all text-gray-700 font-medium">
                         <option value="all">All Cities</option>
                         {cities.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
